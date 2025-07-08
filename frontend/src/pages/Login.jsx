@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, Space, Alert, Divider, Tag } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined, PhoneOutlined, FacebookOutlined, MessageOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Card, Typography, Space, Alert, Divider, Tag, Checkbox, notification } from 'antd';
+import { UserOutlined, LockOutlined, LoginOutlined, PhoneOutlined, FacebookOutlined, MessageOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
 
 const { Title, Text, Paragraph } = Typography;
@@ -10,14 +10,55 @@ const Login = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [networkStatus, setNetworkStatus] = useState(navigator.onLine);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // Check for saved credentials
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('truongphat_remember_email');
+    if (savedEmail) {
+      form.setFieldsValue({ email: savedEmail });
+      setRememberMe(true);
+    }
+  }, [form]);
+
+  // Monitor network status
+  useEffect(() => {
+    const handleOnline = () => setNetworkStatus(true);
+    const handleOffline = () => setNetworkStatus(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const handleLogin = async (values) => {
+    if (!networkStatus) {
+      notification.error({
+        message: 'Không có kết nối mạng',
+        description: 'Vui lòng kiểm tra kết nối internet và thử lại.',
+        duration: 4,
+      });
+      return;
+    }
+
     setLoading(true);
     setError('');
     
     try {
+      // Save email if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem('truongphat_remember_email', values.email);
+      } else {
+        localStorage.removeItem('truongphat_remember_email');
+      }
+
       const result = await login({
         email: values.email,
         password: values.password
@@ -25,12 +66,17 @@ const Login = () => {
       
       if (result.success) {
         // Redirect will be handled by AuthContext
+        notification.success({
+          message: 'Đăng nhập thành công',
+          description: `Chào mừng ${result.user.name} đã quay trở lại!`,
+          duration: 2,
+        });
       } else {
-        setError('Email hoặc mật khẩu không đúng');
+        setError(result.error || 'Email hoặc mật khẩu không đúng');
       }
     } catch (err) {
-      setError('Đã xảy ra lỗi khi đăng nhập');
       console.error('Login error:', err);
+      setError('Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
     }
@@ -65,6 +111,18 @@ const Login = () => {
     }
   ];
 
+  // Form validation rules
+  const emailRules = [
+    { required: true, message: 'Vui lòng nhập email!' },
+    { type: 'email', message: 'Email không hợp lệ!' },
+    { max: 50, message: 'Email không được vượt quá 50 ký tự!' },
+  ];
+
+  const passwordRules = [
+    { required: true, message: 'Vui lòng nhập mật khẩu!' },
+    { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
+  ];
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -83,6 +141,16 @@ const Login = () => {
             Đăng nhập vào hệ thống quản lý bán hàng
           </Text>
         </div>
+
+        {!networkStatus && (
+          <Alert
+            message="Không có kết nối mạng"
+            description="Bạn đang ở chế độ ngoại tuyến. Một số tính năng có thể không hoạt động cho đến khi kết nối được khôi phục."
+            type="warning"
+            showIcon
+            style={{ marginBottom: '20px' }}
+          />
+        )}
 
         <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
           {/* Login Form */}
@@ -111,6 +179,8 @@ const Login = () => {
                 type="error"
                 showIcon
                 style={{ marginBottom: '24px' }}
+                closable
+                onClose={() => setError('')}
               />
             )}
 
@@ -120,32 +190,46 @@ const Login = () => {
               onFinish={handleLogin}
               layout="vertical"
               size="large"
+              initialValues={{ remember: rememberMe }}
             >
               <Form.Item
                 name="email"
                 label="Email"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập email!' },
-                  { type: 'email', message: 'Email không hợp lệ!' }
-                ]}
+                rules={emailRules}
               >
                 <Input
                   prefix={<UserOutlined />}
                   placeholder="admin@truongphat.com"
                   style={{ borderRadius: '8px' }}
+                  disabled={loading}
+                  autoComplete="email"
                 />
               </Form.Item>
 
               <Form.Item
                 name="password"
                 label="Mật khẩu"
-                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+                rules={passwordRules}
               >
                 <Input.Password
                   prefix={<LockOutlined />}
                   placeholder="Nhập mật khẩu"
                   style={{ borderRadius: '8px' }}
+                  disabled={loading}
+                  autoComplete="current-password"
                 />
+              </Form.Item>
+
+              <Form.Item>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Checkbox 
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={loading}
+                  >
+                    Ghi nhớ đăng nhập
+                  </Checkbox>
+                </div>
               </Form.Item>
 
               <Form.Item>
@@ -154,7 +238,7 @@ const Login = () => {
                   htmlType="submit"
                   loading={loading}
                   block
-                  icon={<LoginOutlined />}
+                  icon={loading ? <LoadingOutlined /> : <LoginOutlined />}
                   style={{
                     height: '48px',
                     borderRadius: '8px',
@@ -162,7 +246,7 @@ const Login = () => {
                     fontWeight: 'bold'
                   }}
                 >
-                  Đăng nhập
+                  {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                 </Button>
               </Form.Item>
             </Form>
@@ -201,14 +285,15 @@ const Login = () => {
                 <Card
                   key={index}
                   size="small"
-                  hoverable
-                  onClick={() => handleDemoLogin(account.email, account.password)}
+                  hoverable={!loading}
+                  onClick={() => !loading && handleDemoLogin(account.email, account.password)}
                   style={{
                     borderRadius: '12px',
                     border: `1px solid ${account.color}20`,
                     background: `${account.color}05`,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: loading ? 0.7 : 1
                   }}
                   bodyStyle={{ padding: '16px' }}
                 >
@@ -229,6 +314,7 @@ const Login = () => {
                     <Button
                       type="primary"
                       size="small"
+                      loading={loading}
                       style={{
                         background: account.color,
                         border: 'none',

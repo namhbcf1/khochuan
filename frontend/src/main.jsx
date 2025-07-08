@@ -214,7 +214,7 @@ window.addEventListener('appinstalled', () => {
 
 // Development Environment Setup
 if (import.meta.env.DEV) {
-  console.log('🚀 Enterprise POS - Development Mode')
+  console.log('🖥️ Trường Phát Computer - Development Mode')
   console.log('Environment:', import.meta.env)
   
   // Development tools
@@ -223,7 +223,22 @@ if (import.meta.env.DEV) {
     online: navigator.onLine,
     version: import.meta.env.VITE_APP_VERSION || '1.0.0'
   }
+} else {
+  console.log('🖥️ Trường Phát Computer - Production Mode')
 }
+
+// Log system information
+console.log(`
+🖥️ Trường Phát Computer
+Version: 1.0.0
+Environment: ${import.meta.env.MODE}
+Build: ${import.meta.env.DEV ? 'development' : 'production'}
+
+🚀 Powered by Cloudflare Edge
+⚡ React 18 + Vite + Ant Design
+📱 PWA Ready + Offline Support
+🎮 Staff Gamification + AI Features
+`);
 
 // React 18 Root Creation and Error Boundaries
 const container = document.getElementById('root')

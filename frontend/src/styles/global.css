@@ -566,35 +566,52 @@ body {
   }
 }
 
-/* Custom Ant Design Overrides */
+/* Ant Design Component Overrides */
 .ant-card {
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.ant-btn {
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
+/* Fix for deprecated headStyle and bodyStyle */
+.ant-card .ant-card-head {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 0 24px;
+  min-height: 48px;
 }
 
-.ant-btn:hover {
-  transform: translateY(-1px) !important;
+.ant-card .ant-card-body {
+  padding: 24px;
 }
 
-.ant-input {
-  border-radius: 8px !important;
+/* Custom card styles using the new styles API */
+:where(.css-dev-only-do-not-override-1jr9qlj).ant-card .ant-card-head,
+:where(.css-dev-only-do-not-override-1jr9qlj).ant-card .ant-card-body {
+  padding: 24px;
 }
 
-.ant-select-selector {
-  border-radius: 8px !important;
+:where(.css-dev-only-do-not-override-1jr9qlj).ant-card.ant-card-small .ant-card-head,
+:where(.css-dev-only-do-not-override-1jr9qlj).ant-card.ant-card-small .ant-card-body {
+  padding: 12px;
 }
 
-.ant-modal-content {
-  border-radius: 12px !important;
+:where(.css-dev-only-do-not-override-1jr9qlj).ant-card.ant-card-bordered {
+  border: 1px solid rgba(5, 5, 5, 0.06);
 }
 
-.ant-drawer-content {
-  border-radius: 12px 0 0 12px !important;
+/* Message component styles */
+.ant-message .ant-message-notice-content {
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Remove high contrast deprecation warnings */
+@media (forced-colors: active) {
+  .forced-colors-mode {
+    border: 1px solid CanvasText;
+  }
 }
 
 /* Custom Components */
