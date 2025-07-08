@@ -10,7 +10,9 @@
     "dev": "npm run dev --workspace=frontend",
     "build": "npm run build --workspace=frontend",
     "deploy": "npm run build && echo 'Deploy completed'",
-    "clean": "npm run clean --workspace=frontend"
+    "clean": "npm run clean --workspace=frontend",
+    "backend:dev": "npm run dev --workspace=backend",
+    "backend:deploy": "npm run deploy --workspace=backend"
   },
   "devDependencies": {
     "concurrently": "^8.0.0"

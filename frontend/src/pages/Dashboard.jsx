@@ -1,502 +1,283 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
-import {
-  Row,
-  Col,
-  Card,
-  Statistic,
-  Typography,
-  Space,
-  Button,
-  Alert,
-  Progress,
-  Avatar,
-  List,
-  Tag,
-  Divider,
-  Timeline,
-  Badge
-} from 'antd';
-import {
-  DollarOutlined,
-  ShoppingCartOutlined,
-  UserOutlined,
-  TrophyOutlined,
-  RiseOutlined,
-  FallOutlined,
-  ClockCircleOutlined,
-  BellOutlined,
-  TeamOutlined,
-  ProductOutlined,
-  BarChartOutlined,
-  RightOutlined
-} from '@ant-design/icons';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../components/Common/LoadingSpinner';
-import api from '../services/api';
+import { Card, Button, Row, Col, Typography, Space, Tag, Divider } from 'antd';
+import { 
+  DashboardOutlined, 
+  ShoppingCartOutlined, 
+  TeamOutlined,
+  TrophyOutlined,
+  BarChartOutlined,
+  SettingOutlined,
+  UserOutlined,
+  ShopOutlined
+} from '@ant-design/icons';
+import { useAuth } from '../auth/AuthContext';
 
-const { Title, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 const Dashboard = () => {
-  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState({
-    stats: {},
-    recentOrders: [],
-    notifications: [],
-    topProducts: [],
-    staffPerformance: [],
-    quickActions: []
-  });
+  const { user, isAuthenticated, hasRole } = useAuth();
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  // If user is authenticated, redirect to appropriate dashboard
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      switch (user.role) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'cashier':
+          navigate('/cashier/pos');
+          break;
+        case 'staff':
+          navigate('/staff/dashboard');
+          break;
+        default:
+          // Stay on main dashboard
+          break;
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch dashboard data based on user role
-      const endpoints = {
-        admin: [
-          'analytics/overview',
-          'orders/recent',
-          'products/top-selling',
-          'staff/performance',
-          'notifications'
-        ],
-        manager: [
-          'analytics/overview',
-          'orders/recent', 
-          'products/top-selling',
-          'staff/performance'
-        ],
-        cashier: [
-          'orders/my-orders',
-          'products/popular',
-          'staff/my-performance'
-        ],
-        staff: [
-          'orders/my-orders',
-          'staff/my-performance'
-        ]
-      };
+  const handleLogin = () => {
+    navigate('/login');
+  };
 
-      const userEndpoints = endpoints[user.role] || endpoints.staff;
-      const promises = userEndpoints.map(endpoint => 
-        api.get(`/${endpoint}`).catch(err => ({ error: err.message }))
-      );
-
-      const results = await Promise.all(promises);
-
-      setDashboardData({
-        stats: results[0]?.data || getMockStats(),
-        recentOrders: results[1]?.data || getMockOrders(),
-        topProducts: results[2]?.data || getMockProducts(),
-        staffPerformance: results[3]?.data || getMockStaff(),
-        notifications: results[4]?.data || getMockNotifications(),
-        quickActions: getQuickActions(user.role)
-      });
-
-    } catch (error) {
-      console.error('Dashboard loading error:', error);
-      // Load mock data on error
-      setDashboardData({
-        stats: getMockStats(),
-        recentOrders: getMockOrders(),
-        topProducts: getMockProducts(),
-        staffPerformance: getMockStaff(),
-        notifications: getMockNotifications(),
-        quickActions: getQuickActions(user.role)
-      });
-    } finally {
-      setLoading(false);
+  const handleRoleAccess = (role) => {
+    switch (role) {
+      case 'admin':
+        navigate('/admin/dashboard');
+        break;
+      case 'cashier':
+        navigate('/cashier/pos');
+        break;
+      case 'staff':
+        navigate('/staff/dashboard');
+        break;
+      default:
+        navigate('/login');
     }
   };
 
-  const getMockStats = () => ({
-    todayRevenue: 15420.50,
-    todayOrders: 127,
-    totalCustomers: 1834,
-    averageOrderValue: 121.42,
-    revenueGrowth: 12.5,
-    ordersGrowth: 8.3,
-    customersGrowth: 15.2,
-    conversionRate: 4.2
-  });
-
-  const getMockOrders = () => [
-    { id: 'ORD-2024-001', customer: 'John Doe', amount: 89.50, status: 'completed', time: '2 minutes ago' },
-    { id: 'ORD-2024-002', customer: 'Jane Smith', amount: 156.25, status: 'processing', time: '5 minutes ago' },
-    { id: 'ORD-2024-003', customer: 'Mike Johnson', amount: 75.00, status: 'completed', time: '8 minutes ago' },
-    { id: 'ORD-2024-004', customer: 'Sarah Wilson', amount: 203.75, status: 'pending', time: '12 minutes ago' },
-    { id: 'ORD-2024-005', customer: 'David Brown', amount: 95.30, status: 'completed', time: '15 minutes ago' }
-  ];
-
-  const getMockProducts = () => [
-    { name: 'Premium Coffee Blend', sales: 156, revenue: 2340, growth: 15 },
-    { name: 'Organic Green Tea', sales: 134, revenue: 1876, growth: 23 },
-    { name: 'Artisan Pastries', sales: 98, revenue: 1470, growth: -5 },
-    { name: 'Fresh Sandwiches', sales: 87, revenue: 1305, growth: 8 },
-    { name: 'Energy Drinks', sales: 76, revenue: 912, growth: 31 }
-  ];
-
-  const getMockStaff = () => [
-    { name: 'Alice Johnson', role: 'Cashier', score: 94, orders: 45, badges: 3 },
-    { name: 'Bob Smith', role: 'Staff', score: 87, orders: 38, badges: 2 },
-    { name: 'Carol Davis', role: 'Cashier', score: 91, orders: 42, badges: 4 },
-    { name: 'David Wilson', role: 'Staff', score: 82, orders: 35, badges: 1 }
-  ];
-
-  const getMockNotifications = () => [
-    { id: 1, type: 'info', message: 'Low stock alert: Premium Coffee Blend (5 units left)', time: '10 minutes ago' },
-    { id: 2, type: 'success', message: 'Daily sales target achieved!', time: '2 hours ago' },
-    { id: 3, type: 'warning', message: 'Staff training reminder for this week', time: '4 hours ago' },
-    { id: 4, type: 'info', message: 'New customer loyalty program launched', time: '1 day ago' }
-  ];
-
-  const getQuickActions = (role) => {
-    const actions = {
-      admin: [
-        { title: 'View Analytics', icon: BarChartOutlined, path: '/analytics', color: '#1890ff' },
-        { title: 'Manage Products', icon: ProductOutlined, path: '/products', color: '#52c41a' },
-        { title: 'Staff Management', icon: TeamOutlined, path: '/staff', color: '#722ed1' },
-        { title: 'POS Terminal', icon: ShoppingCartOutlined, path: '/pos', color: '#fa541c' }
-      ],
-      manager: [
-        { title: 'POS Terminal', icon: ShoppingCartOutlined, path: '/pos', color: '#fa541c' },
-        { title: 'Manage Products', icon: ProductOutlined, path: '/products', color: '#52c41a' },
-        { title: 'View Reports', icon: BarChartOutlined, path: '/analytics', color: '#1890ff' },
-        { title: 'Staff Performance', icon: TeamOutlined, path: '/staff', color: '#722ed1' }
-      ],
-      cashier: [
-        { title: 'POS Terminal', icon: ShoppingCartOutlined, path: '/pos', color: '#fa541c' },
-        { title: 'Order History', icon: ClockCircleOutlined, path: '/orders', color: '#1890ff' },
-        { title: 'Customer Lookup', icon: UserOutlined, path: '/customers', color: '#52c41a' },
-        { title: 'My Performance', icon: TrophyOutlined, path: '/staff', color: '#722ed1' }
-      ],
-      staff: [
-        { title: 'POS Terminal', icon: ShoppingCartOutlined, path: '/pos', color: '#fa541c' },
-        { title: 'My Orders', icon: ClockCircleOutlined, path: '/orders', color: '#1890ff' },
-        { title: 'My Performance', icon: TrophyOutlined, path: '/staff', color: '#722ed1' }
-      ]
-    };
-    return actions[role] || actions.staff;
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      completed: 'green',
-      processing: 'blue',
-      pending: 'orange',
-      cancelled: 'red'
-    };
-    return colors[status] || 'default';
-  };
-
-  if (loading) {
-    return <LoadingSpinner tip="Loading dashboard..." />;
-  }
-
-  const { stats, recentOrders, topProducts, staffPerformance, notifications, quickActions } = dashboardData;
-
   return (
-    <div>
-      {/* Welcome Header */}
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2}>
-          Welcome back, {user?.name || user?.email}! 👋
-        </Title>
-        <Text type="secondary">
-          Here's what's happening with your business today.
-        </Text>
-      </div>
+    <div style={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      padding: '20px'
+    }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <Title level={1} style={{ 
+            color: 'white', 
+            fontSize: '3.5rem', 
+            marginBottom: '20px',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            🏪 Smart POS System
+          </Title>
+          <Paragraph style={{ 
+            fontSize: '1.3rem', 
+            color: 'rgba(255,255,255,0.9)',
+            maxWidth: '600px',
+            margin: '0 auto'
+          }}>
+            Hệ thống quản lý bán hàng thông minh với AI, Game hóa và Real-time Analytics
+          </Paragraph>
+          <Tag color="gold" style={{ marginTop: '10px', fontSize: '14px' }}>
+            Powered by Cloudflare Edge
+          </Tag>
+        </div>
 
-      {/* Key Metrics */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Today's Revenue"
-              value={stats.todayRevenue}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix={
-                <Tag color={stats.revenueGrowth > 0 ? 'green' : 'red'} style={{ marginLeft: 8 }}>
-                  {stats.revenueGrowth > 0 ? <RiseOutlined /> : <FallOutlined />}
-                  {Math.abs(stats.revenueGrowth)}%
-                </Tag>
-              }
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Orders Today"
-              value={stats.todayOrders}
-              prefix={<ShoppingCartOutlined />}
-              suffix={
-                <Tag color={stats.ordersGrowth > 0 ? 'green' : 'red'} style={{ marginLeft: 8 }}>
-                  {stats.ordersGrowth > 0 ? <RiseOutlined /> : <FallOutlined />}
-                  {Math.abs(stats.ordersGrowth)}%
-                </Tag>
-              }
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Total Customers"
-              value={stats.totalCustomers}
-              prefix={<UserOutlined />}
-              suffix={
-                <Tag color="blue" style={{ marginLeft: 8 }}>
-                  +{stats.customersGrowth}%
-                </Tag>
-              }
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="Avg Order Value"
-              value={stats.averageOrderValue}
-              precision={2}
-              prefix={<DollarOutlined />}
-              suffix={
-                <Tag color="purple" style={{ marginLeft: 8 }}>
-                  {stats.conversionRate}% conv.
-                </Tag>
-              }
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]}>
-        {/* Quick Actions */}
-        <Col xs={24} lg={8}>
-          <Card title="Quick Actions" size="small">
-            <Row gutter={[8, 8]}>
-              {quickActions.map((action, index) => (
-                <Col span={12} key={index}>
-                  <Button
-                    block
-                    size="large"
-                    style={{
-                      height: '60px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderColor: action.color,
-                      color: action.color
-                    }}
-                    onClick={() => navigate(action.path)}
-                  >
-                    <action.icon style={{ fontSize: '18px', marginBottom: '4px' }} />
-                    <span style={{ fontSize: '12px' }}>{action.title}</span>
+        {/* Main Content */}
+        {!isAuthenticated ? (
+          <>
+            {/* Role Cards */}
+            <Row gutter={[24, 24]} style={{ marginBottom: '60px' }}>
+              <Col xs={24} md={8}>
+                <Card
+                  hoverable
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '16px',
+                    textAlign: 'center',
+                    height: '280px'
+                  }}
+                  bodyStyle={{ padding: '30px' }}
+                  onClick={() => handleRoleAccess('admin')}
+                >
+                  <DashboardOutlined style={{ fontSize: '3rem', color: '#ffd700', marginBottom: '20px' }} />
+                  <Title level={3} style={{ color: 'white', marginBottom: '15px' }}>
+                    Admin Dashboard
+                  </Title>
+                  <Paragraph style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '20px' }}>
+                    Quản lý toàn bộ hệ thống, báo cáo, phân tích dữ liệu và cấu hình AI
+                  </Paragraph>
+                  <Button type="primary" size="large" ghost>
+                    Truy cập Dashboard
                   </Button>
-                </Col>
-              ))}
+                </Card>
+              </Col>
+
+              <Col xs={24} md={8}>
+                <Card
+                  hoverable
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '16px',
+                    textAlign: 'center',
+                    height: '280px'
+                  }}
+                  bodyStyle={{ padding: '30px' }}
+                  onClick={() => handleRoleAccess('cashier')}
+                >
+                  <ShoppingCartOutlined style={{ fontSize: '3rem', color: '#52c41a', marginBottom: '20px' }} />
+                  <Title level={3} style={{ color: 'white', marginBottom: '15px' }}>
+                    POS Terminal
+                  </Title>
+                  <Paragraph style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '20px' }}>
+                    Terminal bán hàng với quét mã vạch, thanh toán và gợi ý AI
+                  </Paragraph>
+                  <Button type="primary" size="large" ghost>
+                    Mở Terminal
+                  </Button>
+                </Card>
+              </Col>
+
+              <Col xs={24} md={8}>
+                <Card
+                  hoverable
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '16px',
+                    textAlign: 'center',
+                    height: '280px'
+                  }}
+                  bodyStyle={{ padding: '30px' }}
+                  onClick={() => handleRoleAccess('staff')}
+                >
+                  <TeamOutlined style={{ fontSize: '3rem', color: '#1890ff', marginBottom: '20px' }} />
+                  <Title level={3} style={{ color: 'white', marginBottom: '15px' }}>
+                    Staff Portal
+                  </Title>
+                  <Paragraph style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '20px' }}>
+                    Cổng nhân viên với game hóa, theo dõi hiệu suất và đào tạo
+                  </Paragraph>
+                  <Button type="primary" size="large" ghost>
+                    Vào Portal
+                  </Button>
+                </Card>
+              </Col>
             </Row>
-          </Card>
 
-          {/* Notifications */}
-          <Card 
-            title={
-              <Space>
-                <BellOutlined />
-                Notifications
-                <Badge count={notifications.length} size="small" />
-              </Space>
-            } 
-            style={{ marginTop: 16 }}
-            size="small"
-          >
-            <List
-              size="small"
-              dataSource={notifications}
-              renderItem={(item) => (
-                <List.Item>
-                  <List.Item.Meta
-                    description={
-                      <div>
-                        <Text style={{ fontSize: '12px' }}>{item.message}</Text>
-                        <br />
-                        <Text type="secondary" style={{ fontSize: '11px' }}>
-                          {item.time}
-                        </Text>
+            {/* Features Grid */}
+            <div style={{ marginBottom: '60px' }}>
+              <Title level={2} style={{ color: 'white', textAlign: 'center', marginBottom: '40px' }}>
+                ✨ Tính năng nổi bật
+              </Title>
+              <Row gutter={[16, 16]}>
+                {[
+                  { icon: '🤖', title: 'AI Recommendations', desc: 'Gợi ý sản phẩm thông minh' },
+                  { icon: '📊', title: 'Real-time Analytics', desc: 'Phân tích dữ liệu thời gian thực' },
+                  { icon: '🎮', title: 'Staff Gamification', desc: 'Game hóa cho nhân viên' },
+                  { icon: '📱', title: 'PWA Mobile', desc: 'Hỗ trợ mobile và offline' },
+                  { icon: '🔄', title: 'Offline Sync', desc: 'Đồng bộ khi mất kết nối' },
+                  { icon: '⚡', title: 'Cloudflare Edge', desc: 'Tốc độ toàn cầu' }
+                ].map((feature, index) => (
+                  <Col xs={12} md={8} lg={4} key={index}>
+                    <Card
+                      style={{
+                        background: 'rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '12px',
+                        textAlign: 'center',
+                        height: '120px'
+                      }}
+                      bodyStyle={{ padding: '16px' }}
+                    >
+                      <div style={{ fontSize: '2rem', marginBottom: '8px' }}>
+                        {feature.icon}
                       </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
+                      <div style={{ color: 'white', fontWeight: 'bold', fontSize: '12px' }}>
+                        {feature.title}
+                      </div>
+                      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '10px' }}>
+                        {feature.desc}
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </div>
 
-        {/* Recent Orders */}
-        <Col xs={24} lg={8}>
-          <Card 
-            title="Recent Orders" 
-            size="small"
-            extra={
-              <Button type="link" size="small" onClick={() => navigate('/orders')}>
-                View All <RightOutlined />
-              </Button>
-            }
-          >
-            <List
-              size="small"
-              dataSource={recentOrders}
-              renderItem={(order) => (
-                <List.Item>
-                  <List.Item.Meta
-                    title={
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Text strong>{order.id}</Text>
-                        <Tag color={getStatusColor(order.status)}>
-                          {order.status.toUpperCase()}
-                        </Tag>
-                      </div>
-                    }
-                    description={
-                      <div>
-                        <Text>{order.customer}</Text>
-                        <br />
-                        <Space>
-                          <Text strong>${order.amount}</Text>
-                          <Text type="secondary" style={{ fontSize: '11px' }}>
-                            {order.time}
-                          </Text>
-                        </Space>
-                      </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-
-        {/* Performance & Analytics */}
-        <Col xs={24} lg={8}>
-          {/* Top Products */}
-          <Card 
-            title="Top Products Today" 
-            size="small"
-            extra={
-              <Button type="link" size="small" onClick={() => navigate('/products')}>
-                View All <RightOutlined />
-              </Button>
-            }
-          >
-            <List
-              size="small"
-              dataSource={topProducts}
-              renderItem={(product) => (
-                <List.Item>
-                  <List.Item.Meta
-                    title={
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Text>{product.name}</Text>
-                        <Tag color={product.growth > 0 ? 'green' : 'red'}>
-                          {product.growth > 0 ? '+' : ''}{product.growth}%
-                        </Tag>
-                      </div>
-                    }
-                    description={
-                      <Space>
-                        <Text type="secondary">{product.sales} sales</Text>
-                        <Text strong>${product.revenue}</Text>
-                      </Space>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
-
-          {/* Staff Performance */}
-          {(user.role === 'admin' || user.role === 'manager') && (
-            <Card 
-              title="Staff Performance" 
-              style={{ marginTop: 16 }}
-              size="small"
-              extra={
-                <Button type="link" size="small" onClick={() => navigate('/staff')}>
-                  View All <RightOutlined />
+            {/* Login Section */}
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+              <Title level={3} style={{ color: 'white', marginBottom: '20px' }}>
+                Bắt đầu sử dụng ngay
+              </Title>
+              <Space size="large">
+                <Button type="primary" size="large" onClick={handleLogin}>
+                  <UserOutlined /> Đăng nhập
                 </Button>
-              }
-            >
-              <List
-                size="small"
-                dataSource={staffPerformance}
-                renderItem={(staff) => (
-                  <List.Item>
-                    <List.Item.Meta
-                      avatar={<Avatar icon={<UserOutlined />} />}
-                      title={
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Text>{staff.name}</Text>
-                          <Space>
-                            <Tag>{staff.role}</Tag>
-                            <Badge count={staff.badges} showZero color="gold" />
-                          </Space>
-                        </div>
-                      }
-                      description={
-                        <div>
-                          <Progress 
-                            percent={staff.score} 
-                            size="small" 
-                            format={() => `${staff.score}%`}
-                          />
-                          <Text type="secondary" style={{ fontSize: '11px' }}>
-                            {staff.orders} orders today
-                          </Text>
-                        </div>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
-            </Card>
-          )}
-        </Col>
-      </Row>
+                <Button size="large" ghost>
+                  <ShopOutlined /> Demo
+                </Button>
+              </Space>
+            </div>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <Title level={2} style={{ color: 'white' }}>
+              Chào mừng, {user?.name}!
+            </Title>
+            <Paragraph style={{ color: 'rgba(255,255,255,0.8)' }}>
+              Đang chuyển hướng đến dashboard của bạn...
+            </Paragraph>
+          </div>
+        )}
+
+        {/* System Status */}
+        <Card
+          style={{
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '16px',
+            textAlign: 'center'
+          }}
+          bodyStyle={{ padding: '20px' }}
+        >
+          <Title level={4} style={{ color: 'white', marginBottom: '20px' }}>
+            🚀 System Status
+          </Title>
+          <Row gutter={[16, 16]}>
+            <Col span={6}>
+              <div style={{ color: '#52c41a', fontSize: '1.5rem' }}>●</div>
+              <div style={{ color: 'white', fontSize: '12px' }}>Frontend</div>
+            </Col>
+            <Col span={6}>
+              <div style={{ color: '#faad14', fontSize: '1.5rem' }}>●</div>
+              <div style={{ color: 'white', fontSize: '12px' }}>Backend</div>
+            </Col>
+            <Col span={6}>
+              <div style={{ color: '#52c41a', fontSize: '1.5rem' }}>●</div>
+              <div style={{ color: 'white', fontSize: '12px' }}>Database</div>
+            </Col>
+            <Col span={6}>
+              <div style={{ color: '#52c41a', fontSize: '1.5rem' }}>●</div>
+              <div style={{ color: 'white', fontSize: '12px' }}>CDN</div>
+            </Col>
+          </Row>
+        </Card>
+      </div>
     </div>
   );
 };
 
 export default Dashboard;
-
-/*
-📁 FILE PATH: frontend/src/pages/Dashboard.jsx
-
-📋 DESCRIPTION:
-Main dashboard page showing real-time business metrics, recent activity,
-staff performance, and role-based quick actions for Enterprise POS.
-
-🔧 FEATURES:
-- Real-time business metrics with growth indicators
-- Role-based dashboard content (Admin/Manager/Cashier/Staff)
-- Recent orders and top products display
-- Staff performance tracking with gamification
-- Quick action buttons for common tasks
-- Responsive design for all screen sizes
-- Live notifications and alerts
-- Mock data fallback for offline/demo mode
-
-🎯 INTEGRATION:
-- Connects to backend analytics APIs
-- Uses AuthContext for role-based content
-- Integrates with all major POS modules
-- Mobile-optimized for tablet POS use
-*/
