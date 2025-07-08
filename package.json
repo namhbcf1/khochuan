@@ -15,6 +15,11 @@
     "backend:deploy": "npm run deploy --workspace=backend"
   },
   "devDependencies": {
-    "concurrently": "^8.0.0"
+    "canvas": "^3.1.2",
+    "concurrently": "^8.0.0",
+    "vite-plugin-pwa": "^1.0.1"
+  },
+  "dependencies": {
+    "react-helmet-async": "^2.0.5"
   }
 }

@@ -327,7 +327,7 @@ const AdminLayout = () => {
           segmentation: 'Phân khúc khách hàng',
           personalization: 'Cá nhân hóa',
           // Staff
-          performance: 'Theo dõi hiệu suất',
+          'staff-performance': 'Theo dõi hiệu suất',
           gamification: 'Cấu hình game hóa',
           commissions: 'Thiết lập hoa hồng',
           // Reports

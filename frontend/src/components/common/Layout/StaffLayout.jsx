@@ -237,8 +237,6 @@ const StaffLayout = () => {
           skills: 'Kỹ năng bán hàng',
           certifications: 'Chứng chỉ',
           // Profile
-          performance: 'Lịch sử hiệu suất',
-          commission: 'Lịch sử hoa hồng',
           preferences: 'Tùy chọn',
         };
         items.push({

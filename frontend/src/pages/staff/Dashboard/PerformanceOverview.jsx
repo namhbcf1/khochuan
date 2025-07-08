@@ -28,7 +28,7 @@ import {
   GiftOutlined,
   ThunderboltOutlined,
   HeartOutlined,
-  DiamondOutlined
+  SketchOutlined
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -88,7 +88,7 @@ const PerformanceOverview = () => {
         id: 4, 
         name: 'Thạch kim cương', 
         description: 'Đạt doanh thu 100 triệu trong tháng',
-        icon: <DiamondOutlined style={{ color: '#b37feb' }} />,
+        icon: <SketchOutlined style={{ color: '#b37feb' }} />,
         rarity: 'legendary',
         unlocked: false,
         progress: 45

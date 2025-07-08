@@ -422,7 +422,7 @@ const api = {
     return responses.map(result => {
       if (result.status === 'fulfilled') {
         return { success: true, data: result.value.data };
-      } else {
+    } else {
         return { 
           success: false, 
           error: {
