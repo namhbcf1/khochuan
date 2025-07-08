@@ -1,0 +1,9 @@
+{
+  "build": {
+    "command": "./build.sh",
+    "output_directory": "dist",
+    "environment": {
+      "NODE_VERSION": "18"
+    }
+  }
+} 

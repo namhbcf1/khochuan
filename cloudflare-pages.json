@@ -1,0 +1,9 @@
+{
+  "build": {
+    "command": "cd frontend && npm install && npm run build",
+    "output_directory": "frontend/dist",
+    "environment": {
+      "NODE_VERSION": "18"
+    }
+  }
+} 
