@@ -1,370 +1,495 @@
-// frontend/src/services/api.js
-// Enterprise POS System - Frontend API Client
-// Handles all HTTP requests to backend with authentication, caching, and error handling
+/**
+ * API Service
+ * Centralized API communication layer with error handling and offline support
+ * Edge-optimized for Cloudflare environment
+ */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://enterprise-pos-backend.your-subdomain.workers.dev';
+import axios from 'axios';
+import { getAccessToken, refreshToken, clearAuthTokens } from '../utils/helpers/authUtils';
+import { localCache } from '../utils/helpers/cacheUtils';
+import { logEvent } from '../utils/helpers/analyticsUtils';
 
-class ApiClient {
-  constructor() {
-    this.baseURL = API_BASE_URL;
-    this.token = localStorage.getItem('auth_token');
-    this.refreshToken = localStorage.getItem('refresh_token');
-    this.requestInterceptors = [];
-    this.responseInterceptors = [];
+// Default API configuration
+const DEFAULT_TIMEOUT = 15000; // 15 seconds
+const RETRY_ATTEMPTS = 2;
+const RETRY_DELAY = 1000; // 1 second
+
+// Create API client instance
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  timeout: DEFAULT_TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Client-Version': import.meta.env.VITE_APP_VERSION || '1.0.0',
   }
+});
 
-  // Set authentication token
-  setAuthToken(token, refreshToken = null) {
-    this.token = token;
-    this.refreshToken = refreshToken;
-    localStorage.setItem('auth_token', token);
-    if (refreshToken) {
-      localStorage.setItem('refresh_token', refreshToken);
-    }
-  }
-
-  // Clear authentication
-  clearAuth() {
-    this.token = null;
-    this.refreshToken = null;
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-  }
-
-  // Build request headers
-  getHeaders(customHeaders = {}) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...customHeaders
-    };
-
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
-    }
-
-    return headers;
-  }
-
-  // Handle API response
-  async handleResponse(response) {
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Token expired, try to refresh
-        const refreshed = await this.refreshAuthToken();
-        if (!refreshed) {
-          this.clearAuth();
-          window.location.href = '/login';
-          throw new Error('Authentication failed');
-        }
-        return null; // Retry will be handled by caller
-      }
-
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      return await response.json();
+// Request interceptor for authentication
+apiClient.interceptors.request.use(
+  async (config) => {
+    // Skip auth token for login/refresh endpoints
+    if (config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/refresh'))) {
+      return config;
     }
     
-    return await response.text();
-  }
-
-  // Refresh authentication token
-  async refreshAuthToken() {
-    if (!this.refreshToken) return false;
-
-    try {
-      const response = await fetch(`${this.baseURL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: this.refreshToken })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        this.setAuthToken(data.accessToken, data.refreshToken);
-        return true;
-      }
-    } catch (error) {
-      console.error('Token refresh failed:', error);
+    // Add auth token to request
+    const token = getAccessToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
-
-    return false;
+    
+    // Add request timestamp for performance tracking
+    config.metadata = { startTime: Date.now() };
+    
+    // Add offline flag for background sync
+    config.headers['X-Offline-Operation'] = navigator.onLine ? 'false' : 'true';
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  // Generic request method with retry logic
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const config = {
-      ...options,
-      headers: this.getHeaders(options.headers)
-    };
-
-    try {
-      let response = await fetch(url, config);
-      let result = await this.handleResponse(response);
-
-      // If token was refreshed, retry the request
-      if (result === null && response.status === 401) {
-        config.headers = this.getHeaders(options.headers);
-        response = await fetch(url, config);
-        result = await this.handleResponse(response);
-      }
-
-      return result;
-    } catch (error) {
-      console.error(`API request failed: ${endpoint}`, error);
-      throw error;
-    }
-  }
-
-  // HTTP Methods
-  async get(endpoint, params = {}) {
-    const searchParams = new URLSearchParams(params);
-    const url = searchParams.toString() ? `${endpoint}?${searchParams}` : endpoint;
-    return this.request(url, { method: 'GET' });
-  }
-
-  async post(endpoint, data = {}) {
-    return this.request(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async put(endpoint, data = {}) {
-    return this.request(endpoint, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async patch(endpoint, data = {}) {
-    return this.request(endpoint, {
-      method: 'PATCH',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async delete(endpoint) {
-    return this.request(endpoint, { method: 'DELETE' });
-  }
-
-  // Upload file with progress tracking
-  async uploadFile(endpoint, file, onProgress = null) {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
+// Response interceptor for error handling and token refresh
+apiClient.interceptors.response.use(
+  (response) => {
+    // Calculate request duration for performance monitoring
+    if (response.config.metadata) {
+      const duration = Date.now() - response.config.metadata.startTime;
+      response.duration = duration;
       
-      if (onProgress) {
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            const percentComplete = (e.loaded / e.total) * 100;
-            onProgress(percentComplete);
-          }
+      // Log slow requests
+      if (duration > 1000) {
+        console.warn(`Slow API request: ${response.config.url} took ${duration}ms`);
+        logEvent('api_performance', {
+          endpoint: response.config.url,
+          duration,
+          status: response.status
         });
       }
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(JSON.parse(xhr.responseText));
-        } else {
-          reject(new Error(`Upload failed: ${xhr.statusText}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => reject(new Error('Upload failed')));
+    }
+    
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // Handle network errors (offline)
+    if (!error.response && error.message === 'Network Error') {
+      // Queue request for background sync when online
+      await queueOfflineRequest(originalRequest);
       
-      xhr.open('POST', `${this.baseURL}${endpoint}`);
-      if (this.token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${this.token}`);
+      // Return cached response if available
+      const cachedResponse = await getCachedResponse(originalRequest);
+      if (cachedResponse) {
+        return Promise.resolve({
+          ...cachedResponse,
+          isOfflineCache: true
+        });
       }
       
-      xhr.send(formData);
+      return Promise.reject({
+        ...error,
+        isOfflineError: true,
+        message: 'You are currently offline. This operation will sync when you\'re back online.'
+      });
+    }
+    
+    // Handle token expired error (401)
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      // Only attempt refresh once
+      originalRequest._retry = true;
+      
+      try {
+        // Attempt to refresh token
+        const newToken = await refreshToken();
+        
+        if (newToken) {
+          // Update header with new token
+          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+          
+          // Retry original request
+          return apiClient(originalRequest);
+        }
+      } catch (refreshError) {
+        // If refresh fails, clear tokens and redirect to login
+        clearAuthTokens();
+        window.location.href = '/login?session_expired=true';
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    // Handle rate limit (429)
+    if (error.response && error.response.status === 429 && !originalRequest._rateLimit) {
+      // Get retry after header or use default delay
+      const retryAfter = error.response.headers['retry-after'] 
+        ? parseInt(error.response.headers['retry-after']) * 1000 
+        : RETRY_DELAY;
+      
+      // Mark as rate limited to avoid multiple retries
+      originalRequest._rateLimit = true;
+      
+      // Wait for the retry delay
+      await new Promise(resolve => setTimeout(resolve, retryAfter));
+      
+      // Retry the request
+      return apiClient(originalRequest);
+    }
+    
+    // Handle server errors with retry logic (5xx)
+    if (error.response && error.response.status >= 500 && !originalRequest._serverRetry) {
+      originalRequest._serverRetry = true;
+      
+      // Wait for the retry delay
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      
+      // Retry the request
+      return apiClient(originalRequest);
+    }
+    
+    // Format error response
+    const errorResponse = {
+      status: error.response ? error.response.status : 0,
+      message: error.response ? error.response.data.message || error.message : error.message,
+      data: error.response ? error.response.data : null,
+      originalError: error
+    };
+    
+    // Log error for monitoring
+    logEvent('api_error', {
+      endpoint: originalRequest.url,
+      method: originalRequest.method,
+      status: errorResponse.status,
+      message: errorResponse.message
     });
+    
+    return Promise.reject(errorResponse);
+  }
+);
+
+/**
+ * Queue a request for processing when back online
+ * @param {Object} request - The API request config
+ * @returns {Promise<void>}
+ */
+async function queueOfflineRequest(request) {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
+    // Store in local queue if service worker isn't available
+    const offlineQueue = JSON.parse(localStorage.getItem('offlineApiQueue') || '[]');
+    offlineQueue.push({
+      url: request.url,
+      method: request.method,
+      data: request.data,
+      headers: request.headers,
+      timestamp: Date.now()
+    });
+    localStorage.setItem('offlineApiQueue', JSON.stringify(offlineQueue));
+    return;
+  }
+  
+  // Send to service worker for background sync
+  try {
+    await navigator.serviceWorker.ready;
+    await navigator.serviceWorker.controller.postMessage({
+      type: 'ENQUEUE_REQUEST',
+      payload: {
+        url: request.url,
+        method: request.method,
+        data: request.data,
+        headers: request.headers,
+        timestamp: Date.now()
+      }
+    });
+  } catch (error) {
+    console.error('Failed to queue offline request:', error);
   }
 }
 
-// Create singleton instance
-const api = new ApiClient();
+/**
+ * Get cached response for offline fallback
+ * @param {Object} request - The API request config
+ * @returns {Promise<Object|null>} - Cached response or null
+ */
+async function getCachedResponse(request) {
+  // Create cache key from URL and params
+  const cacheKey = `api_cache_${request.url}_${JSON.stringify(request.params || {})}`;
+  
+  // Check local memory cache first
+  const cachedResponse = localCache.get(cacheKey);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  // Check IndexedDB cache if available
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    try {
+      await navigator.serviceWorker.ready;
+      const message = await new Promise(resolve => {
+        const messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = event => resolve(event.data);
+        
+        navigator.serviceWorker.controller.postMessage({
+          type: 'GET_CACHED_RESPONSE',
+          payload: { url: request.url, params: request.params }
+        }, [messageChannel.port2]);
+      });
+      
+      if (message && message.data) {
+        return message.data;
+      }
+    } catch (error) {
+      console.error('Failed to get cached response:', error);
+    }
+  }
+  
+  return null;
+}
 
-// Authentication API
-export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
-  logout: () => api.post('/auth/logout'),
-  refresh: () => api.post('/auth/refresh'),
-  profile: () => api.get('/auth/profile'),
-  updateProfile: (data) => api.put('/auth/profile', data),
-  changePassword: (data) => api.post('/auth/change-password', data)
-};
-
-// Products API
-export const productsAPI = {
-  getAll: (params) => api.get('/products', params),
-  getById: (id) => api.get(`/products/${id}`),
-  create: (product) => api.post('/products', product),
-  update: (id, product) => api.put(`/products/${id}`, product),
-  delete: (id) => api.delete(`/products/${id}`),
-  updateStock: (id, quantity, type) => api.patch(`/products/${id}/stock`, { quantity, type }),
-  bulkUpdate: (updates) => api.post('/products/bulk-update', updates),
-  getCategories: () => api.get('/products/categories'),
-  search: (query) => api.get('/products/search', { q: query }),
-  getLowStock: () => api.get('/products/low-stock'),
-  getTopSelling: (params) => api.get('/products/top-selling', params)
-};
-
-// Orders API
-export const ordersAPI = {
-  getAll: (params) => api.get('/orders', params),
-  getById: (id) => api.get(`/orders/${id}`),
-  create: (order) => api.post('/orders', order),
-  update: (id, order) => api.put(`/orders/${id}`, order),
-  cancel: (id, reason) => api.patch(`/orders/${id}/cancel`, { reason }),
-  refund: (id, amount, reason) => api.post(`/orders/${id}/refund`, { amount, reason }),
-  getReceipt: (id) => api.get(`/orders/${id}/receipt`),
-  getDailySales: (date) => api.get('/orders/daily-sales', { date }),
-  getMonthlySales: (month) => api.get('/orders/monthly-sales', { month }),
-  exportOrders: (params) => api.get('/orders/export', params)
-};
-
-// Customers API
-export const customersAPI = {
-  getAll: (params) => api.get('/customers', params),
-  getById: (id) => api.get(`/customers/${id}`),
-  create: (customer) => api.post('/customers', customer),
-  update: (id, customer) => api.put(`/customers/${id}`, customer),
-  delete: (id) => api.delete(`/customers/${id}`),
-  search: (query) => api.get('/customers/search', { q: query }),
-  getOrders: (id, params) => api.get(`/customers/${id}/orders`, params),
-  updateLoyaltyPoints: (id, points, reason) => api.patch(`/customers/${id}/loyalty`, { points, reason }),
-  getTopCustomers: (params) => api.get('/customers/top-customers', params)
-};
-
-// Staff API
-export const staffAPI = {
-  getAll: (params) => api.get('/staff', params),
-  getById: (id) => api.get(`/staff/${id}`),
-  create: (staff) => api.post('/staff', staff),
-  update: (id, staff) => api.put(`/staff/${id}`, staff),
-  delete: (id) => api.delete(`/staff/${id}`),
-  getStats: (id, period) => api.get(`/staff/${id}/stats`, { period }),
-  getLeaderboard: (period) => api.get('/staff/leaderboard', { period }),
-  getBadges: () => api.get('/staff/badges'),
-  getChallenges: () => api.get('/staff/challenges'),
-  updateChallenge: (id, progress) => api.patch(`/staff/challenges/${id}`, { progress }),
-  getAchievements: (staffId) => api.get(`/staff/${staffId}/achievements`),
-  recordSale: (staffId, saleData) => api.post(`/staff/${staffId}/sales`, saleData)
-};
-
-// Analytics API
-export const analyticsAPI = {
-  getDashboard: (period) => api.get('/analytics/dashboard', { period }),
-  getSalesReport: (params) => api.get('/analytics/sales', params),
-  getProductReport: (params) => api.get('/analytics/products', params),
-  getCustomerReport: (params) => api.get('/analytics/customers', params),
-  getStaffReport: (params) => api.get('/analytics/staff', params),
-  getRevenueChart: (period) => api.get('/analytics/revenue-chart', { period }),
-  getProductChart: (period) => api.get('/analytics/product-chart', { period }),
-  getHourlyReport: (date) => api.get('/analytics/hourly', { date }),
-  exportReport: (type, params) => api.get(`/analytics/export/${type}`, params),
-  getRealTimeStats: () => api.get('/analytics/realtime')
-};
-
-// AI API
-export const aiAPI = {
-  getRecommendations: (customerId, context) => api.post('/ai/recommendations', { customerId, context }),
-  getDemandForecast: (productId, period) => api.get('/ai/demand-forecast', { productId, period }),
-  getSalesPredict: (period) => api.get('/ai/sales-predict', { period }),
-  getPriceOptimization: (productId) => api.get('/ai/price-optimization', { productId }),
-  getInventoryAlert: () => api.get('/ai/inventory-alerts'),
-  getCustomerInsights: (customerId) => api.get(`/ai/customer-insights/${customerId}`),
-  getChatbotResponse: (message, context) => api.post('/ai/chatbot', { message, context }),
-  getStaffSuggestions: (staffId) => api.get(`/ai/staff-suggestions/${staffId}`)
-};
-
-// WebSocket API for real-time features
-export const wsAPI = {
-  connect: (onMessage, onError, onClose) => {
-    const wsUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
-    const ws = new WebSocket(`${wsUrl}/ws?token=${api.token}`);
-    
-    ws.onmessage = onMessage;
-    ws.onerror = onError || (() => {});
-    ws.onclose = onClose || (() => {});
-    
-    return ws;
+// API wrapper with offline support
+const api = {
+  /**
+   * GET request
+   * @param {String} url - API endpoint
+   * @param {Object} config - Additional config
+   * @returns {Promise<Object>} - Response data
+   */
+  async get(url, config = {}) {
+    const response = await apiClient.get(url, config);
+    return response.data;
   },
   
-  sendMessage: (ws, type, data) => {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type, data, timestamp: Date.now() }));
+  /**
+   * POST request
+   * @param {String} url - API endpoint
+   * @param {Object} data - Request payload
+   * @param {Object} config - Additional config
+   * @returns {Promise<Object>} - Response data
+   */
+  async post(url, data = {}, config = {}) {
+    const response = await apiClient.post(url, data, config);
+    return response.data;
+  },
+  
+  /**
+   * PUT request
+   * @param {String} url - API endpoint
+   * @param {Object} data - Request payload
+   * @param {Object} config - Additional config
+   * @returns {Promise<Object>} - Response data
+   */
+  async put(url, data = {}, config = {}) {
+    const response = await apiClient.put(url, data, config);
+    return response.data;
+  },
+  
+  /**
+   * PATCH request
+   * @param {String} url - API endpoint
+   * @param {Object} data - Request payload
+   * @param {Object} config - Additional config
+   * @returns {Promise<Object>} - Response data
+   */
+  async patch(url, data = {}, config = {}) {
+    const response = await apiClient.patch(url, data, config);
+    return response.data;
+  },
+  
+  /**
+   * DELETE request
+   * @param {String} url - API endpoint
+   * @param {Object} config - Additional config
+   * @returns {Promise<Object>} - Response data
+   */
+  async delete(url, config = {}) {
+    const response = await apiClient.delete(url, config);
+    return response.data;
+  },
+  
+  /**
+   * GET request with caching
+   * @param {String} url - API endpoint
+   * @param {Object} config - Additional config
+   * @param {Number} cacheTTL - Cache time-to-live in seconds
+   * @returns {Promise<Object>} - Response data
+   */
+  async getCached(url, config = {}, cacheTTL = 300) {
+    // Create cache key from URL and params
+    const cacheKey = `api_cache_${url}_${JSON.stringify(config.params || {})}`;
+    
+    // Check cache first
+    const cachedResponse = localCache.get(cacheKey);
+    if (cachedResponse) {
+      return cachedResponse;
     }
+    
+    // Make request
+    const response = await apiClient.get(url, config);
+    
+    // Cache response
+    localCache.set(cacheKey, response.data, cacheTTL);
+    
+    return response.data;
+  },
+  
+  /**
+   * Upload file(s)
+   * @param {String} url - API endpoint
+   * @param {FormData} formData - Form data with files
+   * @param {Function} onProgress - Progress callback
+   * @param {Object} config - Additional config
+   * @returns {Promise<Object>} - Response data
+   */
+  async upload(url, formData, onProgress = null, config = {}) {
+    const uploadConfig = {
+      ...config,
+      headers: {
+        ...config.headers,
+        'Content-Type': 'multipart/form-data'
+      }
+    };
+    
+    // Add progress tracking if callback provided
+    if (onProgress) {
+      uploadConfig.onUploadProgress = progressEvent => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        onProgress(percentCompleted, progressEvent);
+      };
+    }
+    
+    const response = await apiClient.post(url, formData, uploadConfig);
+    return response.data;
+  },
+  
+  /**
+   * Download file
+   * @param {String} url - API endpoint
+   * @param {Object} params - Request parameters
+   * @param {String} filename - Suggested filename
+   * @param {Function} onProgress - Progress callback
+   * @returns {Promise<Blob>} - File blob
+   */
+  async download(url, params = {}, filename = null, onProgress = null) {
+    const downloadConfig = {
+      params,
+      responseType: 'blob',
+      headers: {
+        'Accept': 'application/octet-stream'
+      }
+    };
+    
+    // Add progress tracking if callback provided
+    if (onProgress) {
+      downloadConfig.onDownloadProgress = progressEvent => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        onProgress(percentCompleted, progressEvent);
+      };
+    }
+    
+    const response = await apiClient.get(url, downloadConfig);
+    
+    // Create download link and trigger download
+    if (filename) {
+      const blob = new Blob([response.data]);
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    }
+    
+    return response.data;
+  },
+  
+  /**
+   * Batch requests
+   * @param {Array} requests - Array of request configs
+   * @returns {Promise<Array>} - Array of responses
+   */
+  async batch(requests) {
+    // Use axios.all to run requests in parallel
+    const responses = await Promise.allSettled(
+      requests.map(req => {
+        const method = (req.method || 'get').toLowerCase();
+        return apiClient[method](req.url, req.data, req.config);
+      })
+    );
+    
+    // Process responses
+    return responses.map(result => {
+      if (result.status === 'fulfilled') {
+        return { success: true, data: result.value.data };
+      } else {
+        return { 
+          success: false, 
+          error: {
+            status: result.reason.response?.status,
+            message: result.reason.response?.data?.message || result.reason.message
+          }
+        };
+      }
+    });
+  },
+  
+  /**
+   * Health check to verify API connectivity
+   * @returns {Promise<Boolean>} - True if API is accessible
+   */
+  async healthCheck() {
+    try {
+      const response = await apiClient.get('/health', { timeout: 5000 });
+      return response.status === 200;
+    } catch (error) {
+      return false;
+    }
+  },
+  
+  /**
+   * Get client instance for advanced usage
+   * @returns {Object} - Axios instance
+   */
+  getClient() {
+    return apiClient;
   }
 };
 
-// Utility functions
-export const apiUtils = {
-  // Format error messages for UI display
-  formatError: (error) => {
-    if (typeof error === 'string') return error;
-    if (error.message) return error.message;
-    return 'An unexpected error occurred';
-  },
-
-  // Retry API call with exponential backoff
-  retryWithBackoff: async (apiCall, maxRetries = 3, baseDelay = 1000) => {
-    for (let i = 0; i < maxRetries; i++) {
+// Add event listener for online/offline
+window.addEventListener('online', async () => {
+  // Process offline queue when back online
+  const offlineQueue = JSON.parse(localStorage.getItem('offlineApiQueue') || '[]');
+  if (offlineQueue.length > 0) {
+    console.log(`Processing ${offlineQueue.length} offline requests`);
+    
+    // Process queue in sequence
+    for (const request of offlineQueue) {
       try {
-        return await apiCall();
+        await apiClient({
+          url: request.url,
+          method: request.method,
+          data: request.data,
+          headers: request.headers
+        });
       } catch (error) {
-        if (i === maxRetries - 1) throw error;
-        
-        const delay = baseDelay * Math.pow(2, i);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        console.error('Failed to process offline request:', error);
       }
     }
-  },
-
-  // Cache API responses
-  cache: new Map(),
-  
-  getCachedOrFetch: async (key, apiCall, ttl = 300000) => { // 5 minutes default TTL
-    const cached = apiUtils.cache.get(key);
     
-    if (cached && Date.now() - cached.timestamp < ttl) {
-      return cached.data;
-    }
-    
-    const data = await apiCall();
-    apiUtils.cache.set(key, { data, timestamp: Date.now() });
-    return data;
-  },
-
-  clearCache: (key) => {
-    if (key) {
-      apiUtils.cache.delete(key);
-    } else {
-      apiUtils.cache.clear();
-    }
+    // Clear queue
+    localStorage.removeItem('offlineApiQueue');
   }
-};
+  
+  // Notify user they're back online
+  // This would typically use a notification system
+  console.log('Back online. Synced offline changes.');
+});
 
-// Export the main API instance and all sub-APIs
+window.addEventListener('offline', () => {
+  // Notify user they're offline
+  console.log('You are offline. Changes will be saved and synced when you reconnect.');
+});
+
+export { api, apiClient };
 export default api;
-export { 
-  api, 
-  authAPI, 
-  productsAPI, 
-  ordersAPI, 
-  customersAPI, 
-  staffAPI, 
-  analyticsAPI, 
-  aiAPI, 
-  wsAPI,
-  apiUtils 
-};

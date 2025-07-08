@@ -352,3 +352,53 @@ INSERT INTO activity_logs (user_id, action, entity_type, entity_id, new_values, 
 -- Admin: admin@pos.com / admin123
 -- Staff: john.staff@pos.com / staff123
 -- Cashier: mike.cashier@pos.com / cashier123
+
+-- Insert test customers
+INSERT INTO customers (id, name, phone, email, address) VALUES
+('cust_001', 'Nguyễn Văn A', '0987654321', 'nguyenvana@example.com', '123 Đường ABC, Quận 1, TP.HCM'),
+('cust_002', 'Trần Thị B', '0912345678', 'tranthib@example.com', '456 Đường XYZ, Quận 2, TP.HCM'),
+('cust_003', 'Lê Văn C', '0909123456', 'levanc@example.com', '789 Đường DEF, Quận 3, TP.HCM');
+
+-- Insert test products
+INSERT INTO products (id, name, description, category, price, stock_quantity) VALUES
+('prod_001', 'Laptop Dell XPS 13', 'Laptop cao cấp cho doanh nhân', 'Laptop', 25000000, 10),
+('prod_002', 'Màn hình Dell 27"', 'Màn hình IPS 27 inch 4K', 'Màn hình', 7500000, 15),
+('prod_003', 'Chuột Logitech MX Master', 'Chuột không dây cao cấp', 'Chuột', 1800000, 20),
+('prod_004', 'Bàn phím Keychron K2', 'Bàn phím cơ không dây', 'Bàn phím', 2200000, 8),
+('prod_005', 'Tai nghe Sony WH-1000XM4', 'Tai nghe chống ồn cao cấp', 'Tai nghe', 5500000, 12),
+('prod_006', 'SSD Samsung 970 EVO 1TB', 'Ổ cứng SSD NVMe', 'Linh kiện', 3200000, 25);
+
+-- Insert test orders
+INSERT INTO orders (id, customer_id, total, status, payment_method, shipping_address, shipping_fee, discount, created_at, processing_at, shipped_at, completed_at) VALUES
+('ord_001', 'cust_001', 32500000, 'completed', 'Thẻ tín dụng', '123 Đường ABC, Quận 1, TP.HCM', 0, 0, '2023-01-15 10:30:00', '2023-01-15 11:00:00', '2023-01-16 09:00:00', '2023-01-17 14:30:00'),
+('ord_002', 'cust_001', 7500000, 'completed', 'Tiền mặt', '123 Đường ABC, Quận 1, TP.HCM', 0, 0, '2023-03-20 14:45:00', '2023-03-20 15:30:00', '2023-03-21 10:15:00', '2023-03-22 11:00:00'),
+('ord_003', 'cust_002', 9700000, 'shipped', 'Chuyển khoản', '456 Đường XYZ, Quận 2, TP.HCM', 0, 0, '2023-06-10 09:15:00', '2023-06-10 10:00:00', '2023-06-11 08:30:00', NULL),
+('ord_004', 'cust_003', 3200000, 'processing', 'Tiền mặt', '789 Đường DEF, Quận 3, TP.HCM', 0, 0, '2023-07-05 16:20:00', '2023-07-05 17:00:00', NULL, NULL);
+
+-- Insert test order items with warranty
+INSERT INTO order_items (id, order_id, product_id, quantity, price, serial_number, warranty_months, warranty_expiry) VALUES
+('item_001', 'ord_001', 'prod_001', 1, 25000000, 'SN12345678', 36, '2026-01-15 10:30:00'),
+('item_002', 'ord_001', 'prod_003', 1, 1800000, 'SN23456789', 12, '2024-01-15 10:30:00'),
+('item_003', 'ord_001', 'prod_006', 2, 3200000, 'SN34567890', 36, '2026-01-15 10:30:00'),
+('item_004', 'ord_002', 'prod_002', 1, 7500000, 'SN45678901', 36, '2026-03-20 14:45:00'),
+('item_005', 'ord_003', 'prod_004', 1, 2200000, 'SN56789012', 12, '2024-06-10 09:15:00'),
+('item_006', 'ord_003', 'prod_005', 1, 5500000, 'SN67890123', 12, '2024-06-10 09:15:00'),
+('item_007', 'ord_003', 'prod_003', 1, 1800000, 'SN78901234', 12, '2024-06-10 09:15:00'),
+('item_008', 'ord_004', 'prod_006', 1, 3200000, 'SN89012345', 36, '2026-07-05 16:20:00');
+
+-- Insert test staff scores
+INSERT INTO staff_scores (id, staff_id, points, badge, level, streak_days, season) VALUES
+('score_001', 'staff_001', 1250, 'Gold', 12, 7, '2023-Q2'),
+('score_002', 'staff_002', 980, 'Silver', 10, 3, '2023-Q2'),
+('score_003', 'staff_003', 1500, 'Platinum', 15, 12, '2023-Q2');
+
+-- Insert test logs
+INSERT INTO logs (id, type, ref_id, description, timestamp) VALUES
+('log_001', 'order_created', 'ord_001', 'Đơn hàng được tạo bởi nhân viên staff_001', '2023-01-15 10:30:00'),
+('log_002', 'order_completed', 'ord_001', 'Đơn hàng hoàn thành', '2023-01-17 14:30:00'),
+('log_003', 'order_created', 'ord_002', 'Đơn hàng được tạo bởi nhân viên staff_001', '2023-03-20 14:45:00'),
+('log_004', 'order_completed', 'ord_002', 'Đơn hàng hoàn thành', '2023-03-22 11:00:00'),
+('log_005', 'order_created', 'ord_003', 'Đơn hàng được tạo bởi nhân viên staff_002', '2023-06-10 09:15:00'),
+('log_006', 'order_shipped', 'ord_003', 'Đơn hàng đã được gửi đi', '2023-06-11 08:30:00'),
+('log_007', 'order_created', 'ord_004', 'Đơn hàng được tạo bởi nhân viên staff_003', '2023-07-05 16:20:00'),
+('log_008', 'order_processing', 'ord_004', 'Đơn hàng đang được xử lý', '2023-07-05 17:00:00');

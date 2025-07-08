@@ -3,8 +3,18 @@ import { Navigate } from 'react-router-dom';
 import { Result, Button } from 'antd';
 import { useAuth } from './AuthContext';
 
-const RoleBasedAccess = ({ children, allowedRoles = [], requiredPermissions = [] }) => {
-  const { role, hasRole, hasPermission } = useAuth();
+const RoleBasedAccess = ({ 
+  children, 
+  allowedRoles = [], 
+  requiredPermissions = [], 
+  redirectPath = "/login"
+}) => {
+  const { role, isAuthenticated, hasRole, hasPermission } = useAuth();
+
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to={redirectPath} replace />;
+  }
 
   // Check if user has required role
   const hasRequiredRole = allowedRoles.length === 0 || hasRole(allowedRoles);
@@ -15,6 +25,17 @@ const RoleBasedAccess = ({ children, allowedRoles = [], requiredPermissions = []
 
   // If user doesn't have required role or permissions, show access denied
   if (!hasRequiredRole || !hasRequiredPermissions) {
+    // Get appropriate redirect path based on user's highest role
+    let fallbackPath = "/";
+    
+    if (role === 'admin') {
+      fallbackPath = "/admin/dashboard";
+    } else if (role === 'cashier') {
+      fallbackPath = "/cashier/pos";
+    } else if (role === 'staff') {
+      fallbackPath = "/staff/dashboard";
+    }
+
     return (
       <div style={{ 
         display: 'flex', 
@@ -25,13 +46,21 @@ const RoleBasedAccess = ({ children, allowedRoles = [], requiredPermissions = []
       }}>
         <Result
           status="403"
-          title="403"
-          subTitle="Xin lỗi, bạn không có quyền truy cập trang này."
-          extra={
-            <Button type="primary" onClick={() => window.history.back()}>
+          title="Không có quyền truy cập"
+          subTitle={
+            <div>
+              <p>Xin lỗi, bạn không có quyền truy cập trang này.</p>
+              <p>Hãy liên hệ với quản trị viên nếu bạn cần quyền này.</p>
+            </div>
+          }
+          extra={[
+            <Button type="primary" key="home" onClick={() => window.location.href = fallbackPath}>
+              Về trang chính
+            </Button>,
+            <Button key="back" onClick={() => window.history.back()}>
               Quay lại
             </Button>
-          }
+          ]}
         />
       </div>
     );

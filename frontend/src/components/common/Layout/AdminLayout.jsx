@@ -24,7 +24,18 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  ApiOutlined
+  ApiOutlined,
+  RiseOutlined,
+  LineChartOutlined,
+  PartitionOutlined,
+  SlidersOutlined,
+  BankOutlined,
+  SafetyOutlined,
+  TagsOutlined,
+  AppstoreOutlined,
+  CloudOutlined,
+  CreditCardOutlined,
+  RobotOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../../auth/AuthContext';
 
@@ -39,49 +50,203 @@ const AdminLayout = () => {
 
   const menuItems = [
     {
-      key: '/admin/dashboard',
+      key: 'dashboard',
       icon: <DashboardOutlined />,
       label: 'Dashboard',
+      children: [
+        {
+          key: '/admin/dashboard',
+          label: 'Phân tích',
+        },
+        {
+          key: '/admin/dashboard/revenue',
+          label: 'Doanh thu',
+        },
+        {
+          key: '/admin/dashboard/performance',
+          label: 'Hiệu suất',
+        },
+      ],
     },
     {
-      key: '/admin/products',
+      key: 'products',
       icon: <ShoppingOutlined />,
       label: 'Sản phẩm',
+      children: [
+        {
+          key: '/admin/products',
+          label: 'Quản lý sản phẩm',
+        },
+        {
+          key: '/admin/products/new',
+          label: 'Thêm sản phẩm',
+        },
+        {
+          key: '/admin/products/bulk',
+          label: 'Thao tác hàng loạt',
+        },
+        {
+          key: '/admin/products/price-optimization',
+          label: 'Tối ưu giá',
+        },
+      ],
     },
     {
-      key: '/admin/inventory',
+      key: 'inventory',
       icon: <InboxOutlined />,
       label: 'Kho hàng',
+      children: [
+        {
+          key: '/admin/inventory',
+          label: 'Tổng quan kho',
+        },
+        {
+          key: '/admin/inventory/movements',
+          label: 'Biến động kho',
+        },
+        {
+          key: '/admin/inventory/forecasting',
+          label: 'Dự báo nhu cầu',
+        },
+        {
+          key: '/admin/inventory/warehouse',
+          label: 'Quản lý kho',
+        },
+      ],
     },
     {
-      key: '/admin/orders',
+      key: 'orders',
       icon: <ShoppingCartOutlined />,
       label: 'Đơn hàng',
+      children: [
+        {
+          key: '/admin/orders',
+          label: 'Quản lý đơn hàng',
+        },
+        {
+          key: '/admin/orders/analytics',
+          label: 'Phân tích đơn hàng',
+        },
+        {
+          key: '/admin/orders/returns',
+          label: 'Xử lý đổi trả',
+        },
+      ],
     },
     {
-      key: '/admin/customers',
+      key: 'customers',
       icon: <UserOutlined />,
       label: 'Khách hàng',
+      children: [
+        {
+          key: '/admin/customers',
+          label: 'Quản lý khách hàng',
+        },
+        {
+          key: '/admin/customers/loyalty',
+          label: 'Chương trình thân thiết',
+        },
+        {
+          key: '/admin/customers/segmentation',
+          label: 'Phân khúc khách hàng',
+        },
+        {
+          key: '/admin/customers/personalization',
+          label: 'Cá nhân hóa',
+        },
+      ],
     },
     {
-      key: '/admin/staff',
+      key: 'staff',
       icon: <TeamOutlined />,
       label: 'Nhân viên',
+      children: [
+        {
+          key: '/admin/staff',
+          label: 'Quản lý nhân viên',
+        },
+        {
+          key: '/admin/staff/performance',
+          label: 'Theo dõi hiệu suất',
+        },
+        {
+          key: '/admin/staff/gamification',
+          label: 'Cấu hình game hóa',
+        },
+        {
+          key: '/admin/staff/commissions',
+          label: 'Thiết lập hoa hồng',
+        },
+      ],
     },
     {
-      key: '/admin/reports',
+      key: 'reports',
       icon: <BarChartOutlined />,
       label: 'Báo cáo',
+      children: [
+        {
+          key: '/admin/reports',
+          label: 'Trung tâm báo cáo',
+        },
+        {
+          key: '/admin/reports/custom',
+          label: 'Báo cáo tùy chỉnh',
+        },
+        {
+          key: '/admin/reports/omnichannel',
+          label: 'Phân tích đa kênh',
+        },
+        {
+          key: '/admin/reports/business-intelligence',
+          label: 'Thông minh kinh doanh',
+        },
+      ],
     },
     {
-      key: '/admin/integrations',
+      key: 'integrations',
       icon: <ApiOutlined />,
       label: 'Tích hợp',
+      children: [
+        {
+          key: '/admin/integrations',
+          label: 'Kênh thương mại điện tử',
+        },
+        {
+          key: '/admin/integrations/payments',
+          label: 'Cổng thanh toán',
+        },
+        {
+          key: '/admin/integrations/apps',
+          label: 'Ứng dụng bên thứ 3',
+        },
+        {
+          key: '/admin/integrations/api',
+          label: 'Quản lý API',
+        },
+      ],
     },
     {
-      key: '/admin/settings',
+      key: 'settings',
       icon: <SettingOutlined />,
       label: 'Cài đặt',
+      children: [
+        {
+          key: '/admin/settings',
+          label: 'Cài đặt hệ thống',
+        },
+        {
+          key: '/admin/settings/roles',
+          label: 'Phân quyền',
+        },
+        {
+          key: '/admin/settings/security',
+          label: 'Bảo mật',
+        },
+        {
+          key: '/admin/settings/company',
+          label: 'Thông tin công ty',
+        },
+      ],
     },
   ];
 
@@ -95,6 +260,7 @@ const AdminLayout = () => {
       key: 'settings',
       icon: <SettingOutlined />,
       label: 'Cài đặt',
+      onClick: () => navigate('/admin/settings'),
     },
     {
       type: 'divider',
@@ -138,6 +304,49 @@ const AdminLayout = () => {
       items.push({
         title: pageNames[currentPage] || currentPage,
       });
+
+      if (pathSegments.length > 2) {
+        const subPage = pathSegments[2];
+        const subPageNames = {
+          // Dashboard
+          revenue: 'Doanh thu',
+          performance: 'Hiệu suất',
+          // Products
+          new: 'Thêm sản phẩm',
+          bulk: 'Thao tác hàng loạt',
+          'price-optimization': 'Tối ưu giá',
+          // Inventory
+          movements: 'Biến động kho',
+          forecasting: 'Dự báo nhu cầu',
+          warehouse: 'Quản lý kho',
+          // Orders
+          analytics: 'Phân tích đơn hàng',
+          returns: 'Xử lý đổi trả',
+          // Customers
+          loyalty: 'Chương trình thân thiết',
+          segmentation: 'Phân khúc khách hàng',
+          personalization: 'Cá nhân hóa',
+          // Staff
+          performance: 'Theo dõi hiệu suất',
+          gamification: 'Cấu hình game hóa',
+          commissions: 'Thiết lập hoa hồng',
+          // Reports
+          custom: 'Báo cáo tùy chỉnh',
+          omnichannel: 'Phân tích đa kênh',
+          'business-intelligence': 'Thông minh kinh doanh',
+          // Integrations
+          payments: 'Cổng thanh toán',
+          apps: 'Ứng dụng bên thứ 3',
+          api: 'Quản lý API',
+          // Settings
+          roles: 'Phân quyền',
+          security: 'Bảo mật',
+          company: 'Thông tin công ty',
+        };
+        items.push({
+          title: subPageNames[subPage] || subPage,
+        });
+      }
     }
 
     return items;
@@ -176,6 +385,7 @@ const AdminLayout = () => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
+          defaultOpenKeys={collapsed ? [] : ['dashboard', 'products', 'inventory', 'orders', 'customers', 'staff', 'reports', 'integrations', 'settings']}
           items={menuItems}
           onClick={handleMenuClick}
           style={{ border: 'none' }}
@@ -230,6 +440,7 @@ const AdminLayout = () => {
             background: '#fff',
             borderRadius: '8px',
             minHeight: 'calc(100vh - 112px)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
           }}
         >
           <Outlet />

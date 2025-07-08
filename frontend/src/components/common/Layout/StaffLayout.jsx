@@ -25,7 +25,13 @@ import {
   MenuUnfoldOutlined,
   StarOutlined,
   FireOutlined,
-  GiftOutlined
+  GiftOutlined,
+  RocketOutlined,
+  TeamOutlined,
+  BarChartOutlined,
+  IdcardOutlined,
+  AimOutlined,
+  SettingOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../../auth/AuthContext';
 
@@ -40,24 +46,127 @@ const StaffLayout = () => {
 
   const menuItems = [
     {
-      key: '/staff/dashboard',
+      key: 'dashboard',
       icon: <DashboardOutlined />,
       label: 'Dashboard',
+      children: [
+        {
+          key: '/staff/dashboard',
+          label: 'Tổng quan',
+        },
+        {
+          key: '/staff/dashboard/performance',
+          label: 'Hiệu suất',
+        },
+        {
+          key: '/staff/dashboard/commission',
+          label: 'Hoa hồng',
+        },
+        {
+          key: '/staff/dashboard/goals',
+          label: 'Mục tiêu',
+        }
+      ]
     },
     {
-      key: '/staff/leaderboard',
+      key: 'gamification',
       icon: <TrophyOutlined />,
-      label: 'Bảng xếp hạng',
+      label: 'Game hóa',
+      children: [
+        {
+          key: '/staff/leaderboard',
+          label: 'Bảng xếp hạng',
+        },
+        {
+          key: '/staff/achievements',
+          label: 'Thành tích',
+        },
+        {
+          key: '/staff/badges',
+          label: 'Huy hiệu',
+        },
+        {
+          key: '/staff/challenges',
+          label: 'Thử thách',
+        },
+        {
+          key: '/staff/rewards',
+          label: 'Phần thưởng',
+        },
+        {
+          key: '/staff/competitions',
+          label: 'Cuộc thi nhóm',
+        }
+      ]
     },
     {
-      key: '/staff/sales',
+      key: 'sales',
       icon: <ShoppingOutlined />,
-      label: 'Doanh số',
+      label: 'Bán hàng',
+      children: [
+        {
+          key: '/staff/sales',
+          label: 'Doanh số của tôi',
+        },
+        {
+          key: '/staff/sales/targets',
+          label: 'Mục tiêu',
+        },
+        {
+          key: '/staff/sales/recommendations',
+          label: 'Gợi ý sản phẩm',
+        },
+        {
+          key: '/staff/sales/customers',
+          label: 'Khách hàng',
+        }
+      ]
     },
     {
-      key: '/staff/training',
+      key: 'training',
       icon: <BookOutlined />,
       label: 'Đào tạo',
+      children: [
+        {
+          key: '/staff/training',
+          label: 'Trung tâm đào tạo',
+        },
+        {
+          key: '/staff/training/products',
+          label: 'Kiến thức sản phẩm',
+        },
+        {
+          key: '/staff/training/skills',
+          label: 'Kỹ năng bán hàng',
+        },
+        {
+          key: '/staff/training/certifications',
+          label: 'Chứng chỉ',
+        }
+      ]
+    },
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: 'Hồ sơ',
+      children: [
+        {
+          key: '/staff/profile',
+          label: 'Thông tin cá nhân',
+        },
+        {
+          key: '/staff/profile/performance',
+          label: 'Lịch sử hiệu suất',
+        },
+        {
+          key: '/staff/profile/commission',
+          label: 'Lịch sử hoa hồng',
+        },
+        {
+          key: '/staff/profile/preferences',
+          label: 'Tùy chọn',
+        }
+      ]
     },
   ];
 
@@ -66,6 +175,7 @@ const StaffLayout = () => {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Hồ sơ cá nhân',
+      onClick: () => navigate('/staff/profile'),
     },
     {
       type: 'divider',
@@ -98,12 +208,43 @@ const StaffLayout = () => {
       const pageNames = {
         dashboard: 'Dashboard',
         leaderboard: 'Bảng xếp hạng',
+        achievements: 'Thành tích',
+        badges: 'Huy hiệu',
+        challenges: 'Thử thách',
+        rewards: 'Phần thưởng',
+        competitions: 'Cuộc thi nhóm',
         sales: 'Doanh số',
         training: 'Đào tạo',
+        profile: 'Hồ sơ',
       };
       items.push({
         title: pageNames[currentPage] || currentPage,
       });
+
+      if (pathSegments.length > 2) {
+        const subPage = pathSegments[2];
+        const subPageNames = {
+          // Dashboard
+          performance: 'Hiệu suất',
+          commission: 'Hoa hồng',
+          goals: 'Mục tiêu',
+          // Sales
+          targets: 'Mục tiêu bán hàng',
+          recommendations: 'Gợi ý sản phẩm',
+          customers: 'Khách hàng',
+          // Training
+          products: 'Kiến thức sản phẩm',
+          skills: 'Kỹ năng bán hàng',
+          certifications: 'Chứng chỉ',
+          // Profile
+          performance: 'Lịch sử hiệu suất',
+          commission: 'Lịch sử hoa hồng',
+          preferences: 'Tùy chọn',
+        };
+        items.push({
+          title: subPageNames[subPage] || subPage,
+        });
+      }
     }
 
     return items;
@@ -209,6 +350,7 @@ const StaffLayout = () => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
+          defaultOpenKeys={collapsed ? [] : ['dashboard', 'gamification', 'sales', 'training', 'profile']}
           items={menuItems}
           onClick={handleMenuClick}
           style={{
@@ -239,6 +381,7 @@ const StaffLayout = () => {
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none'
                 }}
+                onClick={() => navigate('/staff/rewards')}
               >
                 Nhận ngay
               </Button>
@@ -265,26 +408,34 @@ const StaffLayout = () => {
               onClick={() => setCollapsed(!collapsed)}
               style={{ fontSize: '16px', marginRight: '16px' }}
             />
-
+            
             <Breadcrumb items={getBreadcrumbItems()} />
           </div>
 
           <Space size="middle">
-            <Space>
-              <Badge count={3} size="small">
-                <GiftOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
-              </Badge>
-              <Text strong>Xếp hạng: #5</Text>
-            </Space>
+            {/* Notifications */}
+            <Badge count={3} size="small">
+              <Button type="text" icon={<GiftOutlined />} />
+            </Badge>
+            
+            {/* Missions */}
+            <Badge count={2} size="small">
+              <Button type="text" icon={<RocketOutlined />} />
+            </Badge>
 
+            {/* User dropdown */}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <Avatar icon={<UserOutlined />} style={{ marginRight: '8px', background: '#1890ff' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <Text strong>{user?.name || 'Staff'}</Text>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    Level 12 Ninja
-                  </Text>
+                <Badge dot offset={[-5, 5]}>
+                  <Avatar icon={<UserOutlined />} style={{ marginRight: '8px', background: '#1890ff' }} />
+                </Badge>
+                <div>
+                  <Text strong>{user?.name || 'Staff User'}</Text>
+                  <div>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Level 12 • Ninja
+                    </Text>
+                  </div>
                 </div>
               </div>
             </Dropdown>
@@ -298,6 +449,7 @@ const StaffLayout = () => {
             background: '#fff',
             borderRadius: '8px',
             minHeight: 'calc(100vh - 112px)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
           }}
         >
           <Outlet />

@@ -10,19 +10,27 @@ import {
   Space,
   Typography,
   Breadcrumb,
-  Card,
-  Statistic
+  Tag,
+  Divider
 } from 'antd';
 import {
   ShoppingCartOutlined,
-  HistoryOutlined,
+  FileSearchOutlined,
   UserOutlined,
-  ClockCircleOutlined,
+  CalendarOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  BellOutlined,
+  AppstoreOutlined,
   DollarOutlined,
-  ShoppingOutlined
+  PieChartOutlined,
+  PrinterOutlined,
+  ReloadOutlined,
+  BarcodeOutlined,
+  CreditCardOutlined,
+  TeamOutlined,
+  GiftOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../../auth/AuthContext';
 
@@ -37,24 +45,96 @@ const CashierLayout = () => {
 
   const menuItems = [
     {
-      key: '/cashier/pos',
+      key: 'pos',
       icon: <ShoppingCartOutlined />,
-      label: 'POS Terminal',
+      label: 'Bán hàng',
+      children: [
+        {
+          key: '/cashier/pos',
+          label: 'Màn hình bán hàng',
+        },
+        {
+          key: '/cashier/pos/products',
+          label: 'Chọn sản phẩm',
+        },
+        {
+          key: '/cashier/pos/cart',
+          label: 'Giỏ hàng',
+        },
+        {
+          key: '/cashier/pos/payment',
+          label: 'Thanh toán',
+        },
+        {
+          key: '/cashier/pos/receipt',
+          label: 'In hóa đơn',
+        },
+        {
+          key: '/cashier/pos/suggestions',
+          label: 'Gợi ý thông minh',
+        },
+      ],
     },
     {
-      key: '/cashier/orders',
-      icon: <HistoryOutlined />,
-      label: 'Lịch sử đơn hàng',
+      key: 'orders',
+      icon: <FileSearchOutlined />,
+      label: 'Đơn hàng',
+      children: [
+        {
+          key: '/cashier/orders',
+          label: 'Lịch sử đơn hàng',
+        },
+        {
+          key: '/cashier/orders/returns',
+          label: 'Xử lý đổi trả',
+        },
+        {
+          key: '/cashier/orders/tracking',
+          label: 'Theo dõi đơn hàng',
+        },
+      ],
     },
     {
-      key: '/cashier/customers',
+      key: 'customers',
       icon: <UserOutlined />,
       label: 'Khách hàng',
+      children: [
+        {
+          key: '/cashier/customers',
+          label: 'Tra cứu khách hàng',
+        },
+        {
+          key: '/cashier/customers/loyalty',
+          label: 'Điểm thưởng',
+        },
+        {
+          key: '/cashier/customers/membership',
+          label: 'Kiểm tra thành viên',
+        },
+      ],
     },
     {
-      key: '/cashier/session',
-      icon: <ClockCircleOutlined />,
-      label: 'Quản lý ca',
+      key: 'session',
+      icon: <CalendarOutlined />,
+      label: 'Ca làm việc',
+      children: [
+        {
+          key: '/cashier/session/start',
+          label: 'Mở ca',
+        },
+        {
+          key: '/cashier/session/end',
+          label: 'Đóng ca',
+        },
+        {
+          key: '/cashier/session/cash',
+          label: 'Kiểm đếm tiền',
+        },
+        {
+          key: '/cashier/session/reports',
+          label: 'Báo cáo ca',
+        },
+      ],
     },
   ];
 
@@ -86,25 +166,56 @@ const CashierLayout = () => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const items = [
       {
-        title: 'Cashier',
+        title: 'Thu ngân',
       }
     ];
 
     if (pathSegments.length > 1) {
       const currentPage = pathSegments[1];
       const pageNames = {
-        pos: 'POS Terminal',
-        orders: 'Lịch sử đơn hàng',
+        pos: 'Bán hàng',
+        orders: 'Đơn hàng',
         customers: 'Khách hàng',
-        session: 'Quản lý ca',
+        session: 'Ca làm việc',
       };
       items.push({
         title: pageNames[currentPage] || currentPage,
       });
+
+      if (pathSegments.length > 2) {
+        const subPage = pathSegments[2];
+        const subPageNames = {
+          // POS
+          products: 'Chọn sản phẩm',
+          cart: 'Giỏ hàng',
+          payment: 'Thanh toán',
+          receipt: 'In hóa đơn',
+          suggestions: 'Gợi ý thông minh',
+          // Orders
+          returns: 'Xử lý đổi trả',
+          tracking: 'Theo dõi đơn hàng',
+          // Customers
+          loyalty: 'Điểm thưởng',
+          membership: 'Kiểm tra thành viên',
+          // Session
+          start: 'Mở ca',
+          end: 'Đóng ca',
+          cash: 'Kiểm đếm tiền',
+          reports: 'Báo cáo ca',
+        };
+        items.push({
+          title: subPageNames[subPage] || subPage,
+        });
+      }
     }
 
     return items;
   };
+
+  const currentTime = new Date().toLocaleTimeString('vi-VN', { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -114,7 +225,7 @@ const CashierLayout = () => {
         collapsed={collapsed}
         width={250}
         style={{
-          background: '#52c41a',
+          background: '#052c65',
           boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
         }}
       >
@@ -136,17 +247,38 @@ const CashierLayout = () => {
         </div>
 
         {!collapsed && (
-          <div style={{ padding: '16px' }}>
-            <Card size="small" style={{ background: 'rgba(255,255,255,0.1)', border: 'none' }}>
-              <Statistic
-                title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Doanh thu ca này</span>}
-                value={1250000}
-                precision={0}
-                valueStyle={{ color: 'white', fontSize: '18px' }}
-                prefix={<DollarOutlined />}
-                suffix="đ"
-              />
-            </Card>
+          <div style={{ padding: '12px 16px', color: 'white' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <Text style={{ color: '#d6e4ff' }}>Ca hiện tại:</Text>
+              <Text strong style={{ color: 'white' }}>Ca sáng</Text>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <Text style={{ color: '#d6e4ff' }}>Bắt đầu:</Text>
+              <Text strong style={{ color: 'white' }}>08:00</Text>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <Text style={{ color: '#d6e4ff' }}>Hiện tại:</Text>
+              <Text strong style={{ color: 'white' }}>{currentTime}</Text>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Text style={{ color: '#d6e4ff' }}>Trạng thái:</Text>
+              <Tag color="success" style={{ margin: 0 }}>Đang hoạt động</Tag>
+            </div>
+
+            <Divider style={{ margin: '12px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <Text style={{ color: '#d6e4ff' }}>Đơn hôm nay:</Text>
+              <Text strong style={{ color: 'white' }}>24</Text>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Text style={{ color: '#d6e4ff' }}>Doanh thu:</Text>
+              <Text strong style={{ color: '#52c41a' }}>4,520,000đ</Text>
+            </div>
           </div>
         )}
 
@@ -154,13 +286,38 @@ const CashierLayout = () => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
+          defaultOpenKeys={collapsed ? [] : ['pos', 'orders', 'customers', 'session']}
           items={menuItems}
           onClick={handleMenuClick}
-          style={{
+          style={{ 
             border: 'none',
             background: 'transparent'
           }}
         />
+
+        {!collapsed && (
+          <div style={{ padding: '16px', marginTop: 'auto' }}>
+            <Space style={{ width: '100%' }} direction="vertical">
+              <Button 
+                type="primary" 
+                icon={<PrinterOutlined />} 
+                block
+                style={{ marginBottom: '8px', background: '#1890ff' }}
+              >
+                In báo cáo ca
+              </Button>
+              
+              <Button 
+                danger
+                icon={<LogoutOutlined />} 
+                block
+                onClick={() => navigate('/cashier/session/end')}
+              >
+                Đóng ca
+              </Button>
+            </Space>
+          </div>
+        )}
       </Sider>
 
       <Layout>
@@ -181,24 +338,38 @@ const CashierLayout = () => {
               onClick={() => setCollapsed(!collapsed)}
               style={{ fontSize: '16px', marginRight: '16px' }}
             />
-
+            
             <Breadcrumb items={getBreadcrumbItems()} />
           </div>
 
           <Space size="middle">
+            {/* Quick access */}
             <Space>
-              <ShoppingOutlined style={{ color: '#52c41a' }} />
-              <Text strong>Ca: 08:00 - 16:00</Text>
+              <Button type="primary" icon={<BarcodeOutlined />}>
+                Quét mã
+              </Button>
+              
+              <Button icon={<ReloadOutlined />}>
+                Làm mới
+              </Button>
             </Space>
 
+            {/* Notifications */}
+            <Badge count={3} size="small">
+              <Button type="text" icon={<BellOutlined />} />
+            </Badge>
+
+            {/* User dropdown */}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <Avatar icon={<UserOutlined />} style={{ marginRight: '8px', background: '#52c41a' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Avatar icon={<UserOutlined />} style={{ marginRight: '8px', background: '#052c65' }} />
+                <div>
                   <Text strong>{user?.name || 'Cashier'}</Text>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    Thu ngân
-                  </Text>
+                  <div>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Thu ngân
+                    </Text>
+                  </div>
                 </div>
               </div>
             </Dropdown>
@@ -212,6 +383,7 @@ const CashierLayout = () => {
             background: '#fff',
             borderRadius: '8px',
             minHeight: 'calc(100vh - 112px)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
           }}
         >
           <Outlet />
