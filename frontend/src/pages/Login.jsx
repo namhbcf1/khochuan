@@ -1,109 +1,67 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Form, 
-  Input, 
-  Button, 
-  Card, 
-  Typography, 
-  Space, 
-  Divider, 
-  Row, 
-  Col, 
-  Alert,
-  Spin
-} from 'antd';
-import { 
-  UserOutlined, 
-  LockOutlined, 
-  DashboardOutlined,
-  ShoppingCartOutlined,
-  TeamOutlined
-} from '@ant-design/icons';
+import { useNavigate, Link } from 'react-router-dom';
+import { Form, Input, Button, Card, Typography, Space, Alert, Divider, Tag } from 'antd';
+import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 
 const Login = () => {
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
-  
-  const from = location.state?.from?.pathname || '/';
 
-  const onFinish = async (values) => {
+  const handleLogin = async (values) => {
     setLoading(true);
     setError('');
     
     try {
-      const result = await login(values);
-      
-      if (result.success) {
-        // Redirect based on role
-        const role = values.email.includes('admin') ? 'admin' : 
-                    values.email.includes('cashier') ? 'cashier' : 'staff';
-        
-        switch (role) {
-          case 'admin':
-            navigate('/admin/dashboard');
-            break;
-          case 'cashier':
-            navigate('/cashier/pos');
-            break;
-          case 'staff':
-            navigate('/staff/dashboard');
-            break;
-          default:
-            navigate(from);
-        }
+      const success = await login(values.email, values.password);
+      if (success) {
+        // Redirect will be handled by AuthContext
       } else {
-        setError(result.error || 'Đăng nhập thất bại');
+        setError('Email hoặc mật khẩu không đúng');
       }
     } catch (err) {
-      setError('Có lỗi xảy ra khi đăng nhập');
+      setError('Đã xảy ra lỗi khi đăng nhập');
     } finally {
       setLoading(false);
     }
   };
 
-  const demoLogins = [
+  const handleDemoLogin = (email, password) => {
+    form.setFieldsValue({ email, password });
+    handleLogin({ email, password });
+  };
+
+  const demoAccounts = [
     {
       role: 'Admin',
       email: 'admin@smartpos.com',
       password: 'admin123',
-      icon: <DashboardOutlined />,
-      color: '#ffd700',
+      color: '#722ed1',
       description: 'Quản lý toàn bộ hệ thống'
     },
     {
       role: 'Cashier',
       email: 'cashier@smartpos.com',
       password: 'cashier123',
-      icon: <ShoppingCartOutlined />,
       color: '#52c41a',
-      description: 'Vận hành POS Terminal'
+      description: 'Thu ngân, bán hàng'
     },
     {
       role: 'Staff',
       email: 'staff@smartpos.com',
       password: 'staff123',
-      icon: <TeamOutlined />,
       color: '#1890ff',
-      description: 'Theo dõi hiệu suất'
+      description: 'Nhân viên bán hàng'
     }
   ];
 
-  const handleDemoLogin = (demoUser) => {
-    onFinish({
-      email: demoUser.email,
-      password: demoUser.password
-    });
-  };
-
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       display: 'flex',
@@ -111,26 +69,35 @@ const Login = () => {
       justifyContent: 'center',
       padding: '20px'
     }}>
-      <Row gutter={[32, 32]} style={{ width: '100%', maxWidth: '1200px' }}>
-        {/* Left Side - Login Form */}
-        <Col xs={24} lg={12}>
-          <Card
-            style={{
+      <div style={{ width: '100%', maxWidth: '900px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <Title level={1} style={{ color: 'white', marginBottom: '8px' }}>
+            🏪 SmartPOS System
+          </Title>
+          <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px' }}>
+            Đăng nhập vào hệ thống quản lý bán hàng
+          </Text>
+        </div>
+
+        <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+          {/* Login Form */}
+          <Card 
+            style={{ 
+              flex: 1,
+              minWidth: '400px',
               background: 'rgba(255,255,255,0.95)',
               backdropFilter: 'blur(10px)',
-              borderRadius: '20px',
-              border: '1px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+              borderRadius: '16px',
+              border: 'none'
             }}
-            bodyStyle={{ padding: '40px' }}
           >
-            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-              <Title level={2} style={{ color: '#1890ff', marginBottom: '10px' }}>
-                🏪 Smart POS
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <Title level={3} style={{ marginBottom: '8px' }}>
+                Đăng nhập
               </Title>
-              <Paragraph style={{ color: '#666', fontSize: '16px' }}>
-                Đăng nhập vào hệ thống
-              </Paragraph>
+              <Text type="secondary">
+                Nhập thông tin tài khoản của bạn
+              </Text>
             </div>
 
             {error && (
@@ -138,15 +105,14 @@ const Login = () => {
                 message={error}
                 type="error"
                 showIcon
-                closable
-                style={{ marginBottom: '20px' }}
-                onClose={() => setError('')}
+                style={{ marginBottom: '24px' }}
               />
             )}
 
             <Form
+              form={form}
               name="login"
-              onFinish={onFinish}
+              onFinish={handleLogin}
               layout="vertical"
               size="large"
             >
@@ -160,21 +126,20 @@ const Login = () => {
               >
                 <Input
                   prefix={<UserOutlined />}
-                  placeholder="Nhập email của bạn"
+                  placeholder="admin@smartpos.com"
+                  style={{ borderRadius: '8px' }}
                 />
               </Form.Item>
 
               <Form.Item
                 name="password"
                 label="Mật khẩu"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập mật khẩu!' },
-                  { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
-                ]}
+                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
               >
                 <Input.Password
                   prefix={<LockOutlined />}
                   placeholder="Nhập mật khẩu"
+                  style={{ borderRadius: '8px' }}
                 />
               </Form.Item>
 
@@ -184,142 +149,125 @@ const Login = () => {
                   htmlType="submit"
                   loading={loading}
                   block
-                  style={{ 
-                    height: '50px',
+                  icon={<LoginOutlined />}
+                  style={{
+                    height: '48px',
                     borderRadius: '8px',
                     fontSize: '16px',
-                    fontWeight: '500'
+                    fontWeight: 'bold'
                   }}
                 >
-                  {loading ? <Spin size="small" /> : 'Đăng nhập'}
+                  Đăng nhập
                 </Button>
               </Form.Item>
             </Form>
 
-            <Divider>
-              <Text type="secondary">hoặc</Text>
-            </Divider>
-
-            <div style={{ textAlign: 'center' }}>
-              <Button type="link" onClick={() => navigate('/')}>
-                ← Quay lại trang chủ
-              </Button>
+            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+              <Text type="secondary">
+                Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+              </Text>
             </div>
           </Card>
-        </Col>
 
-        {/* Right Side - Demo Accounts */}
-        <Col xs={24} lg={12}>
+          {/* Demo Accounts */}
           <Card
+            title={
+              <div style={{ textAlign: 'center' }}>
+                <Title level={4} style={{ margin: 0 }}>
+                  🎭 Tài khoản Demo
+                </Title>
+                <Text type="secondary" style={{ fontSize: '14px' }}>
+                  Nhấn để đăng nhập nhanh
+                </Text>
+              </div>
+            }
             style={{
-              background: 'rgba(255,255,255,0.1)',
+              flex: 1,
+              minWidth: '350px',
+              background: 'rgba(255,255,255,0.95)',
               backdropFilter: 'blur(10px)',
-              borderRadius: '20px',
-              border: '1px solid rgba(255,255,255,0.2)',
-              color: 'white'
+              borderRadius: '16px',
+              border: 'none'
             }}
-            bodyStyle={{ padding: '40px' }}
+            headStyle={{ border: 'none', paddingBottom: '16px' }}
           >
-            <Title level={3} style={{ color: 'white', textAlign: 'center', marginBottom: '30px' }}>
-              🎯 Demo Accounts
-            </Title>
-            
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              {demoLogins.map((demo, index) => (
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              {demoAccounts.map((account, index) => (
                 <Card
                   key={index}
+                  size="small"
                   hoverable
+                  onClick={() => handleDemoLogin(account.email, account.password)}
                   style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.2)',
                     borderRadius: '12px',
-                    cursor: 'pointer'
+                    border: `1px solid ${account.color}20`,
+                    background: `${account.color}05`,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
                   }}
-                  bodyStyle={{ padding: '20px' }}
-                  onClick={() => handleDemoLogin(demo)}
+                  bodyStyle={{ padding: '16px' }}
                 >
-                  <Row align="middle" gutter={[16, 0]}>
-                    <Col flex="none">
-                      <div style={{ 
-                        fontSize: '2rem', 
-                        color: demo.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '60px',
-                        height: '60px',
-                        background: 'rgba(255,255,255,0.1)',
-                        borderRadius: '50%'
-                      }}>
-                        {demo.icon}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                        <Tag color={account.color} style={{ margin: 0, marginRight: '8px' }}>
+                          {account.role}
+                        </Tag>
+                        <Text strong style={{ color: account.color }}>
+                          {account.email}
+                        </Text>
                       </div>
-                    </Col>
-                    <Col flex="auto">
-                      <Title level={4} style={{ color: 'white', margin: 0 }}>
-                        {demo.role}
-                      </Title>
-                      <Paragraph style={{ color: 'rgba(255,255,255,0.8)', margin: '4px 0' }}>
-                        {demo.description}
-                      </Paragraph>
-                      <Text code style={{ 
-                        background: 'rgba(255,255,255,0.1)', 
-                        color: 'rgba(255,255,255,0.7)',
-                        fontSize: '12px'
-                      }}>
-                        {demo.email}
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {account.description}
                       </Text>
-                    </Col>
-                    <Col flex="none">
-                      <Button 
-                        type="primary" 
-                        ghost 
-                        size="small"
-                        loading={loading}
-                      >
-                        Đăng nhập
-                      </Button>
-                    </Col>
-                  </Row>
+                    </div>
+                    <Button
+                      type="primary"
+                      size="small"
+                      style={{
+                        background: account.color,
+                        border: 'none',
+                        borderRadius: '6px'
+                      }}
+                    >
+                      Đăng nhập
+                    </Button>
+                  </div>
                 </Card>
               ))}
             </Space>
 
-            <Divider style={{ borderColor: 'rgba(255,255,255,0.2)' }} />
+            <Divider style={{ margin: '24px 0' }} />
 
             <div style={{ textAlign: 'center' }}>
-              <Title level={4} style={{ color: 'white', marginBottom: '15px' }}>
-                🚀 Tính năng nổi bật
+              <Title level={5} style={{ marginBottom: '16px' }}>
+                🔐 Thông tin đăng nhập
               </Title>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>🤖</div>
-                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>
-                      AI Smart
-                    </Text>
-                  </div>
-                </Col>
-                <Col span={8}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>📊</div>
-                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>
-                      Analytics
-                    </Text>
-                  </div>
-                </Col>
-                <Col span={8}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>🎮</div>
-                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>
-                      Gamification
-                    </Text>
-                  </div>
-                </Col>
-              </Row>
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                  <Text type="secondary">Admin:</Text>
+                  <Text code>admin@smartpos.com / admin123</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                  <Text type="secondary">Cashier:</Text>
+                  <Text code>cashier@smartpos.com / cashier123</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                  <Text type="secondary">Staff:</Text>
+                  <Text code>staff@smartpos.com / staff123</Text>
+                </div>
+              </Space>
             </div>
           </Card>
-        </Col>
-      </Row>
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
+            © 2024 SmartPOS System. Hệ thống quản lý bán hàng thông minh.
+          </Text>
+        </div>
+      </div>
     </div>
   );
 };

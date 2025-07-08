@@ -15,7 +15,10 @@
     "@ant-design/icons": "^5.2.6",
     "axios": "^1.6.5",
     "dayjs": "^1.11.10",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "@heroicons/react": "^2.0.18",
+    "recharts": "^2.8.0",
+    "framer-motion": "^10.18.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

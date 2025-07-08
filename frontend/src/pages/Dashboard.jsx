@@ -1,280 +1,281 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Row, Col, Typography, Space, Tag, Divider } from 'antd';
-import { 
-  DashboardOutlined, 
-  ShoppingCartOutlined, 
-  TeamOutlined,
-  TrophyOutlined,
-  BarChartOutlined,
-  SettingOutlined,
+import { Card, Row, Col, Typography, Button, Space, Statistic, Progress } from 'antd';
+import {
+  ShoppingCartOutlined,
   UserOutlined,
-  ShopOutlined
+  DollarOutlined,
+  TrophyOutlined,
+  RiseOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
 
-const { Title, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, hasRole } = useAuth();
+  const { user } = useAuth();
 
-  // If user is authenticated, redirect to appropriate dashboard
-  React.useEffect(() => {
-    if (isAuthenticated && user) {
-      switch (user.role) {
-        case 'admin':
-          navigate('/admin/dashboard');
-          break;
-        case 'cashier':
-          navigate('/cashier/pos');
-          break;
-        case 'staff':
-          navigate('/staff/dashboard');
-          break;
-        default:
-          // Stay on main dashboard
-          break;
-      }
+  useEffect(() => {
+    // Redirect based on user role
+    if (user?.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else if (user?.role === 'cashier') {
+      navigate('/cashier/pos');
+    } else if (user?.role === 'staff') {
+      navigate('/staff/dashboard');
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [user, navigate]);
 
-  const handleLogin = () => {
-    navigate('/login');
-  };
-
-  const handleRoleAccess = (role) => {
-    switch (role) {
-      case 'admin':
-        navigate('/admin/dashboard');
-        break;
-      case 'cashier':
-        navigate('/cashier/pos');
-        break;
-      case 'staff':
-        navigate('/staff/dashboard');
-        break;
-      default:
-        navigate('/login');
+  // Demo statistics
+  const stats = [
+    {
+      title: 'Doanh thu hôm nay',
+      value: 15420000,
+      prefix: <DollarOutlined />,
+      suffix: 'VND',
+      color: '#52c41a'
+    },
+    {
+      title: 'Đơn hàng',
+      value: 234,
+      prefix: <ShoppingCartOutlined />,
+      color: '#1890ff'
+    },
+    {
+      title: 'Khách hàng',
+      value: 1234,
+      prefix: <UserOutlined />,
+      color: '#722ed1'
+    },
+    {
+      title: 'Nhân viên',
+      value: 12,
+      prefix: <TeamOutlined />,
+      color: '#fa8c16'
     }
-  };
+  ];
 
   return (
     <div style={{ 
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white',
-      padding: '20px'
+      padding: '40px 20px'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <Title level={1} style={{ 
-            color: 'white', 
-            fontSize: '3.5rem', 
-            marginBottom: '20px',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-          }}>
-            🏪 Smart POS System
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <Title level={1} style={{ color: 'white', marginBottom: '16px' }}>
+            🏪 SmartPOS System
           </Title>
-          <Paragraph style={{ 
-            fontSize: '1.3rem', 
-            color: 'rgba(255,255,255,0.9)',
-            maxWidth: '600px',
-            margin: '0 auto'
-          }}>
-            Hệ thống quản lý bán hàng thông minh với AI, Game hóa và Real-time Analytics
-          </Paragraph>
-          <Tag color="gold" style={{ marginTop: '10px', fontSize: '14px' }}>
-            Powered by Cloudflare Edge
-          </Tag>
+          <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '18px' }}>
+            Hệ thống quản lý bán hàng thông minh
+          </Text>
         </div>
 
+        {/* Quick Stats */}
+        <Row gutter={[24, 24]} style={{ marginBottom: '40px' }}>
+          {stats.map((stat, index) => (
+            <Col xs={24} sm={12} lg={6} key={index}>
+              <Card 
+                style={{ 
+                  background: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '12px'
+                }}
+              >
+                <Statistic
+                  title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{stat.title}</span>}
+                  value={stat.value}
+                  valueStyle={{ color: stat.color }}
+                  prefix={stat.prefix}
+                  suffix={stat.suffix}
+                />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
         {/* Main Content */}
-        {!isAuthenticated ? (
-          <>
-            {/* Role Cards */}
-            <Row gutter={[24, 24]} style={{ marginBottom: '60px' }}>
-              <Col xs={24} md={8}>
-                <Card
-                  hoverable
-                  style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    height: '280px'
-                  }}
-                  bodyStyle={{ padding: '30px' }}
-                  onClick={() => handleRoleAccess('admin')}
-                >
-                  <DashboardOutlined style={{ fontSize: '3rem', color: '#ffd700', marginBottom: '20px' }} />
-                  <Title level={3} style={{ color: 'white', marginBottom: '15px' }}>
-                    Admin Dashboard
-                  </Title>
-                  <Paragraph style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '20px' }}>
-                    Quản lý toàn bộ hệ thống, báo cáo, phân tích dữ liệu và cấu hình AI
-                  </Paragraph>
-                  <Button type="primary" size="large" ghost>
-                    Truy cập Dashboard
+        <Row gutter={[24, 24]}>
+          {/* Welcome Card */}
+          <Col xs={24} lg={16}>
+            <Card 
+              style={{ 
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px',
+                height: '100%'
+              }}
+            >
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <Title level={2} style={{ color: 'white', marginBottom: '24px' }}>
+                  Chào mừng đến với SmartPOS! 👋
+                </Title>
+                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px', display: 'block', marginBottom: '32px' }}>
+                  Hệ thống quản lý bán hàng hiện đại với AI tích hợp, 
+                  giúp tối ưu hóa doanh thu và trải nghiệm khách hàng.
+                </Text>
+                
+                <Space size="large" wrap>
+                  <Button 
+                    type="primary" 
+                    size="large" 
+                    icon={<ShoppingCartOutlined />}
+                    onClick={() => navigate('/login')}
+                    style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    Bắt đầu bán hàng
                   </Button>
-                </Card>
-              </Col>
-
-              <Col xs={24} md={8}>
-                <Card
-                  hoverable
-                  style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    height: '280px'
-                  }}
-                  bodyStyle={{ padding: '30px' }}
-                  onClick={() => handleRoleAccess('cashier')}
-                >
-                  <ShoppingCartOutlined style={{ fontSize: '3rem', color: '#52c41a', marginBottom: '20px' }} />
-                  <Title level={3} style={{ color: 'white', marginBottom: '15px' }}>
-                    POS Terminal
-                  </Title>
-                  <Paragraph style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '20px' }}>
-                    Terminal bán hàng với quét mã vạch, thanh toán và gợi ý AI
-                  </Paragraph>
-                  <Button type="primary" size="large" ghost>
-                    Mở Terminal
+                  <Button 
+                    size="large" 
+                    icon={<UserOutlined />}
+                    onClick={() => navigate('/login')}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      color: 'white',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    Đăng nhập
                   </Button>
-                </Card>
-              </Col>
+                </Space>
+              </div>
+            </Card>
+          </Col>
 
-              <Col xs={24} md={8}>
-                <Card
-                  hoverable
-                  style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    height: '280px'
-                  }}
-                  bodyStyle={{ padding: '30px' }}
-                  onClick={() => handleRoleAccess('staff')}
-                >
-                  <TeamOutlined style={{ fontSize: '3rem', color: '#1890ff', marginBottom: '20px' }} />
-                  <Title level={3} style={{ color: 'white', marginBottom: '15px' }}>
-                    Staff Portal
-                  </Title>
-                  <Paragraph style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '20px' }}>
-                    Cổng nhân viên với game hóa, theo dõi hiệu suất và đào tạo
-                  </Paragraph>
-                  <Button type="primary" size="large" ghost>
-                    Vào Portal
-                  </Button>
-                </Card>
-              </Col>
-            </Row>
+          {/* Quick Actions */}
+          <Col xs={24} lg={8}>
+            <Card 
+              title={<span style={{ color: 'white' }}>Tính năng nổi bật</span>}
+              style={{ 
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px',
+                height: '100%'
+              }}
+              headStyle={{ border: 'none' }}
+              bodyStyle={{ padding: '20px' }}
+            >
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                  <RiseOutlined style={{ color: '#52c41a', fontSize: '24px', marginRight: '12px' }} />
+                  <div>
+                    <Text strong style={{ color: 'white', display: 'block' }}>AI Dự đoán</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Dự báo nhu cầu thông minh</Text>
+                  </div>
+                </div>
 
-            {/* Features Grid */}
-            <div style={{ marginBottom: '60px' }}>
-              <Title level={2} style={{ color: 'white', textAlign: 'center', marginBottom: '40px' }}>
-                ✨ Tính năng nổi bật
-              </Title>
-              <Row gutter={[16, 16]}>
-                {[
-                  { icon: '🤖', title: 'AI Recommendations', desc: 'Gợi ý sản phẩm thông minh' },
-                  { icon: '📊', title: 'Real-time Analytics', desc: 'Phân tích dữ liệu thời gian thực' },
-                  { icon: '🎮', title: 'Staff Gamification', desc: 'Game hóa cho nhân viên' },
-                  { icon: '📱', title: 'PWA Mobile', desc: 'Hỗ trợ mobile và offline' },
-                  { icon: '🔄', title: 'Offline Sync', desc: 'Đồng bộ khi mất kết nối' },
-                  { icon: '⚡', title: 'Cloudflare Edge', desc: 'Tốc độ toàn cầu' }
-                ].map((feature, index) => (
-                  <Col xs={12} md={8} lg={4} key={index}>
-                    <Card
-                      style={{
-                        background: 'rgba(255,255,255,0.1)',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        borderRadius: '12px',
-                        textAlign: 'center',
-                        height: '120px'
-                      }}
-                      bodyStyle={{ padding: '16px' }}
-                    >
-                      <div style={{ fontSize: '2rem', marginBottom: '8px' }}>
-                        {feature.icon}
-                      </div>
-                      <div style={{ color: 'white', fontWeight: 'bold', fontSize: '12px' }}>
-                        {feature.title}
-                      </div>
-                      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '10px' }}>
-                        {feature.desc}
-                      </div>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-            </div>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                  <TrophyOutlined style={{ color: '#fa8c16', fontSize: '24px', marginRight: '12px' }} />
+                  <div>
+                    <Text strong style={{ color: 'white', display: 'block' }}>Gamification</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Động lực cho nhân viên</Text>
+                  </div>
+                </div>
 
-            {/* Login Section */}
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-              <Title level={3} style={{ color: 'white', marginBottom: '20px' }}>
-                Bắt đầu sử dụng ngay
-              </Title>
-              <Space size="large">
-                <Button type="primary" size="large" onClick={handleLogin}>
-                  <UserOutlined /> Đăng nhập
-                </Button>
-                <Button size="large" ghost>
-                  <ShopOutlined /> Demo
-                </Button>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                  <UserOutlined style={{ color: '#1890ff', fontSize: '24px', marginRight: '12px' }} />
+                  <div>
+                    <Text strong style={{ color: 'white', display: 'block' }}>CRM Tích hợp</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Quản lý khách hàng toàn diện</Text>
+                  </div>
+                </div>
               </Space>
-            </div>
-          </>
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <Title level={2} style={{ color: 'white' }}>
-              Chào mừng, {user?.name}!
-            </Title>
-            <Paragraph style={{ color: 'rgba(255,255,255,0.8)' }}>
-              Đang chuyển hướng đến dashboard của bạn...
-            </Paragraph>
-          </div>
-        )}
+            </Card>
+          </Col>
+        </Row>
 
-        {/* System Status */}
-        <Card
-          style={{
-            background: 'rgba(255,255,255,0.1)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '16px',
-            textAlign: 'center'
-          }}
-          bodyStyle={{ padding: '20px' }}
-        >
-          <Title level={4} style={{ color: 'white', marginBottom: '20px' }}>
-            🚀 System Status
-          </Title>
-          <Row gutter={[16, 16]}>
-            <Col span={6}>
-              <div style={{ color: '#52c41a', fontSize: '1.5rem' }}>●</div>
-              <div style={{ color: 'white', fontSize: '12px' }}>Frontend</div>
-            </Col>
-            <Col span={6}>
-              <div style={{ color: '#faad14', fontSize: '1.5rem' }}>●</div>
-              <div style={{ color: 'white', fontSize: '12px' }}>Backend</div>
-            </Col>
-            <Col span={6}>
-              <div style={{ color: '#52c41a', fontSize: '1.5rem' }}>●</div>
-              <div style={{ color: 'white', fontSize: '12px' }}>Database</div>
-            </Col>
-            <Col span={6}>
-              <div style={{ color: '#52c41a', fontSize: '1.5rem' }}>●</div>
-              <div style={{ color: 'white', fontSize: '12px' }}>CDN</div>
-            </Col>
-          </Row>
-        </Card>
+        {/* Performance Overview */}
+        <Row gutter={[24, 24]} style={{ marginTop: '40px' }}>
+          <Col xs={24} lg={12}>
+            <Card 
+              title={<span style={{ color: 'white' }}>Hiệu suất hệ thống</span>}
+              style={{ 
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px'
+              }}
+              headStyle={{ border: 'none' }}
+            >
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <div>
+                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>CPU Usage</Text>
+                  <Progress percent={45} strokeColor="#52c41a" />
+                </div>
+                <div>
+                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>Memory Usage</Text>
+                  <Progress percent={67} strokeColor="#1890ff" />
+                </div>
+                <div>
+                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>Storage</Text>
+                  <Progress percent={23} strokeColor="#722ed1" />
+                </div>
+              </Space>
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <Card 
+              title={<span style={{ color: 'white' }}>Thống kê nhanh</span>}
+              style={{ 
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '12px'
+              }}
+              headStyle={{ border: 'none' }}
+            >
+              <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <Statistic
+                    title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Sản phẩm</span>}
+                    value={1234}
+                    valueStyle={{ color: '#52c41a' }}
+                  />
+                </Col>
+                <Col span={12}>
+                  <Statistic
+                    title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Danh mục</span>}
+                    value={89}
+                    valueStyle={{ color: '#1890ff' }}
+                  />
+                </Col>
+                <Col span={12}>
+                  <Statistic
+                    title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Nhà cung cấp</span>}
+                    value={45}
+                    valueStyle={{ color: '#722ed1' }}
+                  />
+                </Col>
+                <Col span={12}>
+                  <Statistic
+                    title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Kho hàng</span>}
+                    value={3}
+                    valueStyle={{ color: '#fa8c16' }}
+                  />
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Footer */}
+        <div style={{ textAlign: 'center', marginTop: '40px', padding: '20px' }}>
+          <Text style={{ color: 'rgba(255,255,255,0.6)' }}>
+            © 2024 SmartPOS System. Phiên bản 1.0.0
+          </Text>
+        </div>
       </div>
     </div>
   );
