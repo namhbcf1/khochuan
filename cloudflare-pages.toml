@@ -1,0 +1,7 @@
+[build]
+command = "cd frontend && npm install --include=dev && npm install --save-dev terser && npm run build"
+publish = "frontend/dist"
+node_version = "18"
+
+[build.environment]
+NPM_FLAGS = "--include=dev" 

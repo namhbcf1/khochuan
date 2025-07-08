@@ -10,6 +10,8 @@ echo "Changed directory to frontend"
 # Install dependencies
 echo "Installing dependencies..."
 npm install --include=dev
+echo "Installing terser explicitly..."
+npm install --save-dev terser
 echo "Dependencies installed successfully"
 
 # Build the application
