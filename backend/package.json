@@ -1,0 +1,21 @@
+{
+  "name": "cloudflare-pos-backend",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers Backend for Enterprise POS",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "echo 'Backend build complete - Workers deploy separately'",
+    "deploy": "wrangler deploy",
+    "setup": "echo 'Backend setup complete'",
+    "migrate": "wrangler d1 migrations apply pos-database --remote",
+    "seed": "wrangler d1 execute pos-database --remote --file=./database/seed.sql"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20241106.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.88.0"
+  }
+}

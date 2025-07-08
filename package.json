@@ -1,0 +1,23 @@
+{
+  "name": "khochuan-enterprise-pos",
+  "version": "1.0.0",
+  "description": "Khochuan Enterprise POS System",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "preview": "npm run preview --workspace=frontend",
+    "setup": "npm install",
+    "lint": "npm run lint --workspace=frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
