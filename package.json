@@ -2,22 +2,11 @@
   "name": "smart-pos-system",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
   "scripts": {
-    "dev": "npm run dev --workspace=frontend",
-    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm install --include=dev && npm run build",
     "deploy": "npm run build && echo 'Deploy completed'",
-    "clean": "npm run clean --workspace=frontend",
-    "backend:dev": "npm run dev --workspace=backend",
-    "backend:deploy": "npm run deploy --workspace=backend"
-  },
-  "devDependencies": {
-    "canvas": "^3.1.2",
-    "concurrently": "^8.0.0",
-    "vite-plugin-pwa": "^1.0.1"
+    "clean": "cd frontend && npm run clean"
   },
   "dependencies": {
     "react-helmet-async": "^2.0.5"
