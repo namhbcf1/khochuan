@@ -84,8 +84,8 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing token on mount
   useEffect(() => {
-    const token = localStorage.getItem('pos_token');
-    const user = localStorage.getItem('pos_user');
+    const token = localStorage.getItem('truongphat_token');
+    const user = localStorage.getItem('truongphat_user');
     
     if (token && user) {
       try {
@@ -100,8 +100,8 @@ export const AuthProvider = ({ children }) => {
         });
       } catch (error) {
         console.error('Error parsing user data:', error);
-        localStorage.removeItem('pos_token');
-        localStorage.removeItem('pos_user');
+        localStorage.removeItem('truongphat_token');
+        localStorage.removeItem('truongphat_user');
       }
     }
     
@@ -116,7 +116,8 @@ export const AuthProvider = ({ children }) => {
       // Mock login - replace with actual API call
       const mockUser = {
         id: 1,
-        name: 'Admin User',
+        name: credentials.email.includes('admin') ? 'Quản trị viên' : 
+              credentials.email.includes('cashier') ? 'Thu ngân' : 'Nhân viên',
         email: credentials.email,
         role: credentials.email.includes('admin') ? 'admin' : 
               credentials.email.includes('cashier') ? 'cashier' : 'staff',
@@ -125,23 +126,34 @@ export const AuthProvider = ({ children }) => {
                                         credentials.email.includes('cashier') ? 'cashier' : 'staff'),
       };
 
-      const mockToken = 'mock-jwt-token-' + Date.now();
+      // Validate credentials
+      if (
+        (credentials.email === 'admin@truongphat.com' && credentials.password === 'admin123') ||
+        (credentials.email === 'cashier@truongphat.com' && credentials.password === 'cashier123') ||
+        (credentials.email === 'staff@truongphat.com' && credentials.password === 'staff123')
+      ) {
+        const mockToken = 'truongphat-jwt-token-' + Date.now();
 
-      // Store in localStorage
-      localStorage.setItem('pos_token', mockToken);
-      localStorage.setItem('pos_user', JSON.stringify(mockUser));
+        // Store in localStorage
+        localStorage.setItem('truongphat_token', mockToken);
+        localStorage.setItem('truongphat_user', JSON.stringify(mockUser));
 
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: {
-          user: mockUser,
-          token: mockToken,
-          permissions: mockUser.permissions,
-        },
-      });
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_SUCCESS,
+          payload: {
+            user: mockUser,
+            token: mockToken,
+            permissions: mockUser.permissions,
+          },
+        });
 
-      message.success('Đăng nhập thành công!');
-      return { success: true };
+        message.success('Đăng nhập thành công!');
+        return { success: true };
+      } else {
+        dispatch({ type: AUTH_ACTIONS.LOGIN_FAILURE });
+        message.error('Email hoặc mật khẩu không đúng!');
+        return { success: false, error: 'Invalid credentials' };
+      }
     } catch (error) {
       dispatch({ type: AUTH_ACTIONS.LOGIN_FAILURE });
       message.error('Đăng nhập thất bại!');
@@ -151,8 +163,8 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    localStorage.removeItem('pos_token');
-    localStorage.removeItem('pos_user');
+    localStorage.removeItem('truongphat_token');
+    localStorage.removeItem('truongphat_user');
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
     message.success('Đăng xuất thành công!');
   };
@@ -160,7 +172,7 @@ export const AuthProvider = ({ children }) => {
   // Update user function
   const updateUser = (userData) => {
     dispatch({ type: AUTH_ACTIONS.UPDATE_USER, payload: userData });
-    localStorage.setItem('pos_user', JSON.stringify({ ...state.user, ...userData }));
+    localStorage.setItem('truongphat_user', JSON.stringify({ ...state.user, ...userData }));
   };
 
   // Check permission function

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Form, Input, Button, Card, Typography, Space, Alert, Divider, Tag } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, LoginOutlined, PhoneOutlined, FacebookOutlined, MessageOutlined } from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const Login = () => {
   const [form] = Form.useForm();
@@ -18,14 +18,19 @@ const Login = () => {
     setError('');
     
     try {
-      const success = await login(values.email, values.password);
-      if (success) {
+      const result = await login({
+        email: values.email,
+        password: values.password
+      });
+      
+      if (result.success) {
         // Redirect will be handled by AuthContext
       } else {
         setError('Email hoặc mật khẩu không đúng');
       }
     } catch (err) {
       setError('Đã xảy ra lỗi khi đăng nhập');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -39,21 +44,21 @@ const Login = () => {
   const demoAccounts = [
     {
       role: 'Admin',
-      email: 'admin@smartpos.com',
+      email: 'admin@truongphat.com',
       password: 'admin123',
       color: '#722ed1',
       description: 'Quản lý toàn bộ hệ thống'
     },
     {
       role: 'Cashier',
-      email: 'cashier@smartpos.com',
+      email: 'cashier@truongphat.com',
       password: 'cashier123',
       color: '#52c41a',
       description: 'Thu ngân, bán hàng'
     },
     {
       role: 'Staff',
-      email: 'staff@smartpos.com',
+      email: 'staff@truongphat.com',
       password: 'staff123',
       color: '#1890ff',
       description: 'Nhân viên bán hàng'
@@ -63,7 +68,7 @@ const Login = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #1677ff 0%, #0958d9 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -72,7 +77,7 @@ const Login = () => {
       <div style={{ width: '100%', maxWidth: '900px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <Title level={1} style={{ color: 'white', marginBottom: '8px' }}>
-            🏪 SmartPOS System
+            💻 Trường Phát Computer
           </Title>
           <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px' }}>
             Đăng nhập vào hệ thống quản lý bán hàng
@@ -126,7 +131,7 @@ const Login = () => {
               >
                 <Input
                   prefix={<UserOutlined />}
-                  placeholder="admin@smartpos.com"
+                  placeholder="admin@truongphat.com"
                   style={{ borderRadius: '8px' }}
                 />
               </Form.Item>
@@ -164,12 +169,12 @@ const Login = () => {
 
             <div style={{ textAlign: 'center', marginTop: '24px' }}>
               <Text type="secondary">
-                Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+                Chưa có tài khoản? Liên hệ quản trị viên
               </Text>
             </div>
           </Card>
 
-          {/* Demo Accounts */}
+          {/* Demo Accounts and Contact Info */}
           <Card
             title={
               <div style={{ textAlign: 'center' }}>
@@ -241,30 +246,46 @@ const Login = () => {
 
             <div style={{ textAlign: 'center' }}>
               <Title level={5} style={{ marginBottom: '16px' }}>
-                🔐 Thông tin đăng nhập
+                📞 Liên Hệ Trường Phát Computer Hòa Bình
               </Title>
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <Text type="secondary">Admin:</Text>
-                  <Text code>admin@smartpos.com / admin123</Text>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <Text type="secondary">Cashier:</Text>
-                  <Text code>cashier@smartpos.com / cashier123</Text>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <Text type="secondary">Staff:</Text>
-                  <Text code>staff@smartpos.com / staff123</Text>
-                </div>
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <Card size="small" style={{ borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <PhoneOutlined style={{ fontSize: '20px', color: '#1677ff', marginRight: '12px' }} />
+                    <div>
+                      <Text strong>Hotline</Text>
+                      <div><a href="tel:0836768597">0836.768.597</a></div>
+                    </div>
+                  </div>
+                </Card>
+                
+                <Card size="small" style={{ borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <MessageOutlined style={{ fontSize: '20px', color: '#1677ff', marginRight: '12px' }} />
+                    <div>
+                      <Text strong>Zalo</Text>
+                      <div><a href="https://zalo.me/0836768597" target="_blank" rel="noopener noreferrer">0836.768.597</a></div>
+                    </div>
+                  </div>
+                </Card>
+                
+                <Card size="small" style={{ borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <FacebookOutlined style={{ fontSize: '20px', color: '#1677ff', marginRight: '12px' }} />
+                    <div>
+                      <Text strong>Facebook</Text>
+                      <div><a href="https://www.facebook.com/truongphatcomputerhoabinh" target="_blank" rel="noopener noreferrer">Trường Phát Computer Hòa Bình</a></div>
+                    </div>
+                  </div>
+                </Card>
               </Space>
             </div>
           </Card>
         </div>
 
-        {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: '40px' }}>
-          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
-            © 2024 SmartPOS System. Hệ thống quản lý bán hàng thông minh.
+          <Text style={{ color: 'rgba(255,255,255,0.7)' }}>
+            © {new Date().getFullYear()} Trường Phát Computer. Tất cả quyền được bảo lưu.
           </Text>
         </div>
       </div>

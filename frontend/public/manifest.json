@@ -1,0 +1,25 @@
+{
+  "name": "Trường Phát Computer",
+  "short_name": "TruongPhat",
+  "description": "Hệ thống quản lý bán hàng Trường Phát Computer Hòa Bình",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1677ff",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity", "finance"]
+}
