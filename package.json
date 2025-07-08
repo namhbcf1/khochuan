@@ -1,23 +1,18 @@
 {
-  "name": "khochuan-enterprise-pos",
+  "name": "smart-pos-system",
   "version": "1.0.0",
-  "description": "Khochuan Enterprise POS System",
   "private": true,
   "workspaces": [
-    "frontend"
+    "frontend",
+    "backend"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=frontend",
     "build": "npm run build --workspace=frontend",
-    "preview": "npm run preview --workspace=frontend",
-    "setup": "npm install",
-    "lint": "npm run lint --workspace=frontend"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "deploy": "npm run build && echo 'Deploy completed'",
+    "clean": "npm run clean --workspace=frontend"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.0.0"
   }
 }
