@@ -1,350 +1,318 @@
 // frontend/src/pages/cashier/POS/POSTerminal.jsx
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import {
-  Row,
-  Col,
-  Card,
-  Button,
-  Input,
-  Space,
-  Typography,
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Row, 
+  Col, 
+  Card, 
+  Input, 
+  Button, 
+  Typography, 
+  Space, 
+  List, 
+  Avatar, 
+  Tag, 
   Divider,
-  Tag,
+  InputNumber,
   Modal,
+  Select,
   message,
   Badge,
-  Avatar,
-  Tooltip,
-  Drawer,
-  Steps,
-  Alert,
-  Progress,
-  Affix
+  Statistic,
+  Tabs
 } from 'antd';
 import {
   ShoppingCartOutlined,
   ScanOutlined,
-  SearchOutlined,
-  UserOutlined,
-  CreditCardOutlined,
-  PrinterOutlined,
   DeleteOutlined,
   PlusOutlined,
   MinusOutlined,
+  CreditCardOutlined,
   DollarOutlined,
-  GiftOutlined,
-  StarOutlined,
-  BarcodeOutlined,
-  CameraOutlined,
-  PayCircleOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
+  UserOutlined,
   CalculatorOutlined,
-  TagOutlined,
-  PhoneOutlined,
-  MailOutlined
+  PrinterOutlined,
+  SearchOutlined,
+  BarcodeOutlined
 } from '@ant-design/icons';
-import { AuthContext } from '../../../auth/AuthContext';
-import ProductSelector from './ProductSelector';
-import CartManager from './CartManager';
-import PaymentProcessor from './PaymentProcessor';
-import CustomerLookup from '../Customers/CustomerLookup';
-import SmartSuggestions from './SmartSuggestions';
-import './POSTerminal.css';
 
 const { Title, Text } = Typography;
-const { Step } = Steps;
+const { TextArea } = Input;
 
 const POSTerminal = () => {
-  const { user } = useContext(AuthContext);
   const [cart, setCart] = useState([]);
-  const [customer, setCustomer] = useState(null);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [paymentVisible, setPaymentVisible] = useState(false);
-  const [customerVisible, setCustomerVisible] = useState(false);
-  const [scannerVisible, setScannerVisible] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [barcodeInput, setBarcodeInput] = useState('');
+  const [customer, setCustomer] = useState(null);
+  const [paymentVisible, setPaymentVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [orderTotal, setOrderTotal] = useState(0);
-  const [discount, setDiscount] = useState(0);
-  const [tax, setTax] = useState(0);
-  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
-  const [suggestions, setSuggestions] = useState([]);
-  
-  const barcodeInputRef = useRef(null);
-  const paymentRef = useRef(null);
+  const barcodeRef = useRef(null);
 
-  // Steps for POS workflow
-  const posSteps = [
-    { title: 'Sản phẩm', icon: <ShoppingCartOutlined /> },
-    { title: 'Khách hàng', icon: <UserOutlined /> },
-    { title: 'Thanh toán', icon: <CreditCardOutlined /> },
-    { title: 'Hoàn tất', icon: <CheckCircleOutlined /> }
+  // Demo products
+  const demoProducts = [
+    {
+      id: 1,
+      name: 'iPhone 15 Pro',
+      barcode: '123456789012',
+      price: 29990000,
+      stock: 15,
+      category: 'Điện thoại',
+      image: 'https://via.placeholder.com/60x60?text=IP15'
+    },
+    {
+      id: 2,
+      name: 'Samsung Galaxy S24',
+      barcode: '123456789013',
+      price: 25990000,
+      stock: 8,
+      category: 'Điện thoại',
+      image: 'https://via.placeholder.com/60x60?text=S24'
+    },
+    {
+      id: 3,
+      name: 'MacBook Air M3',
+      barcode: '123456789014',
+      price: 34990000,
+      stock: 5,
+      category: 'Laptop',
+      image: 'https://via.placeholder.com/60x60?text=MBA'
+    },
+    {
+      id: 4,
+      name: 'AirPods Pro',
+      barcode: '123456789015',
+      price: 6990000,
+      stock: 25,
+      category: 'Phụ kiện',
+      image: 'https://via.placeholder.com/60x60?text=APP'
+    },
+    {
+      id: 5,
+      name: 'iPad Pro 11"',
+      barcode: '123456789016',
+      price: 24990000,
+      stock: 12,
+      category: 'Tablet',
+      image: 'https://via.placeholder.com/60x60?text=IPD'
+    }
   ];
 
-  // Calculate totals
   useEffect(() => {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const discountAmount = subtotal * (discount / 100);
-    const taxAmount = (subtotal - discountAmount) * (tax / 100);
-    const total = subtotal - discountAmount + taxAmount;
-    
-    setOrderTotal(total);
-    
-    // Calculate loyalty points (1 point per 1000 VND)
-    setLoyaltyPoints(Math.floor(total / 1000));
-  }, [cart, discount, tax]);
+    setProducts(demoProducts);
+    // Focus on barcode input
+    if (barcodeRef.current) {
+      barcodeRef.current.focus();
+    }
+  }, []);
 
-  // Add product to cart
-  const addToCart = (product, quantity = 1) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      
-      return [...prevCart, { ...product, quantity }];
-    });
-    
-    message.success(`Đã thêm ${product.name} vào giỏ hàng`);
-    
-    // Load AI suggestions based on cart
-    loadSmartSuggestions([...cart, { ...product, quantity }]);
+  const handleBarcodeScanned = (barcode) => {
+    const product = products.find(p => p.barcode === barcode);
+    if (product) {
+      addToCart(product);
+      setBarcodeInput('');
+      message.success(`Đã thêm ${product.name} vào giỏ hàng`);
+    } else {
+      message.error('Không tìm thấy sản phẩm với mã vạch này');
+    }
   };
 
-  // Update cart item quantity
-  const updateCartItem = (productId, quantity) => {
-    if (quantity <= 0) {
+  const addToCart = (product) => {
+    const existingItem = cart.find(item => item.id === product.id);
+    if (existingItem) {
+      setCart(cart.map(item =>
+        item.id === product.id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
       removeFromCart(productId);
       return;
     }
-    
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === productId ? { ...item, quantity } : item
-      )
-    );
+    setCart(cart.map(item =>
+      item.id === productId
+        ? { ...item, quantity: newQuantity }
+        : item
+    ));
   };
 
-  // Remove from cart
   const removeFromCart = (productId) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
-    message.info('Đã xóa sản phẩm khỏi giỏ hàng');
+    setCart(cart.filter(item => item.id !== productId));
   };
 
-  // Clear cart
   const clearCart = () => {
-    Modal.confirm({
-      title: 'Xóa toàn bộ giỏ hàng?',
-      content: 'Tất cả sản phẩm sẽ bị xóa khỏi giỏ hàng.',
-      onOk: () => {
-        setCart([]);
-        setCustomer(null);
-        setCurrentStep(0);
-        message.success('Đã xóa toàn bộ giỏ hàng');
-      }
-    });
+    setCart([]);
   };
 
-  // Barcode scanning
-  const handleBarcodeSubmit = async () => {
-    if (!barcodeInput.trim()) return;
-    
-    setLoading(true);
-    try {
-      // Search product by barcode
-      const response = await fetch(`/api/products/barcode/${barcodeInput}`);
-      const product = await response.json();
-      
-      if (product) {
-        addToCart(product);
-        setBarcodeInput('');
-        setScannerVisible(false);
-      } else {
-        message.error('Không tìm thấy sản phẩm với mã vạch này');
-      }
-    } catch (error) {
-      message.error('Lỗi khi tìm kiếm sản phẩm');
-    } finally {
-      setLoading(false);
-    }
+  const getTotalAmount = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  // Load smart suggestions
-  const loadSmartSuggestions = async (currentCart) => {
-    try {
-      const response = await fetch('/api/ai/suggestions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          cart: currentCart,
-          customer: customer?.id
-        })
-      });
-      
-      const suggestions = await response.json();
-      setSuggestions(suggestions.slice(0, 6)); // Limit to 6 suggestions
-    } catch (error) {
-      console.error('Error loading suggestions:', error);
-    }
+  const getTotalItems = () => {
+    return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
-  // Process payment
+  const handlePayment = () => {
+    setPaymentVisible(true);
+  };
+
   const processPayment = async (paymentData) => {
     setLoading(true);
     try {
-      const orderData = {
-        items: cart,
-        customer: customer?.id,
-        subtotal: orderTotal - tax,
-        discount: discount,
-        tax: tax,
-        total: orderTotal,
-        loyaltyPoints: loyaltyPoints,
-        payment: paymentData,
-        cashier: user.id
-      };
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
+      message.success('Thanh toán thành công!');
+      setPaymentVisible(false);
+      clearCart();
       
-      const result = await response.json();
-      
-      if (result.success) {
-        setCurrentStep(3);
-        message.success('Thanh toán thành công!');
-        
-        // Print receipt
-        printReceipt(result.order);
-        
-        // Reset for next order
-        setTimeout(() => {
-          setCart([]);
-          setCustomer(null);
-          setCurrentStep(0);
-          setDiscount(0);
-          setPaymentVisible(false);
-        }, 3000);
-      } else {
-        message.error(result.message || 'Thanh toán thất bại');
-      }
+      // Print receipt
+      printReceipt();
     } catch (error) {
-      message.error('Lỗi khi xử lý thanh toán');
+      message.error('Thanh toán thất bại!');
     } finally {
       setLoading(false);
     }
   };
 
-  // Print receipt
-  const printReceipt = (order) => {
-    // In production, integrate with actual printer
-    window.print();
+  const printReceipt = () => {
+    message.info('Đang in hóa đơn...');
+    // Implement receipt printing logic
   };
 
-  return (
-    <div className="pos-terminal">
-      {/* Header */}
-      <Affix offsetTop={0}>
-        <Card className="pos-header" size="small">
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Space>
-                <Avatar icon={<ShoppingCartOutlined />} style={{ backgroundColor: '#52c41a' }} />
-                <div>
-                  <Title level={4} style={{ margin: 0 }}>
-                    POS Terminal
-                  </Title>
-                  <Text type="secondary">
-                    Ca làm việc: {user?.name} • {new Date().toLocaleDateString('vi-VN')}
-                  </Text>
-                </div>
-              </Space>
-            </Col>
-            
-            <Col>
-              <Steps 
-                current={currentStep} 
-                size="small" 
-                items={posSteps}
-                style={{ width: 300 }}
-              />
-            </Col>
-            
-            <Col>
-              <Space>
-                <Badge count={cart.length} showZero>
-                  <Button 
-                    type="primary" 
-                    icon={<ShoppingCartOutlined />}
-                    size="large"
-                  >
-                    Giỏ hàng
-                  </Button>
-                </Badge>
-                
-                <Tooltip title="Quét mã vạch">
-                  <Button 
-                    icon={<ScanOutlined />}
-                    onClick={() => setScannerVisible(true)}
-                    size="large"
-                  />
-                </Tooltip>
-              </Space>
-            </Col>
-          </Row>
-        </Card>
-      </Affix>
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.barcode.includes(searchTerm)
+  );
 
-      {/* Main Content */}
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        {/* Left Panel - Product Selection */}
+  return (
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <Card style={{ marginBottom: '16px' }}>
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Title level={3} style={{ margin: 0 }}>
+              💳 POS Terminal
+            </Title>
+          </Col>
+          <Col>
+            <Space>
+              <Badge count={getTotalItems()} showZero>
+                <Button icon={<ShoppingCartOutlined />} size="large">
+                  Giỏ hàng
+                </Button>
+              </Badge>
+              <Button icon={<UserOutlined />} onClick={() => setCustomer(null)}>
+                {customer ? customer.name : 'Khách lẻ'}
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+      </Card>
+
+      <Row gutter={[16, 16]} style={{ flex: 1 }}>
+        {/* Left Side - Product Search & Barcode */}
         <Col xs={24} lg={14}>
-          <ProductSelector 
-            onAddToCart={addToCart}
-            suggestions={suggestions}
-          />
-          
-          {/* Smart Suggestions */}
-          {suggestions.length > 0 && (
-            <Card 
-              title={
-                <Space>
-                  <StarOutlined style={{ color: '#faad14' }} />
-                  Gợi ý thông minh
-                </Space>
-              }
-              size="small"
-              style={{ marginTop: 16 }}
-            >
-              <SmartSuggestions 
-                suggestions={suggestions}
-                onAddToCart={addToCart}
+          <Card style={{ height: '100%' }}>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              {/* Barcode Scanner */}
+              <Card size="small" style={{ backgroundColor: '#f0f9ff' }}>
+                <Row gutter={[8, 8]} align="middle">
+                  <Col flex="auto">
+                    <Input
+                      ref={barcodeRef}
+                      size="large"
+                      placeholder="Quét mã vạch hoặc nhập mã sản phẩm..."
+                      value={barcodeInput}
+                      onChange={(e) => setBarcodeInput(e.target.value)}
+                      onPressEnter={() => handleBarcodeScanned(barcodeInput)}
+                      prefix={<BarcodeOutlined />}
+                    />
+                  </Col>
+                  <Col>
+                    <Button 
+                      type="primary" 
+                      size="large" 
+                      icon={<ScanOutlined />}
+                      onClick={() => handleBarcodeScanned(barcodeInput)}
+                    >
+                      Quét
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+
+              {/* Product Search */}
+              <Input
+                size="large"
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                prefix={<SearchOutlined />}
               />
-            </Card>
-          )}
+
+              {/* Product Grid */}
+              <div style={{ height: '400px', overflowY: 'auto' }}>
+                <Row gutter={[8, 8]}>
+                  {filteredProducts.map(product => (
+                    <Col xs={12} sm={8} md={6} key={product.id}>
+                      <Card
+                        hoverable
+                        size="small"
+                        onClick={() => addToCart(product)}
+                        style={{ textAlign: 'center' }}
+                        cover={
+                          <img 
+                            alt={product.name} 
+                            src={product.image} 
+                            style={{ height: '60px', objectFit: 'cover' }}
+                          />
+                        }
+                      >
+                        <Card.Meta
+                          title={
+                            <Text ellipsis style={{ fontSize: '12px' }}>
+                              {product.name}
+                            </Text>
+                          }
+                          description={
+                            <div>
+                              <Text strong style={{ color: '#52c41a', fontSize: '14px' }}>
+                                {new Intl.NumberFormat('vi-VN', { 
+                                  style: 'currency', 
+                                  currency: 'VND',
+                                  notation: 'compact'
+                                }).format(product.price)}
+                              </Text>
+                              <br />
+                              <Text type="secondary" style={{ fontSize: '10px' }}>
+                                Còn: {product.stock}
+                              </Text>
+                            </div>
+                          }
+                        />
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+            </Space>
+          </Card>
         </Col>
 
-        {/* Right Panel - Cart & Actions */}
+        {/* Right Side - Cart & Checkout */}
         <Col xs={24} lg={10}>
           <Card 
-            title={
-              <Space>
-                <ShoppingCartOutlined />
-                Giỏ hàng ({cart.length} sản phẩm)
-              </Space>
-            }
+            title="🛒 Giỏ hàng"
             extra={
               <Button 
-                type="text" 
                 danger 
+                size="small" 
                 icon={<DeleteOutlined />}
                 onClick={clearCart}
                 disabled={cart.length === 0}
@@ -352,296 +320,246 @@ const POSTerminal = () => {
                 Xóa tất cả
               </Button>
             }
+            style={{ height: '100%' }}
           >
-            <CartManager
-              cart={cart}
-              onUpdateQuantity={updateCartItem}
-              onRemoveItem={removeFromCart}
-              discount={discount}
-              onDiscountChange={setDiscount}
-              tax={tax}
-              onTaxChange={setTax}
-            />
-            
-            {/* Order Summary */}
-            <Divider />
-            <div className="order-summary">
-              <Row justify="space-between">
-                <Text>Tạm tính:</Text>
-                <Text>{(orderTotal - tax + (orderTotal * discount / 100)).toLocaleString('vi-VN')} ₫</Text>
-              </Row>
-              
-              {discount > 0 && (
-                <Row justify="space-between">
-                  <Text>Giảm giá ({discount}%):</Text>
-                  <Text type="danger">-{((orderTotal - tax) * discount / 100).toLocaleString('vi-VN')} ₫</Text>
-                </Row>
-              )}
-              
-              <Row justify="space-between">
-                <Text>Thuế VAT:</Text>
-                <Text>{tax.toLocaleString('vi-VN')} ₫</Text>
-              </Row>
-              
-              <Divider style={{ margin: '8px 0' }} />
-              
-              <Row justify="space-between">
-                <Title level={4} style={{ margin: 0 }}>Tổng cộng:</Title>
-                <Title level={4} style={{ margin: 0, color: '#52c41a' }}>
-                  {orderTotal.toLocaleString('vi-VN')} ₫
-                </Title>
-              </Row>
-              
-              {customer && loyaltyPoints > 0 && (
-                <Row justify="space-between" style={{ marginTop: 8 }}>
-                  <Text type="secondary">Điểm thưởng:</Text>
-                  <Text type="secondary">+{loyaltyPoints} điểm</Text>
-                </Row>
+            <div style={{ height: '300px', overflowY: 'auto', marginBottom: '16px' }}>
+              {cart.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <ShoppingCartOutlined style={{ fontSize: '48px', color: '#d9d9d9' }} />
+                  <p style={{ color: '#999', marginTop: '16px' }}>
+                    Giỏ hàng trống
+                  </p>
+                </div>
+              ) : (
+                <List
+                  dataSource={cart}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <List.Item.Meta
+                        avatar={<Avatar src={item.image} />}
+                        title={
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Text ellipsis style={{ maxWidth: '150px' }}>
+                              {item.name}
+                            </Text>
+                            <Button
+                              type="text"
+                              danger
+                              size="small"
+                              icon={<DeleteOutlined />}
+                              onClick={() => removeFromCart(item.id)}
+                            />
+                          </div>
+                        }
+                        description={
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Text strong style={{ color: '#52c41a' }}>
+                                {new Intl.NumberFormat('vi-VN', { 
+                                  style: 'currency', 
+                                  currency: 'VND',
+                                  notation: 'compact'
+                                }).format(item.price)}
+                              </Text>
+                              <Space>
+                                <Button
+                                  size="small"
+                                  icon={<MinusOutlined />}
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                />
+                                <InputNumber
+                                  size="small"
+                                  min={1}
+                                  value={item.quantity}
+                                  onChange={(value) => updateQuantity(item.id, value)}
+                                  style={{ width: '60px' }}
+                                />
+                                <Button
+                                  size="small"
+                                  icon={<PlusOutlined />}
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                />
+                              </Space>
+                            </div>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                              Thành tiền: {new Intl.NumberFormat('vi-VN', { 
+                                style: 'currency', 
+                                currency: 'VND'
+                              }).format(item.price * item.quantity)}
+                            </Text>
+                          </div>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
               )}
             </div>
-            
-            {/* Action Buttons */}
-            <div style={{ marginTop: 16 }}>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button
-                  type="default"
-                  icon={<UserOutlined />}
-                  onClick={() => setCustomerVisible(true)}
-                  block
-                  disabled={cart.length === 0}
-                >
-                  {customer ? `Khách hàng: ${customer.name}` : 'Chọn khách hàng'}
-                </Button>
-                
+
+            {/* Cart Summary */}
+            <Card size="small" style={{ backgroundColor: '#f6ffed' }}>
+              <Row justify="space-between" align="middle">
+                <Col>
+                  <Statistic
+                    title="Tổng cộng"
+                    value={getTotalAmount()}
+                    suffix="VND"
+                    valueStyle={{ color: '#52c41a', fontSize: '24px' }}
+                  />
+                </Col>
+                <Col>
+                  <Text type="secondary">
+                    {getTotalItems()} sản phẩm
+                  </Text>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Checkout Buttons */}
+            <div style={{ marginTop: '16px' }}>
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                 <Button
                   type="primary"
-                  icon={<CreditCardOutlined />}
-                  onClick={() => {
-                    setCurrentStep(2);
-                    setPaymentVisible(true);
-                  }}
                   size="large"
                   block
+                  icon={<CreditCardOutlined />}
+                  onClick={handlePayment}
                   disabled={cart.length === 0}
-                  loading={loading}
                 >
-                  Thanh toán • {orderTotal.toLocaleString('vi-VN')} ₫
+                  Thanh toán
                 </Button>
+                <Row gutter={[8, 8]}>
+                  <Col span={12}>
+                    <Button
+                      block
+                      icon={<CalculatorOutlined />}
+                      disabled={cart.length === 0}
+                    >
+                      Tính tiền
+                    </Button>
+                  </Col>
+                  <Col span={12}>
+                    <Button
+                      block
+                      icon={<PrinterOutlined />}
+                      disabled={cart.length === 0}
+                    >
+                      In hóa đơn
+                    </Button>
+                  </Col>
+                </Row>
               </Space>
             </div>
           </Card>
         </Col>
       </Row>
 
-      {/* Barcode Scanner Modal */}
-      <Modal
-        title={
-          <Space>
-            <BarcodeOutlined />
-            Quét mã vạch
-          </Space>
-        }
-        open={scannerVisible}
-        onCancel={() => setScannerVisible(false)}
-        footer={null}
-        width={400}
-      >
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Alert
-            message="Nhập mã vạch hoặc sử dụng máy quét"
-            type="info"
-            showIcon
-          />
-          
-          <Input
-            ref={barcodeInputRef}
-            placeholder="Nhập mã vạch..."
-            value={barcodeInput}
-            onChange={e => setBarcodeInput(e.target.value)}
-            onPressEnter={handleBarcodeSubmit}
-            size="large"
-            autoFocus
-          />
-          
-          <Row gutter={8}>
-            <Col span={12}>
-              <Button
-                icon={<CameraOutlined />}
-                block
-                onClick={() => message.info('Tính năng camera đang phát triển...')}
-              >
-                Quét camera
-              </Button>
-            </Col>
-            <Col span={12}>
-              <Button
-                type="primary"
-                icon={<SearchOutlined />}
-                onClick={handleBarcodeSubmit}
-                loading={loading}
-                block
-              >
-                Tìm kiếm
-              </Button>
-            </Col>
-          </Row>
-        </Space>
-      </Modal>
-
-      {/* Customer Selection Drawer */}
-      <Drawer
-        title="Chọn khách hàng"
-        placement="right"
-        open={customerVisible}
-        onClose={() => setCustomerVisible(false)}
-        width={500}
-      >
-        <CustomerLookup
-          onSelectCustomer={(selectedCustomer) => {
-            setCustomer(selectedCustomer);
-            setCustomerVisible(false);
-            setCurrentStep(Math.max(currentStep, 1));
-            message.success(`Đã chọn khách hàng: ${selectedCustomer.name}`);
-          }}
-          selectedCustomer={customer}
-        />
-      </Drawer>
-
       {/* Payment Modal */}
       <Modal
-        title={
-          <Space>
-            <CreditCardOutlined />
-            Thanh toán
-          </Space>
-        }
+        title="💳 Thanh toán"
         open={paymentVisible}
         onCancel={() => setPaymentVisible(false)}
         footer={null}
         width={600}
-        destroyOnClose
       >
-        <PaymentProcessor
-          ref={paymentRef}
-          total={orderTotal}
-          cart={cart}
-          customer={customer}
-          onPaymentSuccess={processPayment}
-          onCancel={() => setPaymentVisible(false)}
+        <PaymentForm
+          total={getTotalAmount()}
+          onPayment={processPayment}
+          loading={loading}
         />
       </Modal>
+    </div>
+  );
+};
 
-      {/* Success Modal */}
-      <Modal
-        title={
-          <Space>
-            <CheckCircleOutlined style={{ color: '#52c41a' }} />
-            Thanh toán thành công!
-          </Space>
-        }
-        open={currentStep === 3}
-        footer={null}
-        closable={false}
-        width={400}
-        centered
-      >
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <Progress
-            type="circle"
-            percent={100}
-            status="success"
-            format={() => <CheckCircleOutlined style={{ fontSize: 24 }} />}
-          />
-          
-          <div style={{ marginTop: 20 }}>
-            <Title level={4}>Đơn hàng đã được xử lý</Title>
-            <Text type="secondary">
-              Tổng tiền: {orderTotal.toLocaleString('vi-VN')} ₫
-            </Text>
+// Payment Form Component
+const PaymentForm = ({ total, onPayment, loading }) => {
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [receivedAmount, setReceivedAmount] = useState(total);
+
+  const handleSubmit = () => {
+    onPayment({
+      method: paymentMethod,
+      amount: total,
+      received: receivedAmount
+    });
+  };
+
+  const getChangeAmount = () => {
+    return Math.max(0, receivedAmount - total);
+  };
+
+  return (
+    <div>
+      <Card style={{ marginBottom: '16px' }}>
+        <Statistic
+          title="Tổng tiền thanh toán"
+          value={total}
+          suffix="VND"
+          valueStyle={{ color: '#52c41a', fontSize: '24px' }}
+        />
+      </Card>
+
+      <Tabs defaultActiveKey="cash" onChange={setPaymentMethod}>
+        <Tabs.TabPane tab="Tiền mặt" key="cash">
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <div>
+              <Text>Số tiền nhận:</Text>
+              <InputNumber
+                size="large"
+                value={receivedAmount}
+                onChange={setReceivedAmount}
+                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                style={{ width: '100%', marginTop: '8px' }}
+              />
+            </div>
             
-            {customer && loyaltyPoints > 0 && (
-              <div style={{ marginTop: 8 }}>
-                <Tag color="gold" icon={<GiftOutlined />}>
-                  +{loyaltyPoints} điểm thưởng
-                </Tag>
-              </div>
-            )}
-          </div>
-          
-          <div style={{ marginTop: 20 }}>
-            <Space>
-              <Button 
-                icon={<PrinterOutlined />}
-                onClick={() => printReceipt()}
-              >
-                In hóa đơn
-              </Button>
-              
-              <Button
-                type="primary"
-                onClick={() => {
-                  setCart([]);
-                  setCustomer(null);
-                  setCurrentStep(0);
-                  setDiscount(0);
-                  setPaymentVisible(false);
-                }}
-              >
-                Đơn hàng mới
-              </Button>
-            </Space>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Quick Actions Floating Button */}
-      <div className="pos-quick-actions">
-        <Space direction="vertical">
-          <Tooltip title="Hủy đơn hàng" placement="left">
-            <Button
-              type="primary"
-              danger
-              shape="circle"
-              icon={<CloseCircleOutlined />}
-              size="large"
-              onClick={clearCart}
-              disabled={cart.length === 0}
-            />
-          </Tooltip>
-          
-          <Tooltip title="Máy tính" placement="left">
-            <Button
-              type="default"
-              shape="circle"
-              icon={<CalculatorOutlined />}
-              size="large"
-              onClick={() => message.info('Tính năng máy tính đang phát triển...')}
-            />
-          </Tooltip>
-          
-          <Tooltip title="Ghi chú đơn hàng" placement="left">
-            <Button
-              type="default"
-              shape="circle"
-              icon={<TagOutlined />}
-              size="large"
-              onClick={() => message.info('Tính năng ghi chú đang phát triển...')}
-            />
-          </Tooltip>
-        </Space>
-      </div>
-
-      {/* Keyboard Shortcuts Helper */}
-      <div className="keyboard-shortcuts" style={{ display: 'none' }}>
-        <Card title="Phím tắt" size="small">
-          <Space direction="vertical" size="small">
-            <Text><kbd>F1</kbd> - Quét mã vạch</Text>
-            <Text><kbd>F2</kbd> - Chọn khách hàng</Text>
-            <Text><kbd>F3</kbd> - Thanh toán</Text>
-            <Text><kbd>F4</kbd> - Xóa giỏ hàng</Text>
-            <Text><kbd>Ctrl+Enter</kbd> - Hoàn tất thanh toán</Text>
+            <Card size="small" style={{ backgroundColor: '#f0f9ff' }}>
+              <Statistic
+                title="Tiền thừa"
+                value={getChangeAmount()}
+                suffix="VND"
+                valueStyle={{ color: '#1890ff' }}
+              />
+            </Card>
           </Space>
-        </Card>
+        </Tabs.TabPane>
+
+        <Tabs.TabPane tab="Thẻ" key="card">
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <CreditCardOutlined style={{ fontSize: '48px', color: '#1890ff' }} />
+            <p style={{ marginTop: '16px' }}>
+              Vui lòng quẹt thẻ hoặc chạm thẻ
+            </p>
+          </div>
+        </Tabs.TabPane>
+
+        <Tabs.TabPane tab="Chuyển khoản" key="transfer">
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <DollarOutlined style={{ fontSize: '48px', color: '#52c41a' }} />
+            <p style={{ marginTop: '16px' }}>
+              Quét mã QR để chuyển khoản
+            </p>
+          </div>
+        </Tabs.TabPane>
+      </Tabs>
+
+      <div style={{ marginTop: '24px', textAlign: 'right' }}>
+        <Space>
+          <Button size="large">
+            Hủy
+          </Button>
+          <Button
+            type="primary"
+            size="large"
+            loading={loading}
+            onClick={handleSubmit}
+            disabled={paymentMethod === 'cash' && receivedAmount < total}
+          >
+            Xác nhận thanh toán
+          </Button>
+        </Space>
       </div>
     </div>
   );
