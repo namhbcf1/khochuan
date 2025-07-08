@@ -374,10 +374,10 @@ const AdminLayout = () => {
         }}>
           {!collapsed ? (
             <Title level={4} style={{ color: 'white', margin: 0 }}>
-              🏪 Smart POS
+              🖥️ Trường Phát
             </Title>
           ) : (
-            <span style={{ fontSize: '24px' }}>🏪</span>
+            <span style={{ fontSize: '24px' }}>🖥️</span>
           )}
         </div>
 

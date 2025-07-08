@@ -239,10 +239,10 @@ const CashierLayout = () => {
         }}>
           {!collapsed ? (
             <Title level={4} style={{ color: 'white', margin: 0 }}>
-              💰 POS Terminal
+              🖥️ Trường Phát
             </Title>
           ) : (
-            <span style={{ fontSize: '24px' }}>💰</span>
+            <span style={{ fontSize: '24px' }}>🖥️</span>
           )}
         </div>
 

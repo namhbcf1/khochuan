@@ -144,7 +144,7 @@ const PerformanceOverview = () => {
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <Title level={2} style={{ margin: 0 }}>
-          🎮 Performance Dashboard
+          🖥️ Trường Phát Computer - Hiệu suất
         </Title>
         <Text type="secondary">
           Theo dõi hiệu suất và thành tích của bạn

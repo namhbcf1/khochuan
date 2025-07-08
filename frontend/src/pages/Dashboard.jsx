@@ -60,17 +60,17 @@ const Dashboard = () => {
   return (
     <div style={{ 
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #1677ff 0%, #0958d9 100%)',
       padding: '40px 20px'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <Title level={1} style={{ color: 'white', marginBottom: '16px' }}>
-            🏪 SmartPOS System
+            🖥️ Trường Phát Computer Hòa Bình
           </Title>
           <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '18px' }}>
-            Hệ thống quản lý bán hàng thông minh
+            Hệ thống quản lý bán hàng và kho hàng chuyên nghiệp
           </Text>
         </div>
 
@@ -113,7 +113,7 @@ const Dashboard = () => {
             >
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <Title level={2} style={{ color: 'white', marginBottom: '24px' }}>
-                  Chào mừng đến với SmartPOS! 👋
+                  Chào mừng đến với Trường Phát Computer! 👋
                 </Title>
                 <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px', display: 'block', marginBottom: '32px' }}>
                   Hệ thống quản lý bán hàng hiện đại với AI tích hợp, 
@@ -170,24 +170,24 @@ const Dashboard = () => {
                 <div style={{ display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                   <RiseOutlined style={{ color: '#52c41a', fontSize: '24px', marginRight: '12px' }} />
                   <div>
-                    <Text strong style={{ color: 'white', display: 'block' }}>AI Dự đoán</Text>
-                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Dự báo nhu cầu thông minh</Text>
+                    <Text strong style={{ color: 'white', display: 'block' }}>Quản lý kho hàng</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Theo dõi tồn kho thời gian thực</Text>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                   <TrophyOutlined style={{ color: '#fa8c16', fontSize: '24px', marginRight: '12px' }} />
                   <div>
-                    <Text strong style={{ color: 'white', display: 'block' }}>Gamification</Text>
-                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Động lực cho nhân viên</Text>
+                    <Text strong style={{ color: 'white', display: 'block' }}>Báo cáo bán hàng</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Phân tích doanh thu chi tiết</Text>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                   <UserOutlined style={{ color: '#1890ff', fontSize: '24px', marginRight: '12px' }} />
                   <div>
-                    <Text strong style={{ color: 'white', display: 'block' }}>CRM Tích hợp</Text>
-                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Quản lý khách hàng toàn diện</Text>
+                    <Text strong style={{ color: 'white', display: 'block' }}>Quản lý khách hàng</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Chăm sóc khách hàng toàn diện</Text>
                   </div>
                 </div>
               </Space>
@@ -199,7 +199,7 @@ const Dashboard = () => {
         <Row gutter={[24, 24]} style={{ marginTop: '40px' }}>
           <Col xs={24} lg={12}>
             <Card 
-              title={<span style={{ color: 'white' }}>Hiệu suất hệ thống</span>}
+              title={<span style={{ color: 'white' }}>Thông tin liên hệ</span>}
               style={{ 
                 background: 'rgba(255,255,255,0.1)',
                 border: 'none',
@@ -210,16 +210,16 @@ const Dashboard = () => {
             >
               <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                 <div>
-                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>CPU Usage</Text>
-                  <Progress percent={45} strokeColor="#52c41a" />
+                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>Hotline</Text>
+                  <div style={{ color: 'white', fontSize: '16px', fontWeight: 'bold', marginTop: '4px' }}>0836.768.597</div>
                 </div>
                 <div>
-                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>Memory Usage</Text>
-                  <Progress percent={67} strokeColor="#1890ff" />
+                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>Địa chỉ</Text>
+                  <div style={{ color: 'white', fontSize: '16px', fontWeight: 'bold', marginTop: '4px' }}>Hòa Bình, Việt Nam</div>
                 </div>
                 <div>
-                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>Storage</Text>
-                  <Progress percent={23} strokeColor="#722ed1" />
+                  <Text style={{ color: 'rgba(255,255,255,0.8)' }}>Email</Text>
+                  <div style={{ color: 'white', fontSize: '16px', fontWeight: 'bold', marginTop: '4px' }}>contact@truongphat.com</div>
                 </div>
               </Space>
             </Card>
@@ -254,15 +254,15 @@ const Dashboard = () => {
                 <Col span={12}>
                   <Statistic
                     title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Nhà cung cấp</span>}
-                    value={45}
-                    valueStyle={{ color: '#722ed1' }}
+                    value={56}
+                    valueStyle={{ color: '#fa8c16' }}
                   />
                 </Col>
                 <Col span={12}>
                   <Statistic
-                    title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Kho hàng</span>}
-                    value={3}
-                    valueStyle={{ color: '#fa8c16' }}
+                    title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Khách hàng thân thiết</span>}
+                    value={892}
+                    valueStyle={{ color: '#722ed1' }}
                   />
                 </Col>
               </Row>
@@ -271,10 +271,8 @@ const Dashboard = () => {
         </Row>
 
         {/* Footer */}
-        <div style={{ textAlign: 'center', marginTop: '40px', padding: '20px' }}>
-          <Text style={{ color: 'rgba(255,255,255,0.6)' }}>
-            © 2024 SmartPOS System. Phiên bản 1.0.0
-          </Text>
+        <div style={{ textAlign: 'center', marginTop: '40px', padding: '20px', color: 'rgba(255,255,255,0.6)' }}>
+          © 2023 Trường Phát Computer Hòa Bình. Tất cả quyền được bảo lưu.
         </div>
       </div>
     </div>

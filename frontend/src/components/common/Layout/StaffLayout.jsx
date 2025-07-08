@@ -254,9 +254,9 @@ const StaffLayout = () => {
         trigger={null}
         collapsible
         collapsed={collapsed}
-        width={280}
+        width={250}
         style={{
-          background: 'linear-gradient(135deg, #1890ff 0%, #722ed1 100%)',
+          background: '#001529',
           boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
         }}
       >
@@ -270,10 +270,10 @@ const StaffLayout = () => {
         }}>
           {!collapsed ? (
             <Title level={4} style={{ color: 'white', margin: 0 }}>
-              🎮 Staff Portal
+              🖥️ Trường Phát
             </Title>
           ) : (
-            <span style={{ fontSize: '24px' }}>🎮</span>
+            <span style={{ fontSize: '24px' }}>🖥️</span>
           )}
         </div>
 

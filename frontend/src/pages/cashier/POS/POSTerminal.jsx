@@ -197,7 +197,7 @@ const POSTerminal = () => {
         <Row justify="space-between" align="middle">
           <Col>
             <Title level={3} style={{ margin: 0 }}>
-              💳 POS Terminal
+              🖥️ Trường Phát Computer
             </Title>
           </Col>
           <Col>

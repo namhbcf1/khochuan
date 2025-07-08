@@ -426,6 +426,14 @@ const PersonalDashboard = () => {
 
   return (
     <div>
+      <Row gutter={[16, 16]} align="middle" style={{ marginBottom: '24px' }}>
+        <Col>
+          <Title level={2} style={{ margin: 0 }}>
+            👋 Chào mừng đến với Trường Phát Computer
+          </Title>
+        </Col>
+      </Row>
+
       <Row gutter={[0, 24]}>
         <Col span={24}>
           {renderProfile()}
