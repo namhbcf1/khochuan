@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=frontend",
-    "build": "npm run build --workspace=frontend",
+    "build": "cd frontend && npm install && npm run build",
     "deploy": "npm run build && echo 'Deploy completed'",
     "clean": "npm run clean --workspace=frontend",
     "backend:dev": "npm run dev --workspace=backend",
