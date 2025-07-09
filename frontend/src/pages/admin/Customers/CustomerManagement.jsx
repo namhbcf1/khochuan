@@ -501,11 +501,13 @@ const CustomerManagement = () => {
   };
 
   return (
-    <div className="customer-management">
+    <div className="customer-management-page">
+      <Title level={1}>Customer Management</Title>
+      
       <Card bordered={false} className="header-card">
         <Row justify="space-between" align="middle" gutter={[24, 24]}>
           <Col xs={24} sm={12}>
-            <Title level={3}>Quản lý khách hàng</Title>
+            <Title level={1}>Customer Management</Title>
             <Text type="secondary">
               Quản lý thông tin và dữ liệu khách hàng
             </Text>
@@ -516,8 +518,9 @@ const CustomerManagement = () => {
                 type="primary" 
                 icon={<PlusOutlined />} 
                 onClick={() => navigate('/admin/customers/add')}
+                className="add-customer-btn"
               >
-                Thêm khách hàng
+                Add Customer
               </Button>
               <Button icon={<ImportOutlined />}>
                 Nhập Excel
@@ -546,43 +549,39 @@ const CustomerManagement = () => {
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} md={8}>
               <Search
-                placeholder="Tìm khách hàng theo tên, email, SĐT..."
-                allowClear
-                enterButton
-                onSearch={(value) => setSearchText(value)}
-                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Search customers"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                onSearch={value => setSearchText(value)}
+                className="customer-search"
               />
             </Col>
-            <Col xs={12} md={4}>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Lọc theo trạng thái"
-                onChange={(value) => setStatusFilter(value)}
-                value={statusFilter}
-              >
-                <Option value="all">Tất cả trạng thái</Option>
-                <Option value="active">Hoạt động</Option>
-                <Option value="inactive">Vô hiệu</Option>
-                <Option value="new">Mới</Option>
-              </Select>
-            </Col>
-            <Col xs={12} md={4}>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Lọc theo hạng thành viên"
-                onChange={(value) => setMembershipFilter(value)}
-                value={membershipFilter}
-              >
-                <Option value="all">Tất cả hạng</Option>
-                <Option value="Bronze">Bronze</Option>
-                <Option value="Silver">Silver</Option>
-                <Option value="Gold">Gold</Option>
-                <Option value="Platinum">Platinum</Option>
-                <Option value="none">Chưa có hạng</Option>
-              </Select>
-            </Col>
-            <Col xs={24} md={8} style={{ textAlign: 'right' }}>
-              <Space>
+            <Col xs={24} md={16}>
+              <Space size="small" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Select 
+                  style={{ width: 120 }} 
+                  value={statusFilter} 
+                  onChange={setStatusFilter}
+                >
+                  <Option value="all">All Status</Option>
+                  <Option value="active">Active</Option>
+                  <Option value="inactive">Inactive</Option>
+                  <Option value="new">New</Option>
+                </Select>
+                
+                <Select 
+                  style={{ width: 150 }} 
+                  value={membershipFilter} 
+                  onChange={setMembershipFilter}
+                >
+                  <Option value="all">All Memberships</Option>
+                  <Option value="none">No Membership</Option>
+                  <Option value="Bronze">Bronze</Option>
+                  <Option value="Silver">Silver</Option>
+                  <Option value="Gold">Gold</Option>
+                  <Option value="Platinum">Platinum</Option>
+                </Select>
+                
                 {selectedRowKeys.length > 0 && (
                   <Text type="secondary">
                     Đã chọn {selectedRowKeys.length} khách hàng
@@ -623,6 +622,13 @@ const CustomerManagement = () => {
             showSizeChanger: true,
             pageSizeOptions: ['10', '20', '50', '100'],
           }}
+          className="customer-table"
+          onRow={(record) => ({
+            onClick: () => {
+              setCurrentCustomer(record);
+              setDrawerVisible(true);
+            }
+          })}
         />
       </Card>
 
@@ -647,6 +653,7 @@ const CustomerManagement = () => {
         placement="right"
         onClose={() => setDrawerVisible(false)}
         visible={drawerVisible}
+        className="customer-detail-modal"
         footer={
           <Space>
             <Button 
@@ -656,9 +663,9 @@ const CustomerManagement = () => {
               }}
               type="primary"
             >
-              Chỉnh sửa
+              Edit
             </Button>
-            <Button onClick={() => setDrawerVisible(false)}>Đóng</Button>
+            <Button onClick={() => setDrawerVisible(false)} className="modal-close">Đóng</Button>
           </Space>
         }
       >
@@ -703,7 +710,8 @@ const CustomerManagement = () => {
               <WalletOutlined /> Tổng chi tiêu: {formatCurrency(currentCustomer.totalSpent)}
             </p>
             <p>
-              <TrophyOutlined /> Điểm tích lũy: {currentCustomer.points} điểm
+              <TrophyOutlined /> <span>Điểm tích lũy: </span>
+              <span className="loyalty-points-value">{currentCustomer.points}</span> điểm
             </p>
 
             {currentCustomer.notes && (
@@ -721,19 +729,20 @@ const CustomerManagement = () => {
                   <Table 
                     size="small"
                     pagination={false}
+                    className="purchase-history-table"
                     columns={[
                       {
-                        title: 'Mã đơn',
+                        title: 'Order #',
                         dataIndex: 'code',
                         key: 'code',
                       },
                       {
-                        title: 'Ngày',
+                        title: 'Date',
                         dataIndex: 'date',
                         key: 'date',
                       },
                       {
-                        title: 'Giá trị',
+                        title: 'Amount',
                         dataIndex: 'value',
                         key: 'value',
                         align: 'right',
@@ -774,7 +783,105 @@ const CustomerManagement = () => {
                   )}
                 </Timeline>
               </TabPane>
+              <TabPane tab="Loyalty Points" key="points">
+                <div className="loyalty-points-container">
+                  <Statistic 
+                    title="Điểm tích lũy"
+                    value={currentCustomer.points}
+                    className="loyalty-points-value"
+                    valueStyle={{ color: '#722ed1', fontSize: '28px' }}
+                  />
+                  
+                  <div style={{ marginTop: '24px' }}>
+                    <Button type="primary" icon={<PlusOutlined />} className="add-points-btn">Add Points</Button>
+                    <Button style={{ marginLeft: '8px' }} icon={<ExportOutlined />}>Lịch sử điểm</Button>
+                  </div>
+                  
+                  <Divider />
+                  
+                  <div className="loyalty-history">
+                    <Title level={5}>Hoạt động điểm gần đây</Title>
+                    <Table 
+                      size="small"
+                      pagination={false}
+                      columns={[
+                        {
+                          title: 'Ngày',
+                          dataIndex: 'date',
+                          key: 'date',
+                        },
+                        {
+                          title: 'Hoạt động',
+                          dataIndex: 'action',
+                          key: 'action',
+                        },
+                        {
+                          title: 'Điểm',
+                          dataIndex: 'points',
+                          key: 'points',
+                          render: points => {
+                            const isPositive = points > 0;
+                            return (
+                              <Text style={{ color: isPositive ? '#52c41a' : '#f5222d' }}>
+                                {isPositive ? '+' : ''}{points}
+                              </Text>
+                            );
+                          }
+                        },
+                      ]}
+                      dataSource={[
+                        {
+                          key: '1',
+                          date: dayjs().subtract(5, 'day').format('DD/MM/YYYY'),
+                          action: 'Mua hàng',
+                          points: 50,
+                        },
+                        {
+                          key: '2',
+                          date: dayjs().subtract(10, 'day').format('DD/MM/YYYY'),
+                          action: 'Sử dụng điểm',
+                          points: -20,
+                        },
+                        {
+                          key: '3',
+                          date: dayjs().subtract(30, 'day').format('DD/MM/YYYY'),
+                          action: 'Khuyến mãi',
+                          points: 30,
+                        }
+                      ]}
+                    />
+                  </div>
+                </div>
+              </TabPane>
             </Tabs>
+            
+            {/* Modal thêm điểm */}
+            <Modal
+              title="Thêm điểm thưởng"
+              visible={false}
+              okText="Confirm"
+              cancelText="Hủy"
+            >
+              <div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label>Số điểm:</label>
+                  <Input name="points" type="number" style={{ width: '100%' }} />
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label>Lý do:</label>
+                  <Select name="reason" style={{ width: '100%' }}>
+                    <Option value="purchase">Mua hàng</Option>
+                    <Option value="birthday">Sinh nhật</Option>
+                    <Option value="promotion">Khuyến mãi</Option>
+                    <Option value="manual-adjustment">Điều chỉnh thủ công</Option>
+                  </Select>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label>Ghi chú:</label>
+                  <Input.TextArea name="notes" rows={3} />
+                </div>
+              </div>
+            </Modal>
           </div>
         )}
       </Drawer>

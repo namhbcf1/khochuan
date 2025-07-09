@@ -381,219 +381,190 @@ const CustomerSegmentation = () => {
     },
   ];
 
+  // Render component
   return (
-    <div className="customer-segmentation">
-      <Card bordered={false} className="header-card">
-        <Row justify="space-between" align="middle" gutter={[24, 24]}>
-          <Col xs={24} sm={12}>
-            <Title level={3}>Phân khúc khách hàng</Title>
-            <Text type="secondary">
-              Phân tích và phân khúc khách hàng để hiểu rõ hơn về đối tượng mục tiêu
-            </Text>
+    <div className="customer-segmentation-page">
+      <Title level={1}>Customer Segmentation</Title>
+      
+      <div className="segmentation-controls">
+        <Card>
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Space>
+                  <Select
+                    value={period}
+                    onChange={handlePeriodChange}
+                    style={{ width: 150 }}
+                  >
+                    <Option value="week">This Week</Option>
+                    <Option value="month">This Month</Option>
+                    <Option value="quarter">This Quarter</Option>
+                    <Option value="year">This Year</Option>
+                    <Option value="all">All Time</Option>
+                  </Select>
+                  
+                  <Button 
+                    type="primary" 
+                    icon={<PieChartOutlined />}
+                    loading={loading}
+                    onClick={() => {
+                      setLoading(true);
+                      setTimeout(() => setLoading(false), 2000);
+                    }}
+                  >
+                    Run Segmentation
+                  </Button>
+                </Space>
+              </Col>
+              <Col>
+                <Space>
+                  <Button icon={<DownloadOutlined />}>Export Segments</Button>
+                  <Button icon={<BarsOutlined />}>Segment Manager</Button>
+                </Space>
+              </Col>
+            </Row>
+            
+            {loading && (
+              <div className="processing-indicator">
+                <Alert
+                  message="Processing Customer Segmentation"
+                  description="AI is analyzing your customer data. This may take a few moments..."
+                  type="info"
+                  showIcon
+                />
+              </div>
+            )}
+          </Space>
+        </Card>
+      </div>
+      
+      <div className="segmentation-results">
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col xs={24} md={8}>
+            <Card title="Customer Segments" className="segments-summary">
+              <div className="segment-chart">
+                <Pie {...segmentPieConfig} />
+              </div>
+              
+              <Divider />
+              
+              <div className="segment-list">
+                {segmentData.map((segment, index) => (
+                  <div key={index} className="segment-item">
+                    <div className="segment-header">
+                      <Tag color={segment.color} style={{ marginRight: 8 }}>{segment.segment}</Tag>
+                      <Text strong>{segment.value}</Text>
+                      <Text type="secondary"> customers ({segment.percentage}%)</Text>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </Col>
-          <Col xs={24} sm={12}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>
-              <Select 
-                style={{ width: 120 }} 
-                value={period} 
-                onChange={handlePeriodChange}
-                loading={loading}
-              >
-                <Option value="month">30 ngày qua</Option>
-                <Option value="quarter">90 ngày qua</Option>
-                <Option value="year">365 ngày qua</Option>
-                <Option value="all">Tất cả thời gian</Option>
-              </Select>
-              
-              <Button 
-                icon={<ReloadOutlined />} 
-                onClick={() => {
-                  setLoading(true);
-                  setTimeout(() => setLoading(false), 1000);
-                }}
-                loading={loading}
-              >
-                Làm mới
-              </Button>
-              
-              <Button icon={<DownloadOutlined />} disabled={loading}>
-                Xuất báo cáo
-              </Button>
-            </div>
+          
+          <Col xs={24} md={16}>
+            <Card title="Customer Value Distribution" className="segment-details">
+              <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <div className="segment-value-chart">
+                    <Column
+                      data={customerValue}
+                      xField="category"
+                      yField="value"
+                      color={({ category }) => {
+                        const item = customerValue.find(d => d.category === category);
+                        return item ? item.color : '#1890ff';
+                      }}
+                    />
+                  </div>
+                </Col>
+                
+                <Col span={12}>
+                  <div className="segment-recency-chart">
+                    <Column
+                      data={recencyData}
+                      xField="time"
+                      yField="value"
+                      color="#1890ff"
+                    />
+                  </div>
+                </Col>
+              </Row>
+            </Card>
+            
+            <Card title="RFM Analysis" style={{ marginTop: 16 }} className="rfm-analysis segment-details">
+              <Heatmap {...rfmHeatmapConfig} />
+            </Card>
           </Col>
         </Row>
-      </Card>
-
-      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
-        <Col xs={24} sm={8}>
-          <Card bordered={false} loading={loading}>
-            <Statistic
-              title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <UserOutlined />
-                  <span>Tổng khách hàng</span>
-                </div>
-              }
-              value={1000}
-              suffix={
-                <div style={{ fontSize: '14px', color: '#52c41a' }}>
-                  <RiseOutlined /> +12.5% so với kỳ trước
-                </div>
-              }
-            />
-          </Card>
-        </Col>
         
-        <Col xs={24} sm={8}>
-          <Card bordered={false} loading={loading}>
-            <Statistic
-              title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <WalletOutlined />
-                  <span>Giá trị trung bình</span>
-                </div>
-              }
-              value={12450000}
-              precision={0}
-              formatter={(value) => formatCurrency(value)}
-              suffix={
-                <div style={{ fontSize: '14px', color: '#52c41a' }}>
-                  <RiseOutlined /> +8.3% so với kỳ trước
-                </div>
-              }
-            />
-          </Card>
-        </Col>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={24}>
+            <Card title="Top Customers" className="top-customers segment-details">
+              <Table
+                dataSource={topCustomers}
+                columns={[
+                  {
+                    title: 'Customer',
+                    dataIndex: 'name',
+                    key: 'name',
+                  },
+                  {
+                    title: 'Orders',
+                    dataIndex: 'orders',
+                    key: 'orders',
+                    sorter: (a, b) => a.orders - b.orders,
+                  },
+                  {
+                    title: 'Total Spent',
+                    dataIndex: 'totalSpent',
+                    key: 'totalSpent',
+                    render: (value) => formatCurrency(value),
+                    sorter: (a, b) => a.totalSpent - b.totalSpent,
+                  },
+                  {
+                    title: 'Last Order',
+                    dataIndex: 'lastOrder',
+                    key: 'lastOrder',
+                    render: (date) => dayjs(date).format('DD/MM/YYYY'),
+                  },
+                  {
+                    title: 'Segment',
+                    dataIndex: 'segment',
+                    key: 'segment',
+                    render: (segment) => {
+                      const colors = {
+                        'VIP': '#722ed1',
+                        'Trung thành': '#2f54eb',
+                        'Tiềm năng': '#1890ff',
+                      };
+                      return <Tag color={colors[segment] || '#d9d9d9'}>{segment}</Tag>;
+                    },
+                  },
+                ]}
+                pagination={false}
+              />
+            </Card>
+          </Col>
+        </Row>
         
-        <Col xs={24} sm={8}>
-          <Card bordered={false} loading={loading}>
-            <Statistic
-              title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ShoppingOutlined />
-                  <span>Tỷ lệ mua lại</span>
-                </div>
-              }
-              value={42.5}
-              suffix="%"
-              precision={1}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
-        <Col xs={24} lg={12}>
-          <Card 
-            title={<span><PieChartOutlined /> Phân khúc khách hàng</span>}
-            bordered={false}
-            loading={loading}
-          >
-            <Pie {...segmentPieConfig} height={300} />
-          </Card>
-        </Col>
-        
-        <Col xs={24} lg={12}>
-          <Tabs defaultActiveKey="value">
-            <TabPane 
-              tab={<span><WalletOutlined /> Phân bố giá trị</span>}
-              key="value"
-            >
-              <Card bordered={false} loading={loading} bodyStyle={{ padding: '12px' }}>
-                <Pie {...customerValuePieConfig} height={300} />
-              </Card>
-            </TabPane>
-            <TabPane 
-              tab={<span><ClockCircleOutlined /> Thời gian mua gần nhất</span>}
-              key="recency"
-            >
-              <Card bordered={false} loading={loading} bodyStyle={{ padding: '12px' }}>
-                <Column {...recencyBarConfig} height={300} />
-              </Card>
-            </TabPane>
-          </Tabs>
-        </Col>
-      </Row>
-
-      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
-        <Col xs={24} lg={12}>
-          <Card 
-            title={<span><FireOutlined /> Top khách hàng giá trị</span>}
-            bordered={false}
-            loading={loading}
-          >
-            <Table 
-              dataSource={topCustomers}
-              columns={topCustomersColumns}
-              pagination={false}
-              rowKey="id"
-            />
-          </Card>
-        </Col>
-        
-        <Col xs={24} lg={12}>
-          <Card 
-            title={<span><DotChartOutlined /> Phân bố khách hàng theo độ tuổi và giới tính</span>}
-            bordered={false}
-            loading={loading}
-          >
-            <Column {...ageDistributionConfig} height={300} />
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
-        <Col xs={24}>
-          <Card 
-            title={<span><BarsOutlined /> Giá trị khách hàng theo vòng đời</span>}
-            bordered={false}
-            loading={loading}
-          >
-            <div style={{ marginBottom: '16px' }}>
-              <Radio.Group defaultValue="stack" buttonStyle="solid">
-                <Radio.Button value="stack">Biểu đồ xếp chồng</Radio.Button>
-                <Radio.Button value="line">Biểu đồ đường</Radio.Button>
-              </Radio.Group>
-            </div>
-            <div style={{ height: '350px' }}>
-              {loading ? (
-                <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <Spin />
-                </div>
-              ) : (
-                <Column height={350} {...lifetimeValueConfig} data={lifetimeValueChartData} />
-              )}
-            </div>
-          </Card>
-        </Col>
-      </Row>
-      
-      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
-        <Col xs={24}>
-          <Alert
-            message="Phân tích phân khúc khách hàng RFM"
-            description={
-              <>
-                <Paragraph>
-                  Phân tích RFM là phương pháp phân tích khách hàng dựa trên ba chỉ số:
-                </Paragraph>
-                <ul>
-                  <li><strong>Recency (R):</strong> Độ gần đây của lần mua hàng cuối cùng</li>
-                  <li><strong>Frequency (F):</strong> Tần suất mua hàng</li>
-                  <li><strong>Monetary (M):</strong> Giá trị chi tiêu</li>
-                </ul>
-                <Paragraph>
-                  Mỗi khách hàng được chấm điểm từ 1-5 cho mỗi chỉ số, với 5 là tốt nhất. 
-                  Khách hàng có điểm cao ở cả 3 chỉ số (VIP) là đối tượng cần được chăm sóc đặc biệt.
-                </Paragraph>
-              </>
-            }
-            type="info"
-            showIcon
-          />
-        </Col>
-      </Row>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={24}>
+            <Card title="Lifetime Value Projection" className="segment-details">
+              <div className="lifetime-value-chart">
+                <Column
+                  data={lifetimeValueData}
+                  isStack={true}
+                  xField="month"
+                  yField={['Mới', '0-6 tháng', '6-12 tháng', '1-2 năm', 'Trên 2 năm']}
+                  legend={{ position: 'top' }}
+                />
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 };
