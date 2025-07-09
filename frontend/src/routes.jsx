@@ -12,6 +12,7 @@ const CustomerLayout = lazy(() => import('./components/common/Layout/CustomerLay
 
 // Auth Pages
 const Login = lazy(() => import('./pages/Login'));
+const HomePage = lazy(() => import('./pages/HomePage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 
 // Customer Pages
@@ -146,7 +147,7 @@ const AppRoutes = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<HomePage />} />
         
         {/* Customer Routes */}
         <Route path="/" element={<CustomerLayout />}>

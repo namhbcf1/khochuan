@@ -1,0 +1,90 @@
+<testsuites id="" name="" tests="6" failures="2" skipped="0" errors="0" time="13.302434">
+<testsuite name="basic-test.spec.js" timestamp="2025-07-09T13:25:10.390Z" hostname="chromium" tests="6" failures="2" skipped="0" time="30.657" errors="0">
+<testcase name="KhoChuan POS System Basic Tests › Homepage loads successfully" classname="basic-test.spec.js" time="1.767">
+</testcase>
+<testcase name="KhoChuan POS System Basic Tests › Admin login works" classname="basic-test.spec.js" time="12.11">
+<failure message="basic-test.spec.js:16:3 Admin login works" type="FAILURE">
+<![CDATA[  [chromium] › basic-test.spec.js:16:3 › KhoChuan POS System Basic Tests › Admin login works ───────
+
+    TimeoutError: page.waitForURL: Timeout 10000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/admin/dashboard" until "load"
+    ============================================================
+
+      24 |     
+      25 |     // Wait for redirect and check dashboard
+    > 26 |     await page.waitForURL('**/admin/dashboard', { timeout: 10000 });
+         |                ^
+      27 |     await expect(page.locator('h1, h2, h3')).toContainText('Dashboard');
+      28 |   });
+      29 |
+        at C:\Users\ADMIN\Desktop\kho augment\frontend\basic-test.spec.js:26:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\video.webm]]
+
+[[ATTACHMENT|basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="KhoChuan POS System Basic Tests › Cashier login redirects to POS" classname="basic-test.spec.js" time="12.089">
+<failure message="basic-test.spec.js:30:3 Cashier login redirects to POS" type="FAILURE">
+<![CDATA[  [chromium] › basic-test.spec.js:30:3 › KhoChuan POS System Basic Tests › Cashier login redirects to POS 
+
+    TimeoutError: page.waitForURL: Timeout 10000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/admin/pos" until "load"
+    ============================================================
+
+      38 |     
+      39 |     // Wait for redirect and check POS terminal
+    > 40 |     await page.waitForURL('**/admin/pos', { timeout: 10000 });
+         |                ^
+      41 |     await expect(page.locator('h1, h2, h3')).toContainText('POS Terminal');
+      42 |   });
+      43 |
+        at C:\Users\ADMIN\Desktop\kho augment\frontend\basic-test.spec.js:40:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\video.webm]]
+
+[[ATTACHMENT|basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="KhoChuan POS System Basic Tests › PWA manifest is accessible" classname="basic-test.spec.js" time="1.146">
+</testcase>
+<testcase name="KhoChuan POS System Basic Tests › Performance check - page loads within 5 seconds" classname="basic-test.spec.js" time="1.816">
+</testcase>
+<testcase name="KhoChuan POS System Basic Tests › Mobile responsiveness" classname="basic-test.spec.js" time="1.729">
+</testcase>
+</testsuite>
+</testsuites>
