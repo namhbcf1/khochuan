@@ -1,50 +1,63 @@
 #!/bin/bash
+set -e
 
-# Cloudflare Enterprise POS - Master Deployment Script
+# ANSI color codes
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-echo "🚀 Deploying Cloudflare Enterprise POS System..."
+echo -e "${BLUE}╔═══════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║                                                   ║${NC}"
+echo -e "${BLUE}║            ${GREEN}KHOCHUAN POS DEPLOYMENT${BLUE}              ║${NC}"
+echo -e "${BLUE}║                                                   ║${NC}"
+echo -e "${BLUE}╚═══════════════════════════════════════════════════╝${NC}"
+echo ""
 
-# Check if user is logged in to Cloudflare
+# Check if Wrangler is installed
+if ! command -v wrangler &> /dev/null; then
+    echo -e "${RED}Error: Wrangler CLI is not installed. Please run setup.sh first.${NC}"
+    exit 1
+fi
+
+# Check Cloudflare login
+echo -e "${BLUE}Checking Cloudflare authentication...${NC}"
 if ! wrangler whoami &> /dev/null; then
-    echo "❌ Please login to Cloudflare first: wrangler auth login"
-    exit 1
+    echo -e "${YELLOW}You need to log in to Cloudflare first.${NC}"
+    wrangler login
 fi
 
-# Deploy backend first
-echo "📡 Deploying backend (Cloudflare Workers)..."
+# Building frontend
+echo -e "${BLUE}Building frontend...${NC}"
+cd frontend
+npm ci
+npm run build
+cd ..
+echo -e "${GREEN}✓ Frontend build complete${NC}"
+
+# Deploying frontend to Cloudflare Pages
+echo -e "${BLUE}Deploying frontend to Cloudflare Pages...${NC}"
+wrangler pages deploy frontend/dist --project-name=khochuan-pos
+echo -e "${GREEN}✓ Frontend deployed to Cloudflare Pages${NC}"
+
+# Deploying backend to Cloudflare Workers
+echo -e "${BLUE}Deploying backend to Cloudflare Workers...${NC}"
 cd backend
-npm run deploy
+npm ci
+wrangler deploy
+echo -e "${GREEN}✓ Backend deployed to Cloudflare Workers${NC}"
 
-if [ $? -eq 0 ]; then
-    echo "✅ Backend deployed successfully!"
-else
-    echo "❌ Backend deployment failed!"
-    exit 1
-fi
-
-# Deploy frontend
-echo "🎨 Deploying frontend (Cloudflare Pages)..."
-cd ../frontend
-npm run deploy
-
-if [ $? -eq 0 ]; then
-    echo "✅ Frontend deployed successfully!"
-else
-    echo "❌ Frontend deployment failed!"
-    exit 1
-fi
-
+# Running database migrations
+echo -e "${BLUE}Running database migrations...${NC}"
+wrangler d1 migrations apply pos-database
+echo -e "${GREEN}✓ Database migrations applied${NC}"
 cd ..
 
 echo ""
-echo "🎉 Deployment Complete!"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📱 Frontend: https://cloudflare-enterprise-pos.pages.dev"
-echo "📡 Backend API: https://enterprise-pos-backend.your-subdomain.workers.dev"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo -e "${GREEN}✅ Deployment complete!${NC}"
 echo ""
-echo "🔧 Next steps:"
-echo "1. Update frontend .env with your backend API URL"
-echo "2. Run health check: npm run health"
-echo "3. Access admin panel with default credentials"
+echo -e "${BLUE}Your application is now available at:${NC}"
+echo -e "${YELLOW}Frontend: https://khochuan-pos.pages.dev${NC}"
+echo -e "${YELLOW}Backend API: https://khochuan-api.<your-subdomain>.workers.dev${NC}"
 echo "" 

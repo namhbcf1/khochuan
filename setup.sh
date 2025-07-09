@@ -1,103 +1,112 @@
 #!/bin/bash
+set -e
 
-# Cloudflare Enterprise POS - Setup Script
+# ANSI color codes
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-echo "🚀 Setting up Cloudflare Enterprise POS System..."
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+# Print KhoChuan Logo
+echo -e "${BLUE}╔═══════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║                                                   ║${NC}"
+echo -e "${BLUE}║  ${GREEN}██╗  ██╗██╗  ██╗ ██████╗  ██████╗██╗  ██╗██╗   ██╗ █████╗ ███╗   ██╗${BLUE}  ║${NC}"
+echo -e "${BLUE}║  ${GREEN}██║ ██╔╝██║  ██║██╔═══██╗██╔════╝██║  ██║██║   ██║██╔══██╗████╗  ██║${BLUE}  ║${NC}"
+echo -e "${BLUE}║  ${GREEN}█████╔╝ ███████║██║   ██║██║     ███████║██║   ██║███████║██╔██╗ ██║${BLUE}  ║${NC}"
+echo -e "${BLUE}║  ${GREEN}██╔═██╗ ██╔══██║██║   ██║██║     ██╔══██║██║   ██║██╔══██║██║╚██╗██║${BLUE}  ║${NC}"
+echo -e "${BLUE}║  ${GREEN}██║  ██╗██║  ██║╚██████╔╝╚██████╗██║  ██║╚██████╔╝██║  ██║██║ ╚████║${BLUE}  ║${NC}"
+echo -e "${BLUE}║  ${GREEN}╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝${BLUE}  ║${NC}"
+echo -e "${BLUE}║                                                   ║${NC}"
+echo -e "${BLUE}║               ${YELLOW}POS System Setup${BLUE}                   ║${NC}"
+echo -e "${BLUE}╚═══════════════════════════════════════════════════╝${NC}"
+echo ""
 
-# Check if wrangler is installed
-if ! command -v wrangler &> /dev/null; then
-    echo "📦 Installing Wrangler CLI..."
-    npm install -g wrangler@latest
+# Check Node.js version
+echo -e "${BLUE}Checking Node.js version...${NC}"
+if ! command -v node &> /dev/null; then
+    echo -e "${RED}Node.js is not installed. Please install Node.js 18 or higher.${NC}"
+    exit 1
 fi
 
-# Check if user is logged in
-echo "🔐 Checking Cloudflare authentication..."
-if ! wrangler whoami &> /dev/null; then
-    echo "Please login to Cloudflare..."
-    wrangler auth login
+NODE_VERSION=$(node -v)
+echo -e "${GREEN}Node.js version: $NODE_VERSION${NC}"
+
+# Check if version is at least 18
+NODE_MAJOR_VERSION=$(echo $NODE_VERSION | cut -d'.' -f1 | tr -d 'v')
+if [ $NODE_MAJOR_VERSION -lt 18 ]; then
+    echo -e "${RED}Node.js version 18 or higher is required. Please upgrade Node.js.${NC}"
+    exit 1
 fi
 
-echo "✅ Cloudflare authentication successful!"
+# Check for Git
+echo -e "${BLUE}Checking Git installation...${NC}"
+if ! command -v git &> /dev/null; then
+    echo -e "${RED}Git is not installed. Please install Git.${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Git is installed.${NC}"
 
-# Install root dependencies
-echo "📦 Installing root dependencies..."
+# Create environment files if they don't exist
+echo -e "${BLUE}Creating environment files...${NC}"
+if [ ! -f ".env" ]; then
+    cp env.example .env
+    echo -e "${GREEN}Created .env from template${NC}"
+else
+    echo -e "${YELLOW}Using existing .env file${NC}"
+fi
+
+if [ ! -f "frontend/.env" ]; then
+    cp frontend/env.example frontend/.env
+    echo -e "${GREEN}Created frontend/.env from template${NC}"
+else
+    echo -e "${YELLOW}Using existing frontend/.env file${NC}"
+fi
+
+if [ ! -f "backend/.env" ]; then
+    cp backend/env.example backend/.env
+    echo -e "${GREEN}Created backend/.env from template${NC}"
+else
+    echo -e "${YELLOW}Using existing backend/.env file${NC}"
+fi
+
+# Install dependencies
+echo -e "${BLUE}Installing project dependencies...${NC}"
 npm install
 
-# Setup backend
-echo "🔧 Setting up backend (Cloudflare Workers)..."
-cd backend
-npm install
-
-echo "🗄️ Creating Cloudflare resources..."
-
-# Create D1 database
-echo "Creating D1 database..."
-DB_OUTPUT=$(wrangler d1 create enterprise-pos-db 2>/dev/null)
-if [ $? -eq 0 ]; then
-    DB_ID=$(echo "$DB_OUTPUT" | grep -o 'database_id = "[^"]*"' | cut -d'"' -f2)
-    echo "✅ D1 Database created: $DB_ID"
-else
-    echo "⚠️  D1 Database may already exist"
-fi
-
-# Create KV namespace
-echo "Creating KV namespace..."
-KV_OUTPUT=$(wrangler kv:namespace create "CACHE" 2>/dev/null)
-if [ $? -eq 0 ]; then
-    KV_ID=$(echo "$KV_OUTPUT" | grep -o 'id = "[^"]*"' | cut -d'"' -f2)
-    echo "✅ KV Namespace created: $KV_ID"
-else
-    echo "⚠️  KV Namespace may already exist"
-fi
-
-# Create R2 bucket
-echo "Creating R2 bucket..."
-wrangler r2 bucket create enterprise-pos-files 2>/dev/null
-if [ $? -eq 0 ]; then
-    echo "✅ R2 Bucket created: enterprise-pos-files"
-else
-    echo "⚠️  R2 Bucket may already exist"
-fi
-
-cd ..
-
-# Setup frontend
-echo "🎨 Setting up frontend (Cloudflare Pages)..."
+echo -e "${BLUE}Installing frontend dependencies...${NC}"
 cd frontend
 npm install
-
-# Copy environment file
-if [ ! -f .env ]; then
-    cp .env.example .env
-    echo "✅ Frontend environment file created"
-fi
-
 cd ..
 
-echo ""
-echo "🎉 Setup Complete!"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📝 Next steps:"
-echo ""
-echo "1. Update backend/wrangler.toml with your resource IDs:"
-if [ ! -z "$DB_ID" ]; then
-    echo "   database_id = \"$DB_ID\""
+echo -e "${BLUE}Installing backend dependencies...${NC}"
+cd backend
+npm install
+cd ..
+
+# Check for Wrangler
+echo -e "${BLUE}Checking Wrangler installation...${NC}"
+if ! command -v wrangler &> /dev/null; then
+    echo -e "${YELLOW}Wrangler CLI is not installed. Installing globally...${NC}"
+    npm install -g wrangler
+    echo -e "${GREEN}Wrangler installed.${NC}"
+else
+    echo -e "${GREEN}Wrangler is already installed.${NC}"
 fi
-if [ ! -z "$KV_ID" ]; then
-    echo "   KV id = \"$KV_ID\""
-fi
+
+# Setup complete
 echo ""
-echo "2. Run database migrations:"
-echo "   npm run migrate"
+echo -e "${GREEN}✅ Setup complete!${NC}"
 echo ""
-echo "3. Seed initial data:"
-echo "   npm run seed"
+echo -e "${BLUE}Next steps:${NC}"
+echo -e "1. Configure your environment variables in the .env files"
+echo -e "2. Start development:"
+echo -e "   - Frontend: ${YELLOW}cd frontend && npm run dev${NC}"
+echo -e "   - Backend: ${YELLOW}cd backend && npm run dev${NC}"
 echo ""
-echo "4. Start development:"
-echo "   npm run dev"
+echo -e "${BLUE}For deployment to Cloudflare:${NC}"
+echo -e "1. Create a GitHub repository and push your code"
+echo -e "2. Set up GitHub Secrets for Cloudflare deployment"
+echo -e "3. Run GitHub Actions workflows to deploy"
 echo ""
-echo "5. Deploy to production:"
-echo "   npm run deploy"
-echo ""
-echo "🚀 Happy coding!" 
+echo -e "${GREEN}Thank you for using KhoChuan POS!${NC}" 

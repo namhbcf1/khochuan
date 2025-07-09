@@ -1,73 +1,52 @@
-name = "smart-pos-api"
+name = "khochuan-api"
 main = "src/index.js"
 compatibility_date = "2024-01-15"
 compatibility_flags = ["nodejs_compat"]
 
 [env.production]
-name = "smart-pos-api"
-route = { pattern = "api.smartpos.dev/*", zone_name = "smartpos.dev" }
+name = "khochuan-api"
 
 [env.staging]
-name = "smart-pos-api-staging"
+name = "khochuan-api-staging"
 
 # D1 Database Configuration
 [[d1_databases]]
 binding = "DB"
-database_name = "smart-pos-db"
-database_id = "your-d1-database-id"
+database_name = "pos-database"
+database_id = "YOUR_D1_DATABASE_ID" # Update this after creating the database
 
 # KV Storage Configuration
 [[kv_namespaces]]
 binding = "CACHE"
-id = "your-kv-namespace-id"
-preview_id = "your-kv-preview-id"
+id = "YOUR_KV_NAMESPACE_ID" # Update this after creating the KV namespace
 
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "your-sessions-kv-id"
-preview_id = "your-sessions-preview-id"
+id = "YOUR_SESSIONS_KV_ID" # Update this after creating the KV namespace
 
 # R2 Storage Configuration
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "smart-pos-files"
+bucket_name = "khochuan-files"
 
 # Environment Variables
 [vars]
 ENVIRONMENT = "production"
-JWT_SECRET = "your-jwt-secret-key"
-ENCRYPTION_KEY = "your-encryption-key"
+JWT_SECRET = "YOUR_JWT_SECRET" # Change this in production
 API_VERSION = "v1"
-CORS_ORIGIN = "https://smartpos.pages.dev"
+CORS_ORIGIN = "https://khochuan-pos.pages.dev"
 
-# AI Configuration
-[ai]
-binding = "AI"
+# Analytics Engine
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "khochuan_events"
 
 # Durable Objects
 [[durable_objects.bindings]]
 name = "REALTIME"
 class_name = "RealtimeHandler"
 
-# Analytics Engine
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-dataset = "smart_pos_events"
-
-# Services (for microservices communication)
-[[services]]
-binding = "PAYMENT_SERVICE"
-service = "payment-processor"
-
-# Limits and Performance
-[build]
-command = "npm run build"
-cwd = "."
-
-[placement]
-mode = "smart"
-
 # Development Configuration
 [env.development]
-name = "smart-pos-api-dev"
-vars = { ENVIRONMENT = "development", CORS_ORIGIN = "http://localhost:3000" }
+name = "khochuan-api-dev"
+vars = { ENVIRONMENT = "development", CORS_ORIGIN = "http://localhost:5173" }

@@ -1,133 +1,314 @@
-# Smart POS System
+# Khochuan - Hệ thống Quản lý Bán hàng Thông minh
+
+![Khochuan POS](frontend/public/logo.svg)
 
 ## Giới thiệu
 
-Hệ thống POS thông minh với tính năng game hóa, AI, và đa kênh bán hàng. Được phát triển với React, Node.js, và hệ thống cơ sở dữ liệu hiện đại.
+Khochuan là một hệ thống quản lý bán hàng toàn diện được phát triển cho doanh nghiệp bán lẻ, kết hợp giữa hệ thống POS (Point of Sale), quản lý kho hàng, phân tích dữ liệu và công nghệ AI để cung cấp một giải pháp bán hàng thông minh.
+
+> **Lưu ý về script trên Windows**: Nếu bạn đang sử dụng Windows, hãy đảm bảo các script `.sh` có thể thực thi bằng cách sử dụng Git Bash hoặc WSL. Trong một số trường hợp, bạn có thể cần chạy `chmod +x *.sh` trong môi trường bash để đảm bảo script có quyền thực thi.
 
 ## Cấu trúc hệ thống
 
-Hệ thống được chia thành hai phần chính:
+Hệ thống được xây dựng theo kiến trúc client-server hiện đại:
 
 ### Frontend
-- Giao diện người dùng phân quyền theo vai trò (Admin, Thu ngân, Nhân viên)
-- Được phát triển với React, Ant Design và các công nghệ hiện đại
-- Hỗ trợ game hóa để tăng năng suất nhân viên
-- Trực quan hóa dữ liệu và báo cáo
-- Tích hợp AI cho việc gợi ý và dự báo
+- **Framework**: React.js + Vite, triển khai trên Cloudflare Pages
+- **UI Framework**: Ant Design (antd)
+- **State Management**: React Context API
+- **Routing**: React Router Dom
 
 ### Backend
-- API RESTful phát triển với Node.js
-- Xác thực và phân quyền chi tiết
-- Tích hợp AI và ML cho phân tích
-- Xử lý thanh toán đa kênh
-- Đồng bộ dữ liệu real-time
+- **Runtime**: Node.js + Express.js, triển khai trên Cloudflare Workers
+- **Database**: SQL (thông qua Cloudflare D1)
+- **Authentication**: JWT (JSON Web Tokens)
+- **API RESTful**
 
 ## Các vai trò người dùng
 
-### Admin
-- Quản lý toàn diện hệ thống
-- Truy cập vào tất cả tính năng và báo cáo
-- Cấu hình và tùy chỉnh hệ thống
+### Admin (Quản trị viên)
+- ✅ **Toàn quyền** trên tất cả modules
+- 🎯 Dashboard BI toàn diện
+- 🤖 Cấu hình AI/ML
+- ⚙️ Quản lý hệ thống
 
-### Thu ngân
-- Xử lý giao dịch bán hàng
-- Quản lý đơn hàng và đổi trả
-- Truy cập thông tin khách hàng
+### Cashier (Thu ngân)
+- ✅ **POS Terminal**
+- 🛒 Xử lý đơn hàng
+- 👤 Tra cứu khách hàng
+- 🧾 In hóa đơn
 
-### Nhân viên
-- Theo dõi hiệu suất cá nhân
-- Tham gia hệ thống game hóa
-- Truy cập thông tin bán hàng và đào tạo
+### Staff (Nhân viên)
+- ✅ **Dashboard cá nhân**
+- 🎮 Hệ thống game hóa
+- 📈 Hiệu suất cá nhân
+- 🏆 Thành tích và thử thách
+
+### Customer (Khách hàng)
+- ✅ **Thông tin cá nhân**
+- 🛍️ Lịch sử đơn hàng
+- 🎁 Điểm tích lũy
+- 🔔 Thông báo ưu đãi
 
 ## Tính năng nổi bật
 
-### Game hóa
-- Hệ thống thứ hạng và cấp độ
-- Thành tích và phần thưởng
-- Bảng xếp hạng và cuộc thi
-- Thử thách và mục tiêu
+### Game hóa cho nhân viên
+- 🏆 Bảng xếp hạng và thách thức
+- 🥇 Hệ thống huy hiệu và thành tích
+- 🎯 Mục tiêu cá nhân và nhóm
+- 🎁 Phần thưởng và ghi nhận
 
-### AI và phân tích
-- Dự báo nhu cầu
-- Phân khúc khách hàng
-- Tối ưu giá
-- Gợi ý sản phẩm
-
-### Quản lý kho thông minh
-- Theo dõi tồn kho thời gian thực
-- Cảnh báo khi hàng sắp hết
-- Đề xuất nhập hàng
-- Phân tích biến động kho
+### Phân tích AI thông minh
+- 👥 Phân khúc khách hàng tự động
+- 📊 Dự báo nhu cầu dựa trên dữ liệu lịch sử
+- 💰 Tối ưu hóa giá dựa trên xu hướng thị trường
+- 🛒 Gợi ý sản phẩm cho khách hàng
 
 ### Tích hợp đa kênh
-- Đồng bộ với các sàn TMĐT: Shopee, Lazada, Tiki
-- Quản lý đơn hàng từ nhiều nguồn
-- Báo cáo hiệu suất bán hàng đa kênh
+- 🌐 Đồng bộ với sàn TMĐT (Shopee, Lazada, Tiki)
+- 📱 Kết nối mạng xã hội và marketing
+- 📦 Quản lý đơn hàng từ nhiều nguồn
+- 👤 Trải nghiệm khách hàng nhất quán
 
-## Kiến trúc frontend
+## Hướng dẫn Bắt đầu
 
-Dự án tuân theo cấu trúc thư mục rõ ràng để dễ bảo trì và mở rộng:
+Để bắt đầu với dự án Khochuan POS, hãy làm theo các bước sau:
 
-```
-client/src/
-├── auth/                        # Hệ thống xác thực & phân quyền
-├── components/                  # Components dùng chung
-│   ├── common/                  # Components cơ bản
-│   ├── ui/                      # UI Components tái sử dụng
-│   └── features/                # Feature-specific components
-├── pages/                       # Các trang chính theo role
-│   ├── admin/                   # Giao diện Quản trị viên
-│   ├── cashier/                 # Giao diện Thu ngân
-│   └── staff/                   # Giao diện Nhân viên (Game hóa)
-├── services/                    # Services & APIs
-│   ├── api/                     # API clients
-│   ├── ai/                      # AI Services
-│   ├── hardware/                # Hardware integrations
-│   ├── ecommerce/               # E-commerce integrations
-│   └── notifications/           # Notification services
-├── utils/                       # Utilities & Helpers
-├── styles/                      # Styles & Themes
-├── assets/                      # Static assets
-└── __tests__/                   # Tests
+### 1. Cài đặt các công cụ cần thiết
+
+- [Node.js](https://nodejs.org/) (phiên bản 18 trở lên)
+- [Git](https://git-scm.com/)
+- Trình soạn thảo code (VS Code được khuyến nghị)
+
+### 2. Clone dự án
+
+```bash
+# Clone repository
+git clone https://github.com/your-username/khochuan-pos.git
+cd khochuan-pos
 ```
 
-## Trạng thái triển khai
+### 3. Chạy script cài đặt
 
-- ✅ Cấu trúc thư mục và kiến trúc ứng dụng
-- ✅ Hệ thống xác thực và phân quyền
-- ✅ Giao diện Admin
-- ✅ Giao diện Thu ngân
-- ✅ Giao diện Nhân viên với game hóa
-- ✅ Ma trận phân quyền chi tiết
-- ⏳ Tích hợp AI (đang phát triển)
-- ⏳ Tích hợp sàn TMĐT (đang phát triển)
-- ⏳ Kết nối phần cứng (đang phát triển)
+Script cài đặt sẽ giúp bạn thiết lập môi trường phát triển.
 
-## Hướng dẫn cài đặt
+```bash
+# Trên Linux/Mac
+chmod +x setup.sh
+./setup.sh
+
+# Trên Windows
+./setup.sh
+# hoặc
+bash setup.sh
+```
+
+### 4. Phát triển cục bộ
+
+Để chạy dự án trên máy tính cục bộ:
+
+```bash
+# Chạy backend
+cd backend
+npm run dev
+
+# Trong terminal khác, chạy frontend
+cd frontend
+npm run dev
+```
+
+Frontend sẽ chạy tại `http://localhost:5173`, backend API sẽ chạy tại `http://localhost:8787`.
+
+### 5. Các lệnh hữu ích
+
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Kiểm tra code frontend
+cd frontend
+npm run lint
+
+# Chạy tests
+cd frontend
+npm test
+
+# Deploy toàn bộ hệ thống
+./deploy-all.sh
+```
+
+## Hướng dẫn triển khai
 
 ### Yêu cầu hệ thống
-- Node.js 14+
-- NPM hoặc Yarn
-- MongoDB 4+
+- Node.js 18+
+- Git
+- Tài khoản GitHub
+- Tài khoản Cloudflare (để triển khai)
 
-### Cài đặt frontend
+### 1. Chuẩn bị triển khai
+
+#### Sao chép dự án
 ```bash
+# Clone repository
+git clone https://github.com/your-username/khochuan-pos.git
+cd khochuan-pos
+
+# Cài đặt dependencies
+npm install
+
+# Cài đặt dependencies frontend
 cd frontend
 npm install
-npm start
-```
+cd ..
 
-### Cài đặt backend
-```bash
+# Cài đặt dependencies backend
 cd backend
 npm install
-npm start
+cd ..
 ```
 
-## Đăng nhập thử nghiệm
+#### Cấu hình môi trường
+
+1. Sao chép file môi trường mẫu:
+```bash
+cp env.example .env
+cp frontend/env.example frontend/.env
+cp backend/env.example backend/.env
+```
+
+2. Chỉnh sửa file `.env` với thông tin phù hợp
+3. Cấu hình Cloudflare:
+   - Tạo tài khoản Cloudflare (nếu chưa có)
+   - Tạo Cloudflare API Token với quyền Workers và Pages
+
+### 2. Triển khai lên GitHub
+
+```bash
+# Khởi tạo repository trên GitHub và liên kết
+git remote add origin https://github.com/your-username/khochuan-pos.git
+git branch -M main
+git push -u origin main
+```
+
+### 3. Cấu hình GitHub Secrets
+
+Thêm các secrets sau vào repository GitHub:
+
+- `CLOUDFLARE_API_TOKEN`: Token API của Cloudflare
+- `CLOUDFLARE_ACCOUNT_ID`: ID tài khoản Cloudflare
+- `VITE_API_URL`: URL của backend API
+- `VITE_API_KEY`: API key (nếu có)
+- `DATABASE_URL`: URL kết nối database
+- `JWT_SECRET`: Khóa bí mật cho JWT
+
+### 4. Triển khai lên Cloudflare
+
+#### Triển khai Frontend (Cloudflare Pages)
+
+1. Từ dashboard Cloudflare, chọn "Pages"
+2. Chọn "Create a project"
+3. Kết nối với GitHub và chọn repository
+4. Cấu hình như sau:
+   - **Framework preset**: Vite
+   - **Build command**: `cd frontend && npm install --include=dev && npm run build`
+   - **Build output directory**: `frontend/dist`
+   - **Environment variables**: Thêm các biến môi trường cần thiết từ `frontend/.env`
+
+#### Triển khai Backend (Cloudflare Workers)
+
+1. Cài đặt Wrangler CLI:
+```bash
+npm install -g wrangler
+```
+
+2. Đăng nhập vào Cloudflare:
+```bash
+wrangler login
+```
+
+3. Cấu hình D1 Database:
+```bash
+# Tạo database
+wrangler d1 create khochuan-pos
+
+# Thêm ID database vào wrangler.toml
+# [d1_databases]
+# binding = "DB"
+# database_name = "khochuan-pos"
+# database_id = "<DATABASE_ID>"
+```
+
+4. Chạy migrations:
+```bash
+cd backend
+wrangler d1 migrations apply khochuan-pos --local
+```
+
+5. Deploy backend:
+```bash
+cd backend
+wrangler deploy
+```
+
+### 5. Tự động hóa với GitHub Actions
+
+Dự án đã được cấu hình với GitHub Actions để tự động triển khai:
+- `.github/workflows/deploy-frontend.yml`: Tự động triển khai frontend lên Cloudflare Pages khi có push vào branch main
+- `.github/workflows/deploy-backend.yml`: Tự động triển khai backend lên Cloudflare Workers khi có push vào branch main
+
+Sau khi thiết lập GitHub Secrets và đẩy code lên, workflows sẽ tự động chạy.
+
+## Cấu trúc dự án
+
+```
+khochuan/
+├── 🔧 backend/                     # Backend API & Server
+│   ├── database/                  # Database migrations & schema
+│   ├── src/                       # Source code
+│   │   ├── ai/                    # AI services
+│   │   ├── controllers/           # Request controllers
+│   │   ├── middleware/            # Middleware
+│   │   ├── routes/                # API routes
+│   │   ├── services/              # Business logic
+│   │   ├── utils/                 # Utilities
+│   │   ├── websocket/             # WebSocket
+│   │   └── index.js               # Main entry point
+│   └── wrangler.toml              # Cloudflare configuration
+│
+└── 🎨 frontend/                    # Frontend client application
+    ├── src/                       # Source code
+    │   ├── auth/                  # Authentication
+    │   ├── components/            # React components
+    │   ├── contexts/              # React contexts
+    │   ├── hooks/                 # Custom hooks
+    │   ├── pages/                 # App pages
+    │   ├── services/              # API services
+    │   ├── styles/                # CSS & styling
+    │   └── utils/                 # Utilities
+    └── vite.config.js             # Vite configuration
+```
+
+## Thử nghiệm hệ thống
+
+Sau khi triển khai, hệ thống có thể truy cập tại:
+- **Frontend**: https://khochuan-pos.pages.dev
+- **Backend API**: https://khochuan-api.your-subdomain.workers.dev
+
+### Đăng nhập thử nghiệm
 
 Sử dụng các tài khoản sau để trải nghiệm hệ thống:
 
-- Admin: admin@example.com / password
-- Thu ngân: cashier@example.com / password
-- Nhân viên: staff@example.com / password 
+- **Admin**: admin@khochuan.com / Khochuan@2023
+- **Thu ngân**: cashier@khochuan.com / Khochuan@2023
+- **Nhân viên**: staff@khochuan.com / Khochuan@2023
+
+## Liên hệ và hỗ trợ
+
+Nếu cần hỗ trợ hoặc có câu hỏi, vui lòng liên hệ:
+- Email: support@khochuan.com
+- GitHub Issues: https://github.com/your-username/khochuan-pos/issues
+
+---
+
+© 2023 Khochuan POS - Hệ thống quản lý bán hàng thông minh 
