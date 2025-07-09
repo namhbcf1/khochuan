@@ -39,8 +39,12 @@ const Login = () => {
     setLoginError('');
     
     try {
-      const { username, password, remember } = values;
-      await login(username, password, remember);
+      const { email, password, remember } = values;
+      const result = await login({ email, password, remember });
+      
+      if (!result.success) {
+        setLoginError(result.error || 'Đăng nhập không thành công. Vui lòng kiểm tra thông tin đăng nhập.');
+      }
       // Chuyển hướng sẽ được xử lý bởi useEffect
     } catch (error) {
       console.error('Login error:', error);
@@ -76,7 +80,7 @@ const Login = () => {
               }}
             >
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <Title level={2} style={{ marginBottom: 0 }}>🖥️ Trường Phát POS</Title>
+                <Title level={2} style={{ marginBottom: 0 }}>🖥️ Khochuan POS</Title>
                 <Paragraph type="secondary">Đăng nhập để tiếp tục</Paragraph>
               </div>
 
@@ -101,18 +105,22 @@ const Login = () => {
                 }}
               >
                 <Form.Item
-                  name="username"
+                  name="email"
                   rules={[
                     {
                       required: true,
-                      message: 'Vui lòng nhập tên đăng nhập!',
+                      message: 'Vui lòng nhập email!',
                     },
+                    {
+                      type: 'email',
+                      message: 'Email không hợp lệ!',
+                    }
                   ]}
                 >
                   <Input
                     prefix={<UserOutlined />}
                     size="large"
-                    placeholder="Tên đăng nhập"
+                    placeholder="Email"
                     disabled={processing}
                   />
                 </Form.Item>
@@ -169,8 +177,8 @@ const Login = () => {
                   block
                   onClick={() => {
                     form.setFieldsValue({
-                      username: 'admin',
-                      password: 'admin123'
+                      email: 'admin@khochuan.com',
+                      password: 'password'
                     });
                     form.submit();
                   }}
@@ -183,8 +191,8 @@ const Login = () => {
                   block
                   onClick={() => {
                     form.setFieldsValue({
-                      username: 'cashier',
-                      password: 'cashier123'
+                      email: 'cashier@khochuan.com',
+                      password: 'password'
                     });
                     form.submit();
                   }}
@@ -197,8 +205,8 @@ const Login = () => {
                   block
                   onClick={() => {
                     form.setFieldsValue({
-                      username: 'staff',
-                      password: 'staff123'
+                      email: 'staff@khochuan.com',
+                      password: 'password'
                     });
                     form.submit();
                   }}
@@ -210,7 +218,7 @@ const Login = () => {
               
               <div style={{ textAlign: 'center', marginTop: '24px' }}>
                 <Text type="secondary">
-                  © {new Date().getFullYear()} Trường Phát Computer Hòa Bình
+                  © {new Date().getFullYear()} Khochuan POS
                 </Text>
               </div>
             </Card>

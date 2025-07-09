@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { message } from 'antd';
+import authService from '../services/api/auth';
 
 // Initial state
 const initialState = {
@@ -29,11 +30,11 @@ const AUTH_ACTIONS = {
 // Session configuration
 const SESSION_CONFIG = {
   TIMEOUT_DURATION: 30 * 60 * 1000, // 30 minutes
-  STORAGE_PREFIX: 'truongphat_',
-  TOKEN_KEY: 'truongphat_token',
-  USER_KEY: 'truongphat_user',
-  EXPIRES_KEY: 'truongphat_expires',
-  ACTIVITY_KEY: 'truongphat_last_activity',
+  STORAGE_PREFIX: 'khochuan_',
+  TOKEN_KEY: 'khochuan_token',
+  USER_KEY: 'khochuan_user',
+  EXPIRES_KEY: 'khochuan_expires',
+  ACTIVITY_KEY: 'khochuan_last_activity',
 };
 
 // Auth reducer
@@ -176,6 +177,9 @@ export const AuthProvider = ({ children }) => {
         if (parsedExpiresAt && Date.now() > parsedExpiresAt) {
           handleLogout(true);
         } else {
+          // Set auth token in axios headers
+          authService.setAuthToken(token);
+          
           dispatch({
             type: AUTH_ACTIONS.LOGIN_SUCCESS,
             payload: {
@@ -202,14 +206,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem(SESSION_CONFIG.USER_KEY);
     localStorage.removeItem(SESSION_CONFIG.EXPIRES_KEY);
     localStorage.removeItem(SESSION_CONFIG.ACTIVITY_KEY);
+    authService.setAuthToken(null);
   };
 
   // Handle logout
-  const handleLogout = (expired = false) => {
+  const handleLogout = async (expired = false) => {
+    if (!expired) {
+      await authService.logout();
+    }
+    
     clearAuthStorage();
     dispatch({ 
       type: expired ? AUTH_ACTIONS.SESSION_EXPIRED : AUTH_ACTIONS.LOGOUT 
     });
+    
     if (!expired) {
       message.success('Đăng xuất thành công!');
     }
@@ -220,11 +230,14 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     
     try {
-      // Validate credentials
-      const validCredentials = validateCredentials(credentials);
+      // Call API login
+      const response = await authService.login(credentials);
       
-      if (validCredentials.success) {
-        const { user, token } = validCredentials;
+      if (response.success) {
+        const { user, token } = response;
+        
+        // Set auth token in axios headers
+        authService.setAuthToken(token);
         
         // Set session expiration (24 hours from now)
         const expiresAt = Date.now() + (24 * 60 * 60 * 1000);
@@ -241,7 +254,7 @@ export const AuthProvider = ({ children }) => {
           payload: {
             user,
             token,
-            permissions: user.permissions,
+            permissions: getPermissionsByRole(user.role),
             expiresAt,
             lastActivity,
           },
@@ -251,69 +264,14 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user };
       } else {
         dispatch({ type: AUTH_ACTIONS.LOGIN_FAILURE });
-        message.error(validCredentials.error || 'Email hoặc mật khẩu không đúng!');
-        return { success: false, error: validCredentials.error };
+        message.error(response.message || 'Email hoặc mật khẩu không đúng!');
+        return { success: false, error: response.message };
       }
     } catch (error) {
       dispatch({ type: AUTH_ACTIONS.LOGIN_FAILURE });
       message.error('Đăng nhập thất bại!');
       return { success: false, error: error.message };
     }
-  };
-
-  // Validate credentials
-  const validateCredentials = (credentials) => {
-    // Mock user accounts
-    const validUsers = [
-      {
-        email: 'admin@truongphat.com',
-        password: 'admin123',
-        name: 'Quản trị viên',
-        role: 'admin',
-      },
-      {
-        email: 'cashier@truongphat.com',
-        password: 'cashier123',
-        name: 'Thu ngân',
-        role: 'cashier',
-      },
-      {
-        email: 'staff@truongphat.com',
-        password: 'staff123',
-        name: 'Nhân viên bán hàng',
-        role: 'staff',
-      }
-    ];
-
-    // Find matching user
-    const user = validUsers.find(u => 
-      u.email.toLowerCase() === credentials.email.toLowerCase() && 
-      u.password === credentials.password
-    );
-
-    if (user) {
-      // Create user object without password
-      const { password, ...userWithoutPassword } = user;
-      
-      // Add permissions
-      const userWithPermissions = {
-        ...userWithoutPassword,
-        permissions: getPermissionsByRole(user.role),
-        id: Date.now(), // Mock user ID
-        avatar: null,
-      };
-
-      return {
-        success: true,
-        user: userWithPermissions,
-        token: 'truongphat-jwt-token-' + Date.now()
-      };
-    }
-
-    return {
-      success: false,
-      error: 'Email hoặc mật khẩu không đúng'
-    };
   };
 
   // Update user function
