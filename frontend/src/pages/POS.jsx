@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import BarcodeScanner from '../components/BarcodeScanner';
+import CustomerModal from '../components/CustomerModal';
+import CheckoutModal from '../components/CheckoutModal';
 import {
   Row,
   Col,
@@ -33,6 +36,7 @@ import {
   DollarOutlined,
   QrcodeOutlined,
   UserOutlined,
+  UserAddOutlined,
   PrinterOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined
@@ -59,6 +63,12 @@ const POS = () => {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [paymentForm] = Form.useForm();
+
+  // New modal states
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState(null);
 
   // Check access permission
   if (!canAccessPOS()) {
@@ -234,43 +244,112 @@ const POS = () => {
     }
   }, [products, addToCart]);
 
+  // Handle barcode scanner
+  const handleBarcodeScanned = useCallback(async (barcode) => {
+    try {
+      // First try to find in current products
+      const product = products.find(p => p.barcode === barcode || p.sku === barcode);
+      if (product) {
+        addToCart(product);
+        notification.success({
+          message: 'Sản phẩm đã được thêm',
+          description: `${product.name} đã được thêm vào giỏ hàng`
+        });
+        return;
+      }
+
+      // If not found, search via API
+      const response = await api.get(`/products/${barcode}`);
+      if (response.data.success) {
+        addToCart(response.data.data);
+        notification.success({
+          message: 'Sản phẩm đã được thêm',
+          description: `${response.data.data.name} đã được thêm vào giỏ hàng`
+        });
+      } else {
+        notification.error({
+          message: 'Không tìm thấy sản phẩm',
+          description: 'Không tìm thấy sản phẩm với mã vạch này'
+        });
+      }
+    } catch (error) {
+      console.error('Error finding product by barcode:', error);
+      notification.error({
+        message: 'Lỗi',
+        description: 'Có lỗi xảy ra khi tìm sản phẩm'
+      });
+    }
+  }, [products, addToCart]);
+
+  // Handle customer creation
+  const handleCustomerCreated = useCallback((newCustomer) => {
+    setCustomers(prev => [newCustomer, ...prev]);
+    setSelectedCustomer(newCustomer);
+    notification.success({
+      message: 'Khách hàng đã được tạo',
+      description: `${newCustomer.name} đã được thêm vào hệ thống`
+    });
+  }, []);
+
   // Handle payment
   const handlePayment = async (paymentData) => {
     try {
       setLoading(true);
 
       const orderData = {
+        customer_id: selectedCustomer?.id || null,
+        cashier_id: user.id,
+        location_id: 'loc-001', // Default location
         items: cart.map(item => ({
           product_id: item.id,
           quantity: item.quantity,
-          price: item.price
+          unit_price: item.price,
+          discount_amount: 0,
+          total_price: item.price * item.quantity
         })),
-        customer_id: selectedCustomer?.id || null,
-        payment_method: paymentData.method,
-        payment_amount: paymentData.amount,
         subtotal: orderSummary.subtotal,
-        tax: orderSummary.tax,
-        discount: orderSummary.discount,
+        tax_amount: orderSummary.tax,
+        discount_amount: orderSummary.discount,
         total: orderSummary.total,
-        cashier_id: user.id
+        payment_method: paymentData.method,
+        notes: paymentData.notes || '',
+        metadata: {
+          payment_method: paymentData.method,
+          cashier_name: user.name,
+          customer_name: selectedCustomer?.name
+        }
       };
 
       const response = await api.post('/orders', orderData);
-      
-      showSuccessNotification(
-        'Order Completed',
-        `Order #${response.data.order_number} processed successfully!`
-      );
 
-      // Print receipt option
-      if (paymentData.printReceipt) {
-        printReceipt(response.data);
+      if (response.data.success) {
+        // Create order object for checkout modal
+        const order = {
+          ...response.data.data,
+          items: cart,
+          customer_name: selectedCustomer?.name,
+          customer_email: selectedCustomer?.email,
+          customer_phone: selectedCustomer?.phone,
+          cashier_name: user.name,
+          location_name: 'KhoChuan Store Main',
+          payment_method: paymentData.method
+        };
+
+        setCurrentOrder(order);
+        setShowCheckoutModal(true);
+
+        // Clear cart and close payment modal
+        clearCart();
+        setPaymentModal(false);
+        paymentForm.resetFields();
+
+        notification.success({
+          message: 'Thanh toán thành công',
+          description: `Đơn hàng #${response.data.data.order_number} đã được xử lý thành công!`
+        });
+      } else {
+        throw new Error(response.data.message || 'Có lỗi xảy ra khi xử lý đơn hàng');
       }
-
-      // Clear cart and close modal
-      clearCart();
-      setPaymentModal(false);
-      paymentForm.resetFields();
 
     } catch (error) {
       console.error('Payment processing error:', error);
@@ -287,6 +366,19 @@ const POS = () => {
     // Implement receipt printing logic
     console.log('Printing receipt for order:', order);
     // In a real implementation, this would integrate with a receipt printer
+  };
+
+  // Handle new order after checkout
+  const handleNewOrder = () => {
+    setSelectedCustomer(null);
+    setCurrentOrder(null);
+    // Focus on search input for next order
+    setTimeout(() => {
+      const searchInput = document.querySelector('.ant-input[placeholder*="Search"]');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }, 100);
   };
 
   const customerColumns = [
@@ -486,6 +578,19 @@ const POS = () => {
             enterButton="Search"
             size="large"
           />
+
+          <Button
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={() => {
+              setShowCustomerModal(true);
+              setCustomerDrawer(false);
+            }}
+            block
+            style={{ marginBottom: 16 }}
+          >
+            Thêm khách hàng mới
+          </Button>
 
           <Table
             columns={customerColumns}
@@ -705,20 +810,31 @@ customer lookup, and payment processing for the Enterprise POS system.
             bodyStyle={{ padding: '16px', height: '400px', overflow: 'auto' }}
           >
             <Space direction="vertical" style={{ width: '100%' }}>
-              <Search
-                placeholder="Search products or scan barcode..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onPressEnter={(e) => {
-                  const value = e.target.value.trim();
-                  if (value.length >= 8) {
-                    handleBarcodeInput(value);
-                  }
-                }}
-                prefix={<QrcodeOutlined />}
-                enterButton={<SearchOutlined />}
-                size="large"
-              />
+              <Input.Group compact>
+                <Search
+                  placeholder="Search products or scan barcode..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onPressEnter={(e) => {
+                    const value = e.target.value.trim();
+                    if (value.length >= 8) {
+                      handleBarcodeInput(value);
+                    }
+                  }}
+                  prefix={<QrcodeOutlined />}
+                  enterButton={<SearchOutlined />}
+                  size="large"
+                  style={{ width: 'calc(100% - 50px)' }}
+                />
+                <Button
+                  type="primary"
+                  icon={<QrcodeOutlined />}
+                  size="large"
+                  onClick={() => setShowBarcodeScanner(true)}
+                  style={{ width: '50px' }}
+                  title="Quét mã vạch"
+                />
+              </Input.Group>
 
               {loading ? (
                 <LoadingSpinner tip="Loading products..." />
@@ -791,3 +907,261 @@ customer lookup, and payment processing for the Enterprise POS system.
                   onClick={() => setCustomerDrawer(true)}
                   type={selectedCustomer ? 'primary' : 'default'}
                 >
+                  {selectedCustomer ? selectedCustomer.name : 'Select Customer'}
+                </Button>
+                <Button
+                  icon={<ClearOutlined />}
+                  onClick={clearCart}
+                  disabled={cart.length === 0}
+                  danger
+                >
+                  Clear
+                </Button>
+              </Space>
+            }
+            style={{ height: '100%' }}
+          >
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {/* Cart Items */}
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {cart.length === 0 ? (
+                  <Empty description="Cart is empty" />
+                ) : (
+                  cart.map((item) => (
+                    <Card key={item.id} size="small" style={{ marginBottom: 8 }}>
+                      <Row align="middle">
+                        <Col span={12}>
+                          <div>
+                            <Text strong>{item.name}</Text>
+                            <div>
+                              <Text type="secondary" style={{ fontSize: '12px' }}>
+                                {formatCurrency(item.price)} each
+                              </Text>
+                            </div>
+                          </div>
+                        </Col>
+                        <Col span={6}>
+                          <Space>
+                            <Button
+                              size="small"
+                              icon={<MinusOutlined />}
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            />
+                            <Text>{item.quantity}</Text>
+                            <Button
+                              size="small"
+                              icon={<PlusOutlined />}
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            />
+                          </Space>
+                        </Col>
+                        <Col span={4}>
+                          <Text strong>{formatCurrency(item.price * item.quantity)}</Text>
+                        </Col>
+                        <Col span={2}>
+                          <Button
+                            size="small"
+                            icon={<DeleteOutlined />}
+                            onClick={() => removeFromCart(item.id)}
+                            danger
+                          />
+                        </Col>
+                      </Row>
+                    </Card>
+                  ))
+                )}
+              </div>
+
+              {/* Order Summary */}
+              <Card size="small">
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Row justify="space-between">
+                    <Col>Subtotal:</Col>
+                    <Col>{formatCurrency(orderSummary.subtotal)}</Col>
+                  </Row>
+                  <Row justify="space-between">
+                    <Col>Tax:</Col>
+                    <Col>{formatCurrency(orderSummary.tax)}</Col>
+                  </Row>
+                  <Row justify="space-between">
+                    <Col>Discount:</Col>
+                    <Col>{formatCurrency(orderSummary.discount)}</Col>
+                  </Row>
+                  <Divider style={{ margin: '8px 0' }} />
+                  <Row justify="space-between">
+                    <Col><Text strong>Total:</Text></Col>
+                    <Col><Text strong style={{ fontSize: '18px', color: '#1890ff' }}>
+                      {formatCurrency(orderSummary.total)}
+                    </Text></Col>
+                  </Row>
+                </Space>
+              </Card>
+
+              {/* Checkout Button */}
+              <Button
+                type="primary"
+                size="large"
+                block
+                icon={<CreditCardOutlined />}
+                onClick={() => setPaymentModal(true)}
+                disabled={cart.length === 0}
+                loading={loading}
+              >
+                Checkout
+              </Button>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Customer Drawer */}
+      <Drawer
+        title="Select Customer"
+        placement="right"
+        onClose={() => setCustomerDrawer(false)}
+        open={customerDrawer}
+        width={400}
+      >
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Search
+            placeholder="Search customers..."
+            enterButton="Search"
+            size="large"
+          />
+
+          <Button
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={() => {
+              setShowCustomerModal(true);
+              setCustomerDrawer(false);
+            }}
+            block
+            style={{ marginBottom: 16 }}
+          >
+            Thêm khách hàng mới
+          </Button>
+
+          <Table
+            columns={customerColumns}
+            dataSource={customers}
+            rowKey="id"
+            size="small"
+            pagination={{ pageSize: 10 }}
+          />
+
+          <Button
+            block
+            onClick={() => {
+              setSelectedCustomer(null);
+              setCustomerDrawer(false);
+            }}
+          >
+            Continue without customer
+          </Button>
+        </Space>
+      </Drawer>
+
+      {/* Payment Modal */}
+      <Modal
+        title="Payment"
+        open={paymentModal}
+        onCancel={() => setPaymentModal(false)}
+        footer={null}
+        width={500}
+      >
+        <Form
+          form={paymentForm}
+          layout="vertical"
+          onFinish={handlePayment}
+        >
+          <Card size="small" style={{ marginBottom: 16 }}>
+            <Row justify="space-between">
+              <Col><Text strong>Total Amount:</Text></Col>
+              <Col><Text strong style={{ fontSize: '20px', color: '#1890ff' }}>
+                {formatCurrency(orderSummary.total)}
+              </Text></Col>
+            </Row>
+          </Card>
+
+          <Form.Item
+            name="method"
+            label="Payment Method"
+            rules={[{ required: true, message: 'Please select payment method' }]}
+          >
+            <Radio.Group>
+              <Space direction="vertical">
+                <Radio value="cash">
+                  <Space>
+                    <DollarOutlined />
+                    Cash
+                  </Space>
+                </Radio>
+                <Radio value="card">
+                  <Space>
+                    <CreditCardOutlined />
+                    Credit Card
+                  </Space>
+                </Radio>
+                <Radio value="qr">
+                  <Space>
+                    <QrcodeOutlined />
+                    QR Code
+                  </Space>
+                </Radio>
+              </Space>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            name="amount"
+            label="Amount Received"
+            rules={[{ required: true, message: 'Please enter amount' }]}
+            initialValue={orderSummary.total}
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={value => value.replace(/\$\s?|(,*)/g, '')}
+              min={orderSummary.total}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={() => setPaymentModal(false)}>
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Process Payment
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Modals */}
+      <BarcodeScanner
+        visible={showBarcodeScanner}
+        onClose={() => setShowBarcodeScanner(false)}
+        onScan={handleBarcodeScanned}
+      />
+
+      <CustomerModal
+        visible={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+        onCustomerCreated={handleCustomerCreated}
+      />
+
+      <CheckoutModal
+        visible={showCheckoutModal}
+        order={currentOrder}
+        onClose={() => setShowCheckoutModal(false)}
+        onPrintReceipt={printReceipt}
+        onNewOrder={handleNewOrder}
+      />
+    </div>
+  );
+};
+
+export default POS;
