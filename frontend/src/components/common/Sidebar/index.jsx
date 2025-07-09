@@ -4,12 +4,13 @@ import {
   Layout, Menu, Tooltip, Typography, Avatar, Badge, Drawer 
 } from 'antd';
 import {
-  DashboardOutlined, ShoppingOutlined, ShoppingCartOutlined, 
+  DashboardOutlined, ShoppingOutlined, ShoppingCartOutlined,
   UserOutlined, TeamOutlined, BarChartOutlined, SettingOutlined,
   ShopOutlined, MobileOutlined, AppstoreOutlined, FileTextOutlined,
   BankOutlined, ClockCircleOutlined, TrophyOutlined, BookOutlined,
   MailOutlined, BellOutlined, CalendarOutlined, LogoutOutlined,
-  HomeOutlined, RollbackOutlined, LaptopOutlined, DesktopOutlined
+  HomeOutlined, RollbackOutlined, LaptopOutlined, DesktopOutlined,
+  BulbOutlined, RobotOutlined, DollarOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../../auth/AuthContext';
 import './styles.css';
@@ -91,7 +92,10 @@ const Sidebar = ({
       'HomeOutlined': <HomeOutlined />,
       'RollbackOutlined': <RollbackOutlined />,
       'LaptopOutlined': <LaptopOutlined />,
-      'DesktopOutlined': <DesktopOutlined />
+      'DesktopOutlined': <DesktopOutlined />,
+      'BulbOutlined': <BulbOutlined />,
+      'RobotOutlined': <RobotOutlined />,
+      'DollarOutlined': <DollarOutlined />
     };
     
     return iconMap[iconName] || <AppstoreOutlined />;

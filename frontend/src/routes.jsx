@@ -20,9 +20,17 @@ const Terms = lazy(() => import('./pages/customer/Terms'));
 const QrLookup = lazy(() => import('./pages/customer/QrLookup'));
 
 // Admin Pages
-const AdminDashboard = lazy(() => import('./pages/admin/Dashboard/AnalyticsDashboard'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const RevenueOverview = lazy(() => import('./pages/admin/Dashboard/RevenueOverview'));
 const PerformanceMetrics = lazy(() => import('./pages/admin/Dashboard/PerformanceMetrics'));
+
+// New Pages
+const POS = lazy(() => import('./pages/POS'));
+const Gamification = lazy(() => import('./pages/Gamification'));
+const Customers = lazy(() => import('./pages/Customers'));
+const Inventory = lazy(() => import('./pages/Inventory'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const AIFeatures = lazy(() => import('./pages/AIFeatures'));
 
 // Products
 const ProductManagement = lazy(() => import('./pages/admin/Products/ProductManagement'));
@@ -160,6 +168,14 @@ const AppRoutes = () => {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="dashboard/revenue" element={<RevenueOverview />} />
           <Route path="dashboard/performance" element={<PerformanceMetrics />} />
+
+          {/* New KhoChuan Features */}
+          <Route path="pos" element={<POS />} />
+          <Route path="gamification" element={<Gamification />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="inventory-management" element={<Inventory />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="ai-features" element={<AIFeatures />} />
           
           {/* Products */}
           <Route path="products" element={<ProductManagement />} />

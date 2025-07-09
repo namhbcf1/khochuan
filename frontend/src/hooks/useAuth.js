@@ -310,7 +310,7 @@ export const useAuthGuard = (requiredRole = null, requiredPermissions = []) => {
 /**
  * Default export
  */
-export default useAuth = () => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   
   if (!context) {

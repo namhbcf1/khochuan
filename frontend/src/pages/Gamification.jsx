@@ -5,7 +5,7 @@ import {
 } from 'antd';
 import {
   TrophyOutlined, StarOutlined, FireOutlined, CrownOutlined,
-  RocketOutlined, ThunderboltOutlined, GiftOutlined, TargetOutlined,
+  RocketOutlined, ThunderboltOutlined, GiftOutlined, AimOutlined,
   CalendarOutlined, TeamOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../hooks/useAuth';
@@ -239,7 +239,7 @@ const Gamification = () => {
     switch (type) {
       case 'achievement': return <TrophyOutlined style={{ color: '#faad14' }} />;
       case 'level_up': return <RocketOutlined style={{ color: '#52c41a' }} />;
-      case 'challenge': return <TargetOutlined style={{ color: '#1890ff' }} />;
+      case 'challenge': return <AimOutlined style={{ color: '#1890ff' }} />;
       case 'sale': return <FireOutlined style={{ color: '#ff4d4f' }} />;
       default: return <StarOutlined />;
     }
@@ -325,7 +325,7 @@ const Gamification = () => {
                     <Statistic
                       title="Thử thách"
                       value={userStats.completedChallenges}
-                      prefix={<TargetOutlined style={{ color: '#52c41a' }} />}
+                      prefix={<AimOutlined style={{ color: '#52c41a' }} />}
                     />
                   </Card>
                 </Col>
@@ -368,7 +368,7 @@ const Gamification = () => {
                   renderItem={(challenge) => (
                     <List.Item>
                       <List.Item.Meta
-                        avatar={<TargetOutlined style={{ fontSize: '20px', color: '#1890ff' }} />}
+                        avatar={<AimOutlined style={{ fontSize: '20px', color: '#1890ff' }} />}
                         title={
                           <Space>
                             {challenge.name}

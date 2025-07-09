@@ -304,6 +304,204 @@ export const AuthProvider = ({ children }) => {
     return state.role === role;
   };
 
+  // Get accessible menus based on role
+  const getAccessibleMenus = () => {
+    if (!state.user) return [];
+
+    const menusByRole = {
+      admin: [
+        {
+          key: 'dashboard',
+          label: 'Dashboard',
+          path: '/admin/dashboard',
+          icon: 'DashboardOutlined',
+        },
+        {
+          key: 'pos',
+          label: 'POS Terminal',
+          path: '/admin/pos',
+          icon: 'ShopOutlined',
+        },
+        {
+          key: 'customers',
+          label: 'Khách hàng',
+          path: '/admin/customers',
+          icon: 'UserOutlined',
+        },
+        {
+          key: 'inventory',
+          label: 'Quản lý kho',
+          path: '/admin/inventory-management',
+          icon: 'ShoppingOutlined',
+        },
+        {
+          key: 'analytics',
+          label: 'Analytics & BI',
+          path: '/admin/analytics',
+          icon: 'BarChartOutlined',
+        },
+        {
+          key: 'gamification',
+          label: 'Gamification',
+          path: '/admin/gamification',
+          icon: 'TrophyOutlined',
+        },
+        {
+          key: 'ai-features',
+          label: 'AI & ML',
+          path: '/admin/ai-features',
+          icon: 'BulbOutlined',
+        },
+        {
+          key: 'products',
+          label: 'Sản phẩm',
+          path: '/admin/products',
+          icon: 'ShoppingCartOutlined',
+          children: [
+            {
+              key: 'products-list',
+              label: 'Danh sách sản phẩm',
+              path: '/admin/products',
+              icon: 'AppstoreOutlined',
+            },
+            {
+              key: 'products-bulk',
+              label: 'Thao tác hàng loạt',
+              path: '/admin/products/bulk',
+              icon: 'FileTextOutlined',
+            },
+            {
+              key: 'products-price',
+              label: 'Tối ưu giá',
+              path: '/admin/products/price-optimization',
+              icon: 'DollarOutlined',
+            },
+          ]
+        },
+        {
+          key: 'orders',
+          label: 'Đơn hàng',
+          path: '/admin/orders',
+          icon: 'ShoppingCartOutlined',
+          children: [
+            {
+              key: 'orders-list',
+              label: 'Quản lý đơn hàng',
+              path: '/admin/orders',
+              icon: 'ShoppingCartOutlined',
+            },
+            {
+              key: 'orders-analytics',
+              label: 'Phân tích đơn hàng',
+              path: '/admin/orders/analytics',
+              icon: 'BarChartOutlined',
+            },
+            {
+              key: 'orders-returns',
+              label: 'Xử lý trả hàng',
+              path: '/admin/orders/returns',
+              icon: 'RollbackOutlined',
+            },
+          ]
+        },
+        {
+          key: 'staff',
+          label: 'Nhân viên',
+          path: '/admin/staff',
+          icon: 'TeamOutlined',
+          children: [
+            {
+              key: 'staff-management',
+              label: 'Quản lý nhân viên',
+              path: '/admin/staff',
+              icon: 'TeamOutlined',
+            },
+            {
+              key: 'staff-performance',
+              label: 'Hiệu suất',
+              path: '/admin/staff/performance',
+              icon: 'TrophyOutlined',
+            },
+            {
+              key: 'staff-gamification',
+              label: 'Gamification',
+              path: '/admin/staff/gamification',
+              icon: 'TrophyOutlined',
+            },
+          ]
+        },
+        {
+          key: 'reports',
+          label: 'Báo cáo',
+          path: '/admin/reports',
+          icon: 'FileTextOutlined',
+          children: [
+            {
+              key: 'reports-center',
+              label: 'Trung tâm báo cáo',
+              path: '/admin/reports',
+              icon: 'FileTextOutlined',
+            },
+            {
+              key: 'reports-custom',
+              label: 'Báo cáo tùy chỉnh',
+              path: '/admin/reports/custom',
+              icon: 'SettingOutlined',
+            },
+            {
+              key: 'reports-bi',
+              label: 'Business Intelligence',
+              path: '/admin/reports/business-intelligence',
+              icon: 'BarChartOutlined',
+            },
+          ]
+        },
+        {
+          key: 'settings',
+          label: 'Cài đặt',
+          path: '/admin/settings',
+          icon: 'SettingOutlined',
+        },
+      ],
+      cashier: [
+        {
+          key: 'pos',
+          label: 'POS Terminal',
+          path: '/admin/pos',
+          icon: 'ShopOutlined',
+        },
+        {
+          key: 'customers',
+          label: 'Khách hàng',
+          path: '/admin/customers',
+          icon: 'UserOutlined',
+        },
+        {
+          key: 'orders',
+          label: 'Đơn hàng',
+          path: '/admin/orders',
+          icon: 'ShoppingCartOutlined',
+        },
+      ],
+      staff: [
+        {
+          key: 'dashboard',
+          label: 'Dashboard',
+          path: '/admin/dashboard',
+          icon: 'DashboardOutlined',
+        },
+        {
+          key: 'gamification',
+          label: 'Gamification',
+          path: '/admin/gamification',
+          icon: 'TrophyOutlined',
+        },
+      ],
+    };
+
+    return menusByRole[state.user.role] || [];
+  };
+
   // Context value
   const value = {
     ...state,
@@ -313,6 +511,7 @@ export const AuthProvider = ({ children }) => {
     hasPermission,
     hasRole,
     updateLastActivity,
+    getAccessibleMenus,
   };
 
   return (

@@ -4,89 +4,56 @@ import BarcodeScanner from '../components/BarcodeScanner';
 import CustomerModal from '../components/CustomerModal';
 import CheckoutModal from '../components/CheckoutModal';
 import {
-  Row,
-  Col,
-  Card,
-  Input,
-  Button,
-  List,
-  Typography,
-  Space,
-  Tag,
-  Divider,
-  Modal,
-  Form,
-  Select,
-  InputNumber,
-  Badge,
-  Avatar,
-  Drawer,
-  Table,
-  Alert,
-  notification
+  Row, Col, Card, Button, Input, Space, Table, Tag, Avatar, Empty,
+  Typography, Divider, Form, Select, Radio, InputNumber, Modal,
+  Drawer, notification, message, Alert
 } from 'antd';
 import {
-  ShoppingCartOutlined,
-  SearchOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  MinusOutlined,
-  ClearOutlined,
-  CreditCardOutlined,
-  DollarOutlined,
-  QrcodeOutlined,
-  UserOutlined,
-  UserAddOutlined,
-  PrinterOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined
+  ShoppingCartOutlined, SearchOutlined, DeleteOutlined, PlusOutlined,
+  MinusOutlined, ClearOutlined, CreditCardOutlined, DollarOutlined,
+  QrcodeOutlined, UserOutlined, UserAddOutlined, PrinterOutlined,
+  CheckCircleOutlined, CloseCircleOutlined, ShopOutlined
 } from '@ant-design/icons';
-import { formatCurrency, calculateOrderTotal, showSuccessNotification, showErrorNotification } from '../utils/helpers';
-import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '../utils/constants';
-import api from '../services/api';
-import LoadingSpinner from '../components/Common/LoadingSpinner';
+import { api } from '../services/api';
 
-const { Title, Text } = Typography;
 const { Search } = Input;
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 const POS = () => {
-  const { user, canAccessPOS } = useAuth();
+  const { user } = useAuth();
+  
+  // State management
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [customerDrawer, setCustomerDrawer] = useState(false);
-  const [paymentModal, setPaymentModal] = useState(false);
-  const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [paymentModal, setPaymentModal] = useState(false);
+  const [customerDrawer, setCustomerDrawer] = useState(false);
   const [paymentForm] = Form.useForm();
-
+  
   // New modal states
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null);
 
-  // Check access permission
-  if (!canAccessPOS()) {
-    return (
-      <Alert
-        message="Access Denied"
-        description="You don't have permission to access the POS terminal."
-        type="error"
-        showIcon
-      />
-    );
-  }
-
+  // Load data on component mount
   useEffect(() => {
     loadProducts();
     loadCategories();
     loadCustomers();
   }, []);
+
+  // Filter products when search term or category changes
+  useEffect(() => {
+    filterProducts();
+  }, [products, searchTerm, selectedCategory]);
 
   const loadProducts = async () => {
     try {
@@ -146,49 +113,28 @@ const POS = () => {
     }
   };
 
-  const getMockProducts = () => [
-    { id: 1, name: 'Premium Coffee', price: 4.50, category: 'beverage', image: null, stock: 50, barcode: '1234567890123' },
-    { id: 2, name: 'Croissant', price: 3.25, category: 'food', image: null, stock: 25, barcode: '1234567890124' },
-    { id: 3, name: 'Green Tea', price: 3.00, category: 'beverage', image: null, stock: 30, barcode: '1234567890125' },
-    { id: 4, name: 'Sandwich', price: 8.95, category: 'food', image: null, stock: 15, barcode: '1234567890126' },
-    { id: 5, name: 'Energy Drink', price: 2.75, category: 'beverage', image: null, stock: 40, barcode: '1234567890127' },
-    { id: 6, name: 'Salad Bowl', price: 12.50, category: 'food', image: null, stock: 10, barcode: '1234567890128' }
-  ];
-
-  const getMockCategories = () => [
-    { id: 'food', name: 'Food' },
-    { id: 'beverage', name: 'Beverages' },
-    { id: 'retail', name: 'Retail Items' }
-  ];
-
-  const getMockCustomers = () => [
-    { id: 1, name: 'John Doe', email: 'john@example.com', phone: '+1234567890', loyaltyPoints: 250 },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '+1234567891', loyaltyPoints: 180 },
-    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '+1234567892', loyaltyPoints: 95 }
-  ];
-
-  // Filter products based on category and search
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.barcode?.includes(searchTerm);
-    return matchesCategory && matchesSearch;
-  });
-
-  // Cart operations
-  const addToCart = useCallback((product) => {
-    if (product.stock <= 0) {
-      showErrorNotification('Out of Stock', `${product.name} is currently out of stock.`);
-      return;
+  const filterProducts = () => {
+    let filtered = products;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.barcode?.includes(searchTerm)
+      );
     }
+    
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    }
+    
+    setFilteredProducts(filtered);
+  };
 
+  const addToCart = useCallback((product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       if (existingItem) {
-        if (existingItem.quantity >= product.stock) {
-          showErrorNotification('Insufficient Stock', `Only ${product.stock} units available.`);
-          return prevCart;
-        }
         return prevCart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -200,18 +146,12 @@ const POS = () => {
     });
   }, []);
 
-  const updateCartQuantity = useCallback((productId, newQuantity) => {
+  const updateQuantity = useCallback((productId, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(productId);
       return;
     }
-
-    const product = products.find(p => p.id === productId);
-    if (product && newQuantity > product.stock) {
-      showErrorNotification('Insufficient Stock', `Only ${product.stock} units available.`);
-      return;
-    }
-
+    
     setCart(prevCart =>
       prevCart.map(item =>
         item.id === productId
@@ -219,7 +159,7 @@ const POS = () => {
           : item
       )
     );
-  }, [products]);
+  }, []);
 
   const removeFromCart = useCallback((productId) => {
     setCart(prevCart => prevCart.filter(item => item.id !== productId));
@@ -230,24 +170,19 @@ const POS = () => {
     setSelectedCustomer(null);
   }, []);
 
-  // Calculate totals
-  const orderSummary = calculateOrderTotal(cart, 0.1, selectedCustomer?.loyaltyDiscount || 0);
+  // Calculate order summary
+  const orderSummary = React.useMemo(() => {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const tax = subtotal * 0.1; // 10% tax
+    const discount = selectedCustomer?.discount || 0;
+    const total = subtotal + tax - discount;
+    
+    return { subtotal, tax, discount, total };
+  }, [cart, selectedCustomer]);
 
   // Handle barcode scanning
-  const handleBarcodeInput = useCallback((value) => {
-    const product = products.find(p => p.barcode === value);
-    if (product) {
-      addToCart(product);
-      setSearchTerm('');
-    } else {
-      showErrorNotification('Product Not Found', 'No product found with this barcode.');
-    }
-  }, [products, addToCart]);
-
-  // Handle barcode scanner
   const handleBarcodeScanned = useCallback(async (barcode) => {
     try {
-      // First try to find in current products
       const product = products.find(p => p.barcode === barcode || p.sku === barcode);
       if (product) {
         addToCart(product);
@@ -258,7 +193,6 @@ const POS = () => {
         return;
       }
 
-      // If not found, search via API
       const response = await api.get(`/products/${barcode}`);
       if (response.data.success) {
         addToCart(response.data.data);
@@ -299,7 +233,7 @@ const POS = () => {
       const orderData = {
         customer_id: selectedCustomer?.id || null,
         cashier_id: user.id,
-        location_id: 'loc-001', // Default location
+        location_id: 'loc-001',
         items: cart.map(item => ({
           product_id: item.id,
           quantity: item.quantity,
@@ -321,9 +255,8 @@ const POS = () => {
       };
 
       const response = await api.post('/orders', orderData);
-
+      
       if (response.data.success) {
-        // Create order object for checkout modal
         const order = {
           ...response.data.data,
           items: cart,
@@ -337,12 +270,11 @@ const POS = () => {
 
         setCurrentOrder(order);
         setShowCheckoutModal(true);
-
-        // Clear cart and close payment modal
+        
         clearCart();
         setPaymentModal(false);
         paymentForm.resetFields();
-
+        
         notification.success({
           message: 'Thanh toán thành công',
           description: `Đơn hàng #${response.data.data.order_number} đã được xử lý thành công!`
@@ -350,29 +282,24 @@ const POS = () => {
       } else {
         throw new Error(response.data.message || 'Có lỗi xảy ra khi xử lý đơn hàng');
       }
-
     } catch (error) {
-      console.error('Payment processing error:', error);
-      showErrorNotification(
-        'Payment Failed',
-        error.message || 'Failed to process payment. Please try again.'
-      );
+      console.error('Payment error:', error);
+      notification.error({
+        message: 'Payment Failed',
+        description: error.message || 'An error occurred while processing payment'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const printReceipt = (order) => {
-    // Implement receipt printing logic
     console.log('Printing receipt for order:', order);
-    // In a real implementation, this would integrate with a receipt printer
   };
 
-  // Handle new order after checkout
   const handleNewOrder = () => {
     setSelectedCustomer(null);
     setCurrentOrder(null);
-    // Focus on search input for next order
     setTimeout(() => {
       const searchInput = document.querySelector('.ant-input[placeholder*="Search"]');
       if (searchInput) {
@@ -381,33 +308,45 @@ const POS = () => {
     }, 100);
   };
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  // Mock data functions
+  const getMockProducts = () => [
+    { id: 1, name: 'Coca Cola 330ml', price: 12000, category: 'Beverages', stock: 50, sku: 'CC-330', barcode: '8934673123456' },
+    { id: 2, name: 'Pepsi 330ml', price: 11000, category: 'Beverages', stock: 30, sku: 'PP-330', barcode: '8934673123457' },
+    { id: 3, name: 'Bánh mì sandwich', price: 25000, category: 'Food', stock: 20, sku: 'BM-SW', barcode: '8934673123458' },
+    { id: 4, name: 'Mì tôm Hảo Hảo', price: 5000, category: 'Food', stock: 100, sku: 'MT-HH', barcode: '8934673123459' },
+    { id: 5, name: 'Cà phê đen', price: 20000, category: 'Beverages', stock: 25, sku: 'CF-BK', barcode: '8934673123460' }
+  ];
+
+  const getMockCategories = () => [
+    { id: 1, name: 'Beverages' },
+    { id: 2, name: 'Food' },
+    { id: 3, name: 'Snacks' }
+  ];
+
+  const getMockCustomers = () => [
+    { id: 1, name: 'Nguyễn Văn A', phone: '0901234567', email: 'nguyenvana@email.com' },
+    { id: 2, name: 'Trần Thị B', phone: '0907654321', email: 'tranthib@email.com' },
+    { id: 3, name: 'Lê Văn C', phone: '0912345678', email: 'levanc@email.com' }
+  ];
+
+  // Customer table columns
   const customerColumns = [
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (name) => (
-        <Space>
-          <Avatar icon={<UserOutlined />} size="small" />
-          {name}
-        </Space>
-      )
     },
     {
-      title: 'Contact',
-      key: 'contact',
-      render: (record) => (
-        <div>
-          <div>{record.email}</div>
-          <div style={{ fontSize: '12px', color: '#666' }}>{record.phone}</div>
-        </div>
-      )
-    },
-    {
-      title: 'Loyalty Points',
-      dataIndex: 'loyaltyPoints',
-      key: 'loyaltyPoints',
-      render: (points) => <Badge count={points} showZero color="gold" />
+      title: 'Phone',
+      dataIndex: 'phone',
+      key: 'phone',
     },
     {
       title: 'Action',
@@ -422,394 +361,39 @@ const POS = () => {
           }}
         >
           Select
-                          {selectedCustomer ? selectedCustomer.name : 'Customer'}
-                </Button>
-                <Button
-                  icon={<ClearOutlined />}
-                  onClick={clearCart}
-                  disabled={cart.length === 0}
-                  danger
-                >
-                  Clear
-                </Button>
-              </Space>
-            }
-            bodyStyle={{ padding: 0, height: '500px', display: 'flex', flexDirection: 'column' }}
-          >
-            {/* Cart Items */}
-            <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
-              {cart.length === 0 ? (
-                <div style={{
-                  height: '200px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#999',
-                  flexDirection: 'column'
-                }}>
-                  <ShoppingCartOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
-                  <Text>Cart is empty</Text>
-                </div>
-              ) : (
-                <List
-                  size="small"
-                  dataSource={cart}
-                  renderItem={(item) => (
-                    <List.Item
-                      actions={[
-                        <Space key="quantity">
-                          <Button
-                            size="small"
-                            icon={<MinusOutlined />}
-                            onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
-                          />
-                          <InputNumber
-                            size="small"
-                            min={1}
-                            max={item.stock}
-                            value={item.quantity}
-                            onChange={(value) => updateCartQuantity(item.id, value)}
-                            style={{ width: '60px' }}
-                          />
-                          <Button
-                            size="small"
-                            icon={<PlusOutlined />}
-                            onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
-                            disabled={item.quantity >= item.stock}
-                          />
-                        </Space>,
-                        <Button
-                          key="remove"
-                          size="small"
-                          icon={<DeleteOutlined />}
-                          onClick={() => removeFromCart(item.id)}
-                          danger
-                        />
-                      ]}
-                    >
-                      <List.Item.Meta
-                        title={
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Text strong>{item.name}</Text>
-                            <Text>{formatCurrency(item.price * item.quantity)}</Text>
-                          </div>
-                        }
-                        description={
-                          <Text type="secondary">
-                            {formatCurrency(item.price)} × {item.quantity}
-                          </Text>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
-              )}
-            </div>
-
-            {/* Order Summary */}
-            {cart.length > 0 && (
-              <div style={{ borderTop: '1px solid #f0f0f0', padding: '16px' }}>
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  {selectedCustomer && (
-                    <Alert
-                      message={`Customer: ${selectedCustomer.name}`}
-                      description={`Loyalty Points: ${selectedCustomer.loyaltyPoints}`}
-                      type="info"
-                      showIcon
-                      size="small"
-                    />
-                  )}
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Subtotal:</Text>
-                    <Text>{formatCurrency(orderSummary.subtotal)}</Text>
-                  </div>
-
-                  {orderSummary.discount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text>Discount:</Text>
-                      <Text style={{ color: '#52c41a' }}>
-                        -{formatCurrency(orderSummary.discount)}
-                      </Text>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Tax:</Text>
-                    <Text>{formatCurrency(orderSummary.tax)}</Text>
-                  </div>
-
-                  <Divider style={{ margin: '8px 0' }} />
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Title level={4} style={{ margin: 0 }}>Total:</Title>
-                    <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-                      {formatCurrency(orderSummary.total)}
-                    </Title>
-                  </div>
-
-                  <Button
-                    type="primary"
-                    size="large"
-                    block
-                    icon={<CreditCardOutlined />}
-                    onClick={() => setPaymentModal(true)}
-                  >
-                    Checkout
-                  </Button>
-                </Space>
-              </div>
-            )}
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Customer Selection Drawer */}
-      <Drawer
-        title="Select Customer"
-        placement="right"
-        onClose={() => setCustomerDrawer(false)}
-        open={customerDrawer}
-        width={500}
-      >
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Search
-            placeholder="Search customers..."
-            enterButton="Search"
-            size="large"
-          />
-
-          <Button
-            type="primary"
-            icon={<UserAddOutlined />}
-            onClick={() => {
-              setShowCustomerModal(true);
-              setCustomerDrawer(false);
-            }}
-            block
-            style={{ marginBottom: 16 }}
-          >
-            Thêm khách hàng mới
-          </Button>
-
-          <Table
-            columns={customerColumns}
-            dataSource={customers}
-            rowKey="id"
-            size="small"
-            pagination={{ pageSize: 10 }}
-          />
-
-          <Button
-            block
-            onClick={() => {
-              setSelectedCustomer(null);
-              setCustomerDrawer(false);
-            }}
-          >
-            Continue without customer
-          </Button>
-        </Space>
-      </Drawer>
-
-      {/* Payment Modal */}
-      <Modal
-        title="Process Payment"
-        open={paymentModal}
-        onCancel={() => setPaymentModal(false)}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={paymentForm}
-          layout="vertical"
-          onFinish={handlePayment}
-          initialValues={{
-            method: PAYMENT_METHODS.CASH,
-            amount: orderSummary.total,
-            printReceipt: true
-          }}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Card size="small" title="Order Summary">
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Subtotal:</Text>
-                    <Text>{formatCurrency(orderSummary.subtotal)}</Text>
-                  </div>
-                  {orderSummary.discount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text>Discount:</Text>
-                      <Text style={{ color: '#52c41a' }}>
-                        -{formatCurrency(orderSummary.discount)}
-                      </Text>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Tax:</Text>
-                    <Text>{formatCurrency(orderSummary.tax)}</Text>
-                  </div>
-                  <Divider style={{ margin: '8px 0' }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Title level={4} style={{ margin: 0 }}>Total:</Title>
-                    <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-                      {formatCurrency(orderSummary.total)}
-                    </Title>
-                  </div>
-                </Space>
-              </Card>
-            </Col>
-
-            <Col span={12}>
-              <Card size="small" title="Payment Details">
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Form.Item
-                    name="method"
-                    label="Payment Method"
-                    rules={[{ required: true }]}
-                  >
-                    <Select size="large">
-                      {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
-                        <Option key={key} value={key}>
-                          {label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-
-                  <Form.Item
-                    name="amount"
-                    label="Amount Received"
-                    rules={[
-                      { required: true },
-                      {
-                        type: 'number',
-                        min: orderSummary.total,
-                        message: 'Amount must be at least the total'
-                      }
-                    ]}
-                  >
-                    <InputNumber
-                      size="large"
-                      style={{ width: '100%' }}
-                      formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                      precision={2}
-                    />
-                  </Form.Item>
-
-                  <Form.Item>
-                    <Text>
-                      Change: {formatCurrency(
-                        Math.max(0, (paymentForm.getFieldValue('amount') || 0) - orderSummary.total)
-                      )}
-                    </Text>
-                  </Form.Item>
-                </Space>
-              </Card>
-            </Col>
-          </Row>
-
-          <Divider />
-
-          <Form.Item name="printReceipt" valuePropName="checked">
-            <Space>
-              <PrinterOutlined />
-              Print receipt
-            </Space>
-          </Form.Item>
-
-          <Form.Item>
-            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-              <Button onClick={() => setPaymentModal(false)}>
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                size="large"
-                icon={<CheckCircleOutlined />}
-              >
-                Complete Payment
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
-  );
-};
-
-export default POS;
-
-/*
-📁 FILE PATH: frontend/src/pages/POS.jsx
-
-📋 DESCRIPTION:
-Complete Point of Sale terminal interface with product selection, cart management,
-customer lookup, and payment processing for the Enterprise POS system.
-
-🔧 FEATURES:
-- Product catalog with category filtering and search
-- Barcode scanning support for quick product entry
-- Shopping cart with quantity management and validation
-- Customer selection with loyalty program integration
-- Multi-payment method support (cash, card, digital wallet)
-- Order total calculation with tax and discount
-- Receipt printing capability
-- Stock validation and low inventory warnings
-- Real-time cart updates and order processing
-- Mobile-optimized for tablet POS terminals
-
-🎯 INTEGRATION:
-- Connects to backend product and customer APIs
-- Uses authentication for cashier identification
-- Integrates with payment processing systems
-- Links to order management and inventory tracking
-- Supports offline mode for basic operations
-
-⚡ BUSINESS LOGIC:
-- Automatic tax calculation at 10%
-- Loyalty discount application based on customer tier
-- Stock validation to prevent overselling
-- Change calculation for cash payments
-- Order number generation and tracking
-- Receipt printing with order details
-*/
+        </Button>
       )
     }
   ];
 
   return (
-    <div>
-      <Row gutter={[16, 16]} style={{ height: 'calc(100vh - 120px)' }}>
-        {/* Product Grid */}
-        <Col xs={24} lg={16}>
+    <div style={{ padding: '24px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
+            <ShopOutlined /> KhoChuan POS Terminal
+          </Title>
+        </Col>
+        <Col>
+          <Space>
+            <Text>Cashier: {user?.name}</Text>
+            <Text type="secondary">|</Text>
+            <Text>{new Date().toLocaleString('vi-VN')}</Text>
+          </Space>
+        </Col>
+      </Row>
+
+      <Row gutter={16} style={{ flex: 1 }}>
+        {/* Products Section */}
+        <Col span={16}>
           <Card
-            title={
-              <Space>
-                <ShoppingCartOutlined />
-                Product Catalog
-              </Space>
-            }
-            extra={
-              <Space>
-                <Select
-                  value={selectedCategory}
-                  onChange={setSelectedCategory}
-                  style={{ width: 150 }}
-                >
-                  {categories.map(cat => (
-                    <Option key={cat.id} value={cat.id}>{cat.name}</Option>
-                  ))}
-                </Select>
-              </Space>
-            }
-            bodyStyle={{ padding: '16px', height: '400px', overflow: 'auto' }}
+            title="Products"
+            style={{ height: '100%' }}
+            bodyStyle={{ padding: 0, height: 'calc(100% - 57px)', display: 'flex', flexDirection: 'column' }}
           >
-            <Space direction="vertical" style={{ width: '100%' }}>
+            {/* Search */}
+            <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
               <Input.Group compact>
                 <Search
                   placeholder="Search products or scan barcode..."
@@ -818,7 +402,7 @@ customer lookup, and payment processing for the Enterprise POS system.
                   onPressEnter={(e) => {
                     const value = e.target.value.trim();
                     if (value.length >= 8) {
-                      handleBarcodeInput(value);
+                      handleBarcodeScanned(value);
                     }
                   }}
                   prefix={<QrcodeOutlined />}
@@ -835,73 +419,75 @@ customer lookup, and payment processing for the Enterprise POS system.
                   title="Quét mã vạch"
                 />
               </Input.Group>
+            </div>
 
-              {loading ? (
-                <LoadingSpinner tip="Loading products..." />
-              ) : (
-                <Row gutter={[8, 8]}>
-                  {filteredProducts.map(product => (
-                    <Col xs={12} sm={8} md={6} lg={4} key={product.id}>
-                      <Card
-                        hoverable
-                        size="small"
-                        onClick={() => addToCart(product)}
-                        style={{
-                          textAlign: 'center',
-                          cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
-                          opacity: product.stock > 0 ? 1 : 0.5
-                        }}
-                        cover={
-                          <div style={{
-                            height: '80px',
-                            background: '#f5f5f5',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '32px',
-                            color: '#1890ff'
-                          }}>
-                            <ShoppingCartOutlined />
-                          </div>
-                        }
-                      >
-                        <Card.Meta
-                          title={
-                            <div style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                              {product.name}
-                            </div>
-                          }
-                          description={
-                            <div>
-                              <div style={{ color: '#1890ff', fontWeight: 'bold' }}>
-                                {formatCurrency(product.price)}
-                              </div>
-                              <div style={{ fontSize: '10px', color: '#666' }}>
-                                Stock: {product.stock}
-                              </div>
-                            </div>
-                          }
-                        />
-                      </Card>
-                    </Col>
-                  ))}
-                </Row>
-              )}
-            </Space>
+            {/* Categories */}
+            <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+              <Space wrap>
+                <Button
+                  type={selectedCategory === 'all' ? 'primary' : 'default'}
+                  onClick={() => setSelectedCategory('all')}
+                >
+                  All
+                </Button>
+                {categories.map(category => (
+                  <Button
+                    key={category.id}
+                    type={selectedCategory === category.name ? 'primary' : 'default'}
+                    onClick={() => setSelectedCategory(category.name)}
+                  >
+                    {category.name}
+                  </Button>
+                ))}
+              </Space>
+            </div>
+
+            {/* Products Grid */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+              <Row gutter={[8, 8]}>
+                {filteredProducts.map(product => (
+                  <Col xs={12} sm={8} md={6} lg={4} key={product.id}>
+                    <Card
+                      hoverable
+                      size="small"
+                      onClick={() => addToCart(product)}
+                      style={{
+                        height: '120px',
+                        cursor: 'pointer',
+                        border: cart.find(item => item.id === product.id) ? '2px solid #1890ff' : '1px solid #d9d9d9'
+                      }}
+                      bodyStyle={{ padding: '8px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+                    >
+                      <div>
+                        <Text strong style={{ fontSize: '12px', lineHeight: '14px' }}>
+                          {product.name}
+                        </Text>
+                      </div>
+                      <div>
+                        <Text type="primary" strong>
+                          {formatCurrency(product.price)}
+                        </Text>
+                        <div>
+                          <Text type="secondary" style={{ fontSize: '10px' }}>
+                            Stock: {product.stock || 0}
+                          </Text>
+                        </div>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </div>
           </Card>
         </Col>
 
-        {/* Cart & Checkout */}
-        <Col xs={24} lg={8}>
+        {/* Cart Section */}
+        <Col span={8}>
           <Card
             title={
               <Space>
                 <ShoppingCartOutlined />
-                Cart ({cart.length} items)
-              </Space>
-            }
-            extra={
-              <Space>
+                <span>Cart ({cart.length})</span>
                 <Button
                   icon={<UserOutlined />}
                   onClick={() => setCustomerDrawer(true)}
@@ -920,84 +506,85 @@ customer lookup, and payment processing for the Enterprise POS system.
               </Space>
             }
             style={{ height: '100%' }}
+            bodyStyle={{ padding: 0, height: 'calc(100% - 57px)', display: 'flex', flexDirection: 'column' }}
           >
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {/* Cart Items */}
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {cart.length === 0 ? (
-                  <Empty description="Cart is empty" />
-                ) : (
-                  cart.map((item) => (
-                    <Card key={item.id} size="small" style={{ marginBottom: 8 }}>
-                      <Row align="middle">
-                        <Col span={12}>
+            {/* Cart Items */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+              {cart.length === 0 ? (
+                <Empty description="Cart is empty" />
+              ) : (
+                cart.map((item) => (
+                  <Card key={item.id} size="small" style={{ marginBottom: 8 }}>
+                    <Row align="middle">
+                      <Col span={12}>
+                        <div>
+                          <Text strong>{item.name}</Text>
                           <div>
-                            <Text strong>{item.name}</Text>
-                            <div>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>
-                                {formatCurrency(item.price)} each
-                              </Text>
-                            </div>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                              {formatCurrency(item.price)} each
+                            </Text>
                           </div>
-                        </Col>
-                        <Col span={6}>
-                          <Space>
-                            <Button
-                              size="small"
-                              icon={<MinusOutlined />}
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            />
-                            <Text>{item.quantity}</Text>
-                            <Button
-                              size="small"
-                              icon={<PlusOutlined />}
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            />
-                          </Space>
-                        </Col>
-                        <Col span={4}>
-                          <Text strong>{formatCurrency(item.price * item.quantity)}</Text>
-                        </Col>
-                        <Col span={2}>
+                        </div>
+                      </Col>
+                      <Col span={6}>
+                        <Space>
                           <Button
                             size="small"
-                            icon={<DeleteOutlined />}
-                            onClick={() => removeFromCart(item.id)}
-                            danger
+                            icon={<MinusOutlined />}
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           />
-                        </Col>
-                      </Row>
-                    </Card>
-                  ))
-                )}
-              </div>
+                          <Text>{item.quantity}</Text>
+                          <Button
+                            size="small"
+                            icon={<PlusOutlined />}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          />
+                        </Space>
+                      </Col>
+                      <Col span={4}>
+                        <Text strong>{formatCurrency(item.price * item.quantity)}</Text>
+                      </Col>
+                      <Col span={2}>
+                        <Button
+                          size="small"
+                          icon={<DeleteOutlined />}
+                          onClick={() => removeFromCart(item.id)}
+                          danger
+                        />
+                      </Col>
+                    </Row>
+                  </Card>
+                ))
+              )}
+            </div>
 
-              {/* Order Summary */}
-              <Card size="small">
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Row justify="space-between">
-                    <Col>Subtotal:</Col>
-                    <Col>{formatCurrency(orderSummary.subtotal)}</Col>
-                  </Row>
-                  <Row justify="space-between">
-                    <Col>Tax:</Col>
-                    <Col>{formatCurrency(orderSummary.tax)}</Col>
-                  </Row>
-                  <Row justify="space-between">
-                    <Col>Discount:</Col>
-                    <Col>{formatCurrency(orderSummary.discount)}</Col>
-                  </Row>
-                  <Divider style={{ margin: '8px 0' }} />
-                  <Row justify="space-between">
-                    <Col><Text strong>Total:</Text></Col>
-                    <Col><Text strong style={{ fontSize: '18px', color: '#1890ff' }}>
-                      {formatCurrency(orderSummary.total)}
-                    </Text></Col>
-                  </Row>
-                </Space>
-              </Card>
+            {/* Order Summary */}
+            <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0' }}>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Row justify="space-between">
+                  <Col>Subtotal:</Col>
+                  <Col>{formatCurrency(orderSummary.subtotal)}</Col>
+                </Row>
+                <Row justify="space-between">
+                  <Col>Tax:</Col>
+                  <Col>{formatCurrency(orderSummary.tax)}</Col>
+                </Row>
+                <Row justify="space-between">
+                  <Col>Discount:</Col>
+                  <Col>{formatCurrency(orderSummary.discount)}</Col>
+                </Row>
+                <Divider style={{ margin: '8px 0' }} />
+                <Row justify="space-between">
+                  <Col><Text strong>Total:</Text></Col>
+                  <Col><Text strong style={{ fontSize: '18px', color: '#1890ff' }}>
+                    {formatCurrency(orderSummary.total)}
+                  </Text></Col>
+                </Row>
+              </Space>
+            </div>
 
-              {/* Checkout Button */}
+            {/* Checkout Button */}
+            <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0' }}>
               <Button
                 type="primary"
                 size="large"
@@ -1009,7 +596,7 @@ customer lookup, and payment processing for the Enterprise POS system.
               >
                 Checkout
               </Button>
-            </Space>
+            </div>
           </Card>
         </Col>
       </Row>

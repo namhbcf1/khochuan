@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Button, Input, Alert, Space, Typography, Card, Row, Col } from 'antd';
-import { CameraOutlined, ScanOutlined, KeyboardOutlined, CloseOutlined } from '@ant-design/icons';
+import { CameraOutlined, ScanOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -183,7 +183,7 @@ const BarcodeScanner = ({ visible, onClose, onScan }) => {
               </Col>
               <Col span={8}>
                 <Button
-                  icon={<KeyboardOutlined />}
+                  icon={<EditOutlined />}
                   onClick={toggleMode}
                   block
                 >
