@@ -37,7 +37,7 @@ import {
   SettingOutlined,
   DeleteOutlined,
   InfoCircleOutlined,
-  ShieldOutlined,
+  SafetyOutlined,
   BellOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -312,7 +312,7 @@ const SecuritySettings = () => {
     <div style={{ padding: '24px' }}>
       <Card>
         <Title level={2}>
-          <ShieldOutlined /> Cài đặt bảo mật
+          <SafetyOutlined /> Cài đặt bảo mật
         </Title>
         <Paragraph>
           Quản lý các cài đặt bảo mật, mật khẩu, xác thực hai lớp và theo dõi hoạt động đăng nhập.
