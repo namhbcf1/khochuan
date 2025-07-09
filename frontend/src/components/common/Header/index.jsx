@@ -11,6 +11,8 @@ import {
   DashboardOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../../auth/AuthContext';
+import { CompactLanguageSwitcher } from '../LanguageSwitcher';
+import OfflineIndicator from '../OfflineIndicator';
 import './styles.css';
 
 const { Header } = Layout;
@@ -166,8 +168,8 @@ const AppHeader = ({
         
         <div className="header-actions">
           {showNotifications && (
-            <Dropdown 
-              overlay={notificationsMenu} 
+            <Dropdown
+              overlay={notificationsMenu}
               trigger={['click']}
               placement="bottomRight"
               arrow={{ pointAtCenter: true }}
@@ -181,6 +183,10 @@ const AppHeader = ({
               </Badge>
             </Dropdown>
           )}
+
+          <OfflineIndicator />
+
+          <CompactLanguageSwitcher style={{ marginRight: 8 }} />
 
           <Dropdown overlay={userMenu} trigger={['click']} placement="bottomRight">
             <div className="user-profile">

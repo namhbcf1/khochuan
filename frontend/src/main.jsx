@@ -6,6 +6,9 @@ import { HelmetProvider } from 'react-helmet-async'
 // Import global styles
 import 'antd/dist/reset.css'
 import './styles/global.css'
+
+// Initialize i18n
+import './i18n'
 import './styles/animations.css'
 
 // PWA registration (disabled)

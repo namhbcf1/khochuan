@@ -21,7 +21,7 @@ const Terms = lazy(() => import('./pages/customer/Terms'));
 const QrLookup = lazy(() => import('./pages/customer/QrLookup'));
 
 // Admin Pages
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const RevenueOverview = lazy(() => import('./pages/admin/Dashboard/RevenueOverview'));
 const PerformanceMetrics = lazy(() => import('./pages/admin/Dashboard/PerformanceMetrics'));
 
@@ -69,7 +69,10 @@ const CustomerSegmentation = lazy(() => import('./pages/admin/Customers/Customer
 const PersonalizationEngine = lazy(() => import('./pages/admin/Customers/PersonalizationEngine'));
 
 // Integrations
-const EcommerceChannels = lazy(() => import('./pages/admin/Integrations/EcommerceChannels'));
+const MarketplaceManager = lazy(() => import('./pages/admin/Integrations/MarketplaceManager'));
+
+// Hardware
+const HardwareManager = lazy(() => import('./pages/admin/Hardware/HardwareManager'));
 const PaymentGateways = lazy(() => import('./pages/admin/Integrations/PaymentGateways'));
 const ThirdPartyApps = lazy(() => import('./pages/admin/Integrations/ThirdPartyApps'));
 const APIManagement = lazy(() => import('./pages/admin/Integrations/APIManagement'));
@@ -215,7 +218,10 @@ const AppRoutes = () => {
           <Route path="customers/personalization" element={<PersonalizationEngine />} />
           
           {/* Integrations */}
-          <Route path="integrations" element={<EcommerceChannels />} />
+          <Route path="integrations" element={<MarketplaceManager />} />
+
+          {/* Hardware */}
+          <Route path="hardware" element={<HardwareManager />} />
           <Route path="integrations/payments" element={<PaymentGateways />} />
           <Route path="integrations/apps" element={<ThirdPartyApps />} />
           <Route path="integrations/api" element={<APIManagement />} />
