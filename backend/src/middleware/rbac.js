@@ -402,3 +402,6 @@ const ROLES = {
    * Export role definitions for frontend
    */
   export { ROLES, RESOURCE_PERMISSIONS }
+
+  // Export rbac as alias for rbacMiddleware
+  export const rbac = rbacMiddleware;

@@ -8,6 +8,7 @@ import axios from 'axios';
 import { getAccessToken, refreshToken, clearAuthTokens } from '../utils/helpers/authUtils';
 import { localCache } from '../utils/helpers/cacheUtils';
 import { logEvent } from '../utils/helpers/analyticsUtils';
+import { mockApi, shouldUseMockApi } from './mockApi';
 
 // Default API configuration
 const DEFAULT_TIMEOUT = 15000; // 15 seconds
@@ -491,5 +492,78 @@ window.addEventListener('offline', () => {
   console.log('You are offline. Changes will be saved and synced when you reconnect.');
 });
 
-export { api, apiClient };
-export default api;
+// Enhanced API with mock fallback
+const enhancedApi = {
+  ...api,
+
+  // Authentication
+  async login(email, password) {
+    if (shouldUseMockApi()) {
+      return await mockApi.login(email, password);
+    }
+    return await api.post('/auth/login', { email, password });
+  },
+
+  async logout() {
+    if (shouldUseMockApi()) {
+      return await mockApi.logout();
+    }
+    return await api.post('/auth/logout');
+  },
+
+  async getProfile() {
+    if (shouldUseMockApi()) {
+      return await mockApi.getProfile();
+    }
+    return await api.get('/auth/me');
+  },
+
+  // Products
+  async getProducts(params = {}) {
+    if (shouldUseMockApi()) {
+      return await mockApi.getProducts(params);
+    }
+    return await api.get('/products', { params });
+  },
+
+  async getProduct(id) {
+    if (shouldUseMockApi()) {
+      return await mockApi.getProduct(id);
+    }
+    return await api.get(`/products/${id}`);
+  },
+
+  // Orders
+  async getOrders(params = {}) {
+    if (shouldUseMockApi()) {
+      return await mockApi.getOrders(params);
+    }
+    return await api.get('/orders', { params });
+  },
+
+  async createOrder(orderData) {
+    if (shouldUseMockApi()) {
+      return await mockApi.createOrder(orderData);
+    }
+    return await api.post('/orders', orderData);
+  },
+
+  // Dashboard
+  async getDashboardStats() {
+    if (shouldUseMockApi()) {
+      return await mockApi.getDashboardStats();
+    }
+    return await api.get('/analytics/dashboard');
+  },
+
+  // Categories
+  async getCategories() {
+    if (shouldUseMockApi()) {
+      return await mockApi.getCategories();
+    }
+    return await api.get('/categories');
+  }
+};
+
+export { enhancedApi as api, apiClient };
+export default enhancedApi;

@@ -2,12 +2,11 @@
 // Enterprise POS System - AI Features with Cloudflare AI
 // Product recommendations, demand forecasting, price optimization, and intelligent insights
 
-import { Hono } from 'hono';
-import { auth } from '../middleware/auth.js';
-import { rbac } from '../middleware/rbac.js';
+import { Router } from 'itty-router';
+import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { DatabaseService } from '../services/database.js';
 
-const ai = new Hono();
+const router = Router();
 
 // Get personalized product recommendations
 ai.post('/recommendations', auth, async (c) => {
@@ -925,4 +924,4 @@ function generateRuleBasedInsights(customer, purchasePatterns) {
   };
 }
 
-export default ai;
+export default router;

@@ -1,33 +1,37 @@
-import { Hono } from 'hono'
-import { z } from 'zod'
+/**
+ * ============================================================================
+ * PRODUCT ROUTES
+ * ============================================================================
+ * Handles product management, inventory, and catalog operations
+ */
 
-const products = new Hono()
+import { Router } from 'itty-router';
+import { corsHeaders } from '../utils/cors.js';
+import { validateRequest, schemas } from '../utils/validators.js';
+import { requireRole } from '../middleware/auth.js';
 
-// Validation schemas
-const createProductSchema = z.object({
-  sku: z.string().min(1, 'SKU is required').max(50),
-  name: z.string().min(1, 'Product name is required').max(200),
-  description: z.string().optional(),
-  category_id: z.string().optional(),
-  price: z.number().positive('Price must be positive'),
-  cost_price: z.number().positive('Cost price must be positive').optional(),
-  stock_quantity: z.number().int().min(0, 'Stock quantity cannot be negative').default(0),
-  reorder_level: z.number().int().min(0).default(10),
-  barcode: z.string().optional(),
-  image_url: z.string().url().optional(),
-  weight: z.number().positive().optional(),
-  dimensions: z.string().optional(), // JSON string
-  tax_rate: z.number().min(0).max(100).default(0)
-})
+const router = Router();
 
-const updateProductSchema = createProductSchema.partial()
+/**
+ * Generate UUID
+ */
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
-const stockUpdateSchema = z.object({
-  quantity_change: z.number().int(),
-  type: z.enum(['sale', 'restock', 'adjustment', 'waste', 'return']),
-  reason: z.string().optional(),
-  reference_id: z.string().optional()
-})
+/**
+ * Generate SKU
+ */
+function generateSKU(name, categoryId) {
+  const prefix = name.substring(0, 3).toUpperCase();
+  const timestamp = Date.now().toString().slice(-6);
+  const random = Math.random().toString(36).substring(2, 4).toUpperCase();
+  return `${prefix}-${timestamp}-${random}`;
+}
 
 // Helper functions
 async function logInventoryChange(db, productId, userId, data) {
@@ -89,108 +93,68 @@ async function updateProductStock(db, productId, quantityChange, userId, logData
 // GET ROUTES
 // ==========================================
 
-// GET /api/products - List all products with filters and pagination
-products.get('/', async (c) => {
+/**
+ * GET /api/products
+ * Get all products with filtering and pagination
+ */
+router.get('/api/products', async (request, env, ctx) => {
   try {
-    const user = c.get('user')
-    const { 
-      page = 1, 
-      limit = 20, 
-      search = '', 
-      category_id = '', 
-      is_active = '',
-      low_stock = '',
-      sort_by = 'name',
-      sort_order = 'asc'
-    } = c.req.query()
-    
-    const offset = (parseInt(page) - 1) * parseInt(limit)
-    const validSortColumns = ['name', 'price', 'stock_quantity', 'created_at', 'sku']
-    const sortColumn = validSortColumns.includes(sort_by) ? sort_by : 'name'
-    const sortDirection = sort_order.toLowerCase() === 'desc' ? 'DESC' : 'ASC'
-    
-    // Build WHERE clause
-    let whereConditions = []
-    let params = []
-    
-    if (search) {
-      whereConditions.push(`(p.name LIKE ? OR p.sku LIKE ? OR p.description LIKE ?)`)
-      const searchTerm = `%${search}%`
-      params.push(searchTerm, searchTerm, searchTerm)
-    }
-    
-    if (category_id) {
-      whereConditions.push(`p.category_id = ?`)
-      params.push(category_id)
-    }
-    
-    if (is_active !== '') {
-      whereConditions.push(`p.is_active = ?`)
-      params.push(is_active === 'true' ? 1 : 0)
-    }
-    
-    if (low_stock === 'true') {
-      whereConditions.push(`p.stock_quantity <= p.reorder_level`)
-    }
-    
-    const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(' AND ')}`
-      : ''
-    
-    // Get total count
+    const url = new URL(request.url);
+    const filters = {
+      category_id: url.searchParams.get('category_id'),
+      search: url.searchParams.get('search'),
+      is_active: url.searchParams.get('is_active') !== 'false',
+      page: parseInt(url.searchParams.get('page')) || 1,
+      limit: parseInt(url.searchParams.get('limit')) || 20,
+      low_stock: url.searchParams.get('low_stock') === 'true'
+    };
+
+    const products = await request.db.getProducts(filters);
+
+    // Get total count for pagination
     const countQuery = `
       SELECT COUNT(*) as total
       FROM products p
-      ${whereClause}
-    `
-    const countResult = await c.env.DB.prepare(countQuery).bind(...params).first()
-    const total = countResult.total
-    
-    // Get products with category info
-    const query = `
-      SELECT 
-        p.*,
-        c.name as category_name,
-        c.color as category_color,
-        CASE 
-          WHEN p.stock_quantity <= p.reorder_level THEN 1 
-          ELSE 0 
-        END as is_low_stock
-      FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      ${whereClause}
-      ORDER BY p.${sortColumn} ${sortDirection}
-      LIMIT ? OFFSET ?
-    `
-    
-    const productsResult = await c.env.DB.prepare(query).bind(
-      ...params, 
-      parseInt(limit), 
-      offset
-    ).all()
-    
-    return c.json({
+      WHERE p.is_active = ?
+      ${filters.category_id ? 'AND p.category_id = ?' : ''}
+      ${filters.search ? 'AND p.name LIKE ?' : ''}
+    `;
+
+    const countParams = [filters.is_active ? 1 : 0];
+    if (filters.category_id) countParams.push(filters.category_id);
+    if (filters.search) countParams.push(`%${filters.search}%`);
+
+    const countResult = await request.db.first(countQuery, countParams);
+    const total = countResult?.total || 0;
+
+    return new Response(JSON.stringify({
       success: true,
-      data: productsResult.results,
+      data: products,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: filters.page,
+        limit: filters.limit,
         total,
-        totalPages: Math.ceil(total / parseInt(limit))
+        pages: Math.ceil(total / filters.limit)
       }
-    })
-    
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+
   } catch (error) {
-    console.error('Get products error:', error)
-    return c.json({
+    console.error('Get products error:', error);
+    return new Response(JSON.stringify({
       error: 'Failed to fetch products',
       code: 'FETCH_ERROR'
-    }, 500)
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
   }
-})
+});
 
 // GET /api/products/:id - Get single product
-products.get('/:id', async (c) => {
+router.get('/:id', async (request, env, ctx) => {
   try {
     const productId = c.req.param('id')
     
@@ -230,7 +194,7 @@ products.get('/:id', async (c) => {
 })
 
 // GET /api/products/barcode/:barcode - Get product by barcode
-products.get('/barcode/:barcode', async (c) => {
+router.get('/barcode/:barcode', async (request, env, ctx) => {
   try {
     const barcode = c.req.param('barcode')
     
@@ -270,7 +234,7 @@ products.get('/barcode/:barcode', async (c) => {
 })
 
 // GET /api/products/low-stock - Get low stock products
-products.get('/low-stock', async (c) => {
+router.get('/low-stock', async (request, env, ctx) => {
   try {
     const lowStockProducts = await c.env.DB.prepare(`
       SELECT 
@@ -304,7 +268,7 @@ products.get('/low-stock', async (c) => {
 // ==========================================
 
 // POST /api/products - Create new product
-products.post('/', async (c) => {
+router.post('/', async (request, env, ctx) => {
   try {
     const user = c.get('user')
     
@@ -419,7 +383,7 @@ products.post('/', async (c) => {
 // ==========================================
 
 // PUT /api/products/:id - Update product
-products.put('/:id', async (c) => {
+router.put('/:id', async (request, env, ctx) => {
   try {
     const user = c.get('user')
     const productId = c.req.param('id')
@@ -535,7 +499,7 @@ products.put('/:id', async (c) => {
 })
 
 // PUT /api/products/:id/stock - Update product stock
-products.put('/:id/stock', async (c) => {
+router.put('/:id/stock', async (request, env, ctx) => {
   try {
     const user = c.get('user')
     const productId = c.req.param('id')
@@ -615,7 +579,7 @@ products.put('/:id/stock', async (c) => {
 // ==========================================
 
 // DELETE /api/products/:id - Delete product (soft delete)
-products.delete('/:id', async (c) => {
+router.delete('/:id', async (request, env, ctx) => {
   try {
     const user = c.get('user')
     const productId = c.req.param('id')
@@ -661,4 +625,4 @@ products.delete('/:id', async (c) => {
   }
 })
 
-export default products
+export default router;

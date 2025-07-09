@@ -1,7 +1,15 @@
-import { Hono } from 'hono'
-import { z } from 'zod'
+/**
+ * ============================================================================
+ * CUSTOMER ROUTES
+ * ============================================================================
+ * Handles customer management and CRM features
+ */
 
-const customers = new Hono()
+import { Router } from 'itty-router';
+import { corsHeaders } from '../utils/cors.js';
+import { validateRequest, schemas } from '../utils/validators.js';
+
+const router = Router();
 
 // Validation schemas
 const createCustomerSchema = z.object({
@@ -720,4 +728,4 @@ customers.delete('/:id', async (c) => {
   }
 })
 
-export default customers
+export default router;

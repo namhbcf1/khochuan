@@ -2,12 +2,12 @@
 // Enterprise POS System - Analytics & Reporting
 // Real-time business intelligence, dashboards, and comprehensive reporting
 
-import { Hono } from 'hono';
+import { Router } from 'itty-router';
 import { auth } from '../middleware/auth.js';
 import { rbac } from '../middleware/rbac.js';
 import { DatabaseService } from '../services/database.js';
 
-const analytics = new Hono();
+const router = Router();
 
 // Real-time dashboard data
 analytics.get('/dashboard', auth, rbac(['admin', 'manager']), async (c) => {
@@ -1086,4 +1086,4 @@ function convertToCSV(data) {
   return csvContent;
 }
 
-export default analytics;
+export default router;

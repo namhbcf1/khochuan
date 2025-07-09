@@ -111,7 +111,8 @@ INSERT INTO payment_methods (id, name, type, is_active, processing_fee, icon, se
 ('pay-003', 'Debit Card', 'card', 1, 1.5, 'credit-card', '{"accepted_cards": ["visa", "mastercard"]}', datetime('now', '-30 days')),
 ('pay-004', 'Apple Pay', 'digital_wallet', 1, 2.0, 'apple', '{"supported_devices": ["iphone", "ipad", "apple_watch"]}', datetime('now', '-30 days')),
 ('pay-005', 'Google Pay', 'digital_wallet', 1, 2.0, 'google', '{"supported_devices": ["android"]}', datetime('now', '-30 days')),
-('pay-006', 'Loyalty Points', 'loyalty_points', 1, 0.00, 'star', '{"points_per_dollar": 100}', datetime('now', '-30 days'));
+('pay-006', 'Bank Transfer', 'bank_transfer', 1, 0.50, 'bank', '{"processing_time": "1-3 business days"}', datetime('now', '-30 days')),
+('pay-007', 'Loyalty Points', 'loyalty_points', 1, 0.00, 'star', '{"points_per_dollar": 100}', datetime('now', '-30 days'));
 
 -- =====================================================
 -- 6. STAFF STATISTICS (Gamification)
@@ -360,45 +361,34 @@ INSERT INTO customers (id, name, phone, email, address) VALUES
 ('cust_003', 'Lê Văn C', '0909123456', 'levanc@example.com', '789 Đường DEF, Quận 3, TP.HCM');
 
 -- Insert test products
-INSERT INTO products (id, name, description, category, price, stock_quantity) VALUES
-('prod_001', 'Laptop Dell XPS 13', 'Laptop cao cấp cho doanh nhân', 'Laptop', 25000000, 10),
-('prod_002', 'Màn hình Dell 27"', 'Màn hình IPS 27 inch 4K', 'Màn hình', 7500000, 15),
-('prod_003', 'Chuột Logitech MX Master', 'Chuột không dây cao cấp', 'Chuột', 1800000, 20),
-('prod_004', 'Bàn phím Keychron K2', 'Bàn phím cơ không dây', 'Bàn phím', 2200000, 8),
-('prod_005', 'Tai nghe Sony WH-1000XM4', 'Tai nghe chống ồn cao cấp', 'Tai nghe', 5500000, 12),
-('prod_006', 'SSD Samsung 970 EVO 1TB', 'Ổ cứng SSD NVMe', 'Linh kiện', 3200000, 25);
+INSERT INTO products (id, sku, name, description, category_id, price, stock_quantity) VALUES
+('prod_001', 'LAP-001', 'Laptop Dell XPS 13', 'Laptop cao cấp cho doanh nhân', 'cat_001', 25000000, 10),
+('prod_002', 'MON-001', 'Màn hình Dell 27"', 'Màn hình IPS 27 inch 4K', 'cat_002', 7500000, 15),
+('prod_003', 'MOU-001', 'Chuột Logitech MX Master', 'Chuột không dây cao cấp', 'cat_003', 1800000, 20),
+('prod_004', 'KEY-001', 'Bàn phím Keychron K2', 'Bàn phím cơ không dây', 'cat_004', 2200000, 8),
+('prod_005', 'HEA-001', 'Tai nghe Sony WH-1000XM4', 'Tai nghe chống ồn cao cấp', 'cat_005', 5500000, 12),
+('prod_006', 'SSD-001', 'SSD Samsung 970 EVO 1TB', 'Ổ cứng SSD NVMe', 'cat_009', 3200000, 25);
 
 -- Insert test orders
-INSERT INTO orders (id, customer_id, total, status, payment_method, shipping_address, shipping_fee, discount, created_at, processing_at, shipped_at, completed_at) VALUES
-('ord_001', 'cust_001', 32500000, 'completed', 'Thẻ tín dụng', '123 Đường ABC, Quận 1, TP.HCM', 0, 0, '2023-01-15 10:30:00', '2023-01-15 11:00:00', '2023-01-16 09:00:00', '2023-01-17 14:30:00'),
-('ord_002', 'cust_001', 7500000, 'completed', 'Tiền mặt', '123 Đường ABC, Quận 1, TP.HCM', 0, 0, '2023-03-20 14:45:00', '2023-03-20 15:30:00', '2023-03-21 10:15:00', '2023-03-22 11:00:00'),
-('ord_003', 'cust_002', 9700000, 'shipped', 'Chuyển khoản', '456 Đường XYZ, Quận 2, TP.HCM', 0, 0, '2023-06-10 09:15:00', '2023-06-10 10:00:00', '2023-06-11 08:30:00', NULL),
-('ord_004', 'cust_003', 3200000, 'processing', 'Tiền mặt', '789 Đường DEF, Quận 3, TP.HCM', 0, 0, '2023-07-05 16:20:00', '2023-07-05 17:00:00', NULL, NULL);
+INSERT INTO orders (id, order_number, customer_id, cashier_id, subtotal, tax_amount, discount_amount, total_amount, payment_method, payment_status, order_status, notes, created_at) VALUES
+('ord_001', 'ORD-001-2024', 'cust_001', 'admin', 32500000, 0, 0, 32500000, 'card', 'completed', 'completed', 'Test order 1', '2024-01-15 10:30:00'),
+('ord_002', 'ORD-002-2024', 'cust_001', 'admin', 7500000, 0, 0, 7500000, 'cash', 'completed', 'completed', 'Test order 2', '2024-03-20 14:45:00'),
+('ord_003', 'ORD-003-2024', 'cust_002', 'admin', 9700000, 0, 0, 9700000, 'digital_wallet', 'completed', 'completed', 'Test order 3', '2024-06-10 09:15:00'),
+('ord_004', 'ORD-004-2024', 'cust_003', 'admin', 3200000, 0, 0, 3200000, 'cash', 'completed', 'completed', 'Test order 4', '2024-07-05 16:20:00');
 
--- Insert test order items with warranty
-INSERT INTO order_items (id, order_id, product_id, quantity, price, serial_number, warranty_months, warranty_expiry) VALUES
-('item_001', 'ord_001', 'prod_001', 1, 25000000, 'SN12345678', 36, '2026-01-15 10:30:00'),
-('item_002', 'ord_001', 'prod_003', 1, 1800000, 'SN23456789', 12, '2024-01-15 10:30:00'),
-('item_003', 'ord_001', 'prod_006', 2, 3200000, 'SN34567890', 36, '2026-01-15 10:30:00'),
-('item_004', 'ord_002', 'prod_002', 1, 7500000, 'SN45678901', 36, '2026-03-20 14:45:00'),
-('item_005', 'ord_003', 'prod_004', 1, 2200000, 'SN56789012', 12, '2024-06-10 09:15:00'),
-('item_006', 'ord_003', 'prod_005', 1, 5500000, 'SN67890123', 12, '2024-06-10 09:15:00'),
-('item_007', 'ord_003', 'prod_003', 1, 1800000, 'SN78901234', 12, '2024-06-10 09:15:00'),
-('item_008', 'ord_004', 'prod_006', 1, 3200000, 'SN89012345', 36, '2026-07-05 16:20:00');
+-- Insert test order items
+INSERT INTO order_items (id, order_id, product_id, quantity, unit_price, subtotal, discount_amount) VALUES
+('item_001', 'ord_001', 'prod_001', 1, 25000000, 25000000, 0),
+('item_002', 'ord_001', 'prod_003', 1, 1800000, 1800000, 0),
+('item_003', 'ord_001', 'prod_006', 2, 3200000, 6400000, 0),
+('item_004', 'ord_002', 'prod_002', 1, 7500000, 7500000, 0),
+('item_005', 'ord_003', 'prod_004', 1, 2200000, 2200000, 0),
+('item_006', 'ord_003', 'prod_005', 1, 5500000, 5500000, 0),
+('item_007', 'ord_003', 'prod_003', 1, 2000000, 2000000, 0),
+('item_008', 'ord_004', 'prod_006', 1, 3200000, 3200000, 0);
 
--- Insert test staff scores
-INSERT INTO staff_scores (id, staff_id, points, badge, level, streak_days, season) VALUES
-('score_001', 'staff_001', 1250, 'Gold', 12, 7, '2023-Q2'),
-('score_002', 'staff_002', 980, 'Silver', 10, 3, '2023-Q2'),
-('score_003', 'staff_003', 1500, 'Platinum', 15, 12, '2023-Q2');
-
--- Insert test logs
-INSERT INTO logs (id, type, ref_id, description, timestamp) VALUES
-('log_001', 'order_created', 'ord_001', 'Đơn hàng được tạo bởi nhân viên staff_001', '2023-01-15 10:30:00'),
-('log_002', 'order_completed', 'ord_001', 'Đơn hàng hoàn thành', '2023-01-17 14:30:00'),
-('log_003', 'order_created', 'ord_002', 'Đơn hàng được tạo bởi nhân viên staff_001', '2023-03-20 14:45:00'),
-('log_004', 'order_completed', 'ord_002', 'Đơn hàng hoàn thành', '2023-03-22 11:00:00'),
-('log_005', 'order_created', 'ord_003', 'Đơn hàng được tạo bởi nhân viên staff_002', '2023-06-10 09:15:00'),
-('log_006', 'order_shipped', 'ord_003', 'Đơn hàng đã được gửi đi', '2023-06-11 08:30:00'),
-('log_007', 'order_created', 'ord_004', 'Đơn hàng được tạo bởi nhân viên staff_003', '2023-07-05 16:20:00'),
-('log_008', 'order_processing', 'ord_004', 'Đơn hàng đang được xử lý', '2023-07-05 17:00:00');
+-- Insert staff stats
+INSERT INTO staff_stats (id, user_id, total_sales, total_orders, total_points, level, experience_points) VALUES
+('stat_001', 'admin', 52700000, 4, 1054, 5, 2635),
+('stat_002', 'cashier', 0, 0, 0, 1, 0),
+('stat_003', 'staff', 0, 0, 0, 1, 0);

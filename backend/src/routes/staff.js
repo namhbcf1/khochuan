@@ -2,12 +2,11 @@
 // Enterprise POS System - Staff Management with Gamification
 // Handles staff CRUD, performance tracking, badges, challenges, and leaderboards
 
-import { Hono } from 'hono';
-import { auth } from '../middleware/auth.js';
-import { rbac } from '../middleware/rbac.js';
+import { Router } from 'itty-router';
+import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { DatabaseService } from '../services/database.js';
 
-const staff = new Hono();
+const router = Router();
 
 // Get all staff members with optional filters
 staff.get('/', auth, rbac(['admin', 'manager']), async (c) => {
@@ -695,4 +694,4 @@ async function updateChallengeProgress(db, staffId, type, value) {
   }
 }
 
-export default staff;
+export default router;

@@ -1,0 +1,5 @@
+# SPA fallback
+/* /index.html 200
+
+# API redirects (if needed)
+/api/* https://your-backend-worker.your-subdomain.workers.dev/:splat 200

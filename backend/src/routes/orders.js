@@ -1,7 +1,16 @@
-import { Hono } from 'hono'
-import { z } from 'zod'
+/**
+ * ============================================================================
+ * ORDER ROUTES
+ * ============================================================================
+ * Handles order management, POS transactions, and order history
+ */
 
-const orders = new Hono()
+import { Router } from 'itty-router';
+import { corsHeaders } from '../utils/cors.js';
+import { validateRequest, schemas } from '../utils/validators.js';
+import { requireRole } from '../middleware/auth.js';
+
+const router = Router();
 
 // Validation schemas
 const orderItemSchema = z.object({
@@ -669,4 +678,4 @@ orders.put('/:id', async (c) => {
   }
 })
 
-export default orders
+export default router;

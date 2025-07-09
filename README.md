@@ -1,8 +1,32 @@
-# Smart POS System
+# 🏪 Smart POS System
 
-## Giới thiệu
+Hệ thống Point of Sale (POS) thông minh được xây dựng với React và Cloudflare Workers, tích hợp AI và gamification.
 
-Hệ thống POS thông minh với tính năng game hóa, AI, và đa kênh bán hàng. Được phát triển với React, Node.js, và hệ thống cơ sở dữ liệu hiện đại.
+## ✨ Tính năng chính
+
+### 🎯 Core POS Features
+- **Quản lý bán hàng**: Giao diện POS hiện đại với barcode scanner
+- **Quản lý kho**: Theo dõi tồn kho, cảnh báo hết hàng
+- **Quản lý khách hàng**: CRM tích hợp với loyalty program
+- **Báo cáo & Analytics**: Dashboard thống kê chi tiết
+
+### 🤖 AI-Powered Features
+- **Dự đoán doanh số**: AI forecasting cho inventory planning
+- **Gợi ý sản phẩm**: Recommendation engine
+- **Phân tích xu hướng**: Trend analysis và insights
+- **Chatbot hỗ trợ**: AI assistant cho nhân viên
+
+### 🎮 Gamification
+- **Hệ thống điểm**: Point system cho nhân viên và khách hàng
+- **Badges & Achievements**: Huy hiệu và thành tựu
+- **Leaderboard**: Bảng xếp hạng nhân viên
+- **Challenges**: Thử thách hàng ngày/tuần
+
+### 🔧 Technical Features
+- **Real-time Updates**: WebSocket cho cập nhật thời gian thực
+- **Offline Support**: PWA với offline capabilities
+- **Multi-tenant**: Hỗ trợ nhiều cửa hàng
+- **Role-based Access**: Phân quyền chi tiết
 
 ## Cấu trúc hệ thống
 

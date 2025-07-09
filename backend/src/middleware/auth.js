@@ -1,112 +1,173 @@
 /**
- * Authentication Middleware
- * Provides JWT verification and role-based access control
+ * ============================================================================
+ * AUTHENTICATION MIDDLEWARE
+ * ============================================================================
+ * Handles JWT token validation, user authentication, and role-based access
  */
 
-import { corsHeaders } from '../utils/cors';
+import { corsHeaders } from '../utils/cors.js';
+import { verifyJWT } from '../utils/jwt.js';
 
 /**
- * Verify JWT token from Authorization header
- * @param {Request} request - The incoming request
- * @param {Object} env - Environment variables
- * @returns {Object|null} - Decoded token payload or null if invalid
+ * Authentication middleware for protected routes
  */
-export async function verifyToken(request, env) {
+export async function authMiddleware(request, env, ctx) {
   try {
-    // Get authorization header
+    // Skip auth for public routes
+    const publicRoutes = [
+      '/health',
+      '/api/info',
+      '/api/auth/login',
+      '/api/auth/register',
+      '/api/auth/forgot-password',
+      '/api/auth/reset-password'
+    ];
+
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+
+    // Check if this is a public route
+    if (publicRoutes.some(route => pathname.includes(route))) {
+      return; // Continue to next handler
+    }
+
+    // Get token from Authorization header
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null;
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: 'Missing or invalid authorization header',
+        code: 'AUTH_MISSING_TOKEN'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
     }
-    
-    // Extract token
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      return null;
-    }
-    
-    // Verify token using Workers JWT library or KV store
-    // This is a simplified example - in production, use proper JWT verification
-    const tokenData = await env.AUTH_STORE.get(`token:${token}`);
-    if (!tokenData) {
-      return null;
-    }
-    
-    // Parse token data
-    return JSON.parse(tokenData);
-  } catch (error) {
-    console.error('Token verification error:', error);
-    return null;
-  }
-}
 
-/**
- * Authentication middleware
- * @param {Request} request - The incoming request
- * @param {Object} env - Environment variables
- * @returns {Response|null} - Error response or null to continue
- */
-export async function authMiddleware(request, env) {
-  // Skip auth for OPTIONS requests (CORS preflight)
-  if (request.method === 'OPTIONS') {
-    return null;
-  }
-  
-  // Verify token
-  const user = await verifyToken(request, env);
-  if (!user) {
-    return new Response(JSON.stringify({ 
-      error: 'Unauthorized',
-      message: 'Authentication required'
-    }), { 
-      status: 401, 
-      headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+    const token = authHeader.substring(7);
+
+    // Verify JWT token
+    const payload = await verifyJWT(token, env.JWT_SECRET || 'default-secret-key');
+
+    if (!payload) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: 'Invalid or expired token',
+        code: 'AUTH_INVALID_TOKEN'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // Get user from database to ensure they still exist and are active
+    const user = await request.db.findById('users', payload.userId);
+
+    if (!user || !user.is_active) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: 'User not found or inactive',
+        code: 'AUTH_USER_INACTIVE'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // Add user info to request for use in route handlers
+    request.user = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      permissions: payload.permissions || [],
+      tokenExp: payload.exp
+    };
+
+    // Continue to next handler
+    return;
+
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+
+    return new Response(JSON.stringify({
+      error: 'Authentication Error',
+      message: 'Failed to authenticate request',
+      code: 'AUTH_ERROR'
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
-  
-  // Attach user to request for handlers
-  request.user = user;
-  
-  // Continue processing
-  return null;
 }
 
 /**
  * Role-based access control middleware
- * @param {Array<String>} allowedRoles - Roles allowed to access the route
- * @returns {Function} - Middleware function
  */
-export function roleCheck(allowedRoles) {
-  return async (request, env) => {
-    // Skip for OPTIONS requests
-    if (request.method === 'OPTIONS') {
-      return null;
-    }
-    
-    // Ensure user is authenticated
-    const user = request.user || await verifyToken(request, env);
-    if (!user) {
-      return new Response(JSON.stringify({ 
+export function requireRole(allowedRoles) {
+  return async function(request, env, ctx) {
+    if (!request.user) {
+      return new Response(JSON.stringify({
         error: 'Unauthorized',
-        message: 'Authentication required'
-      }), { 
-        status: 401, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
       });
     }
-    
-    // Check if user has allowed role
-    if (!allowedRoles.includes(user.role)) {
-      return new Response(JSON.stringify({ 
+
+    const userRole = request.user.role;
+
+    if (!allowedRoles.includes(userRole)) {
+      return new Response(JSON.stringify({
         error: 'Forbidden',
-        message: 'You do not have permission to access this resource'
-      }), { 
-        status: 403, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        message: `Access denied. Required roles: ${allowedRoles.join(', ')}`,
+        code: 'AUTH_INSUFFICIENT_PERMISSIONS'
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
       });
     }
-    
-    // Continue processing
-    return null;
+
+    // Continue to next handler
+    return;
   };
 }
+
+/**
+ * Permission-based access control middleware
+ */
+export function requirePermission(permission) {
+  return async function(request, env, ctx) {
+    if (!request.user) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized',
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    const userPermissions = request.user.permissions || [];
+
+    if (!userPermissions.includes(permission) && request.user.role !== 'admin') {
+      return new Response(JSON.stringify({
+        error: 'Forbidden',
+        message: `Access denied. Required permission: ${permission}`,
+        code: 'AUTH_INSUFFICIENT_PERMISSIONS'
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
+
+    // Continue to next handler
+    return;
+  };
+}
+
+// Export auth as alias for authMiddleware
+export const auth = authMiddleware;

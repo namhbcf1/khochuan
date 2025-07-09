@@ -14,7 +14,8 @@ name = "smart-pos-api-staging"
 [[d1_databases]]
 binding = "DB"
 database_name = "smart-pos-db"
-database_id = "your-d1-database-id"
+database_id = "dfd20fc4-d3a1-47f6-86fa-424fa5a68ca0"
+migrations_dir = "database/migrations"
 
 # KV Storage Configuration
 [[kv_namespaces]]
