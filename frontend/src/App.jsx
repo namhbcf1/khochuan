@@ -3,7 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import { AuthProvider } from './auth/AuthContext';
-import AppRoutes from './routes';
+import AppRoutes from './routes.jsx';
 import './styles/globals.css';
 
 // Loading component
