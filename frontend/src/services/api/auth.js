@@ -29,16 +29,22 @@ const authService = {
    * @returns {Promise} Promise with user data
    */
   login: async (credentials) => {
+    console.log('🔑 AuthService: Login attempt', { email: credentials.email });
+    console.log('🔑 AuthService: Should use mock API?', shouldUseMockApi());
+
     // Use mock API if configured or if backend is unavailable
     if (shouldUseMockApi()) {
+      console.log('🔑 AuthService: Using mock API');
       try {
         const mockResponse = await mockApi.login(credentials.email, credentials.password);
+        console.log('🔑 AuthService: Mock API response', mockResponse);
         return {
           success: true,
           user: mockResponse.data.user,
           token: mockResponse.data.token
         };
       } catch (error) {
+        console.error('🔑 AuthService: Mock API error', error);
         return {
           success: false,
           message: error.message || 'Email hoặc mật khẩu không đúng!'
@@ -47,22 +53,26 @@ const authService = {
     }
 
     // Try real API
+    console.log('🔑 AuthService: Trying real API');
     try {
       const response = await apiClient.post(AUTH_ENDPOINTS.LOGIN, credentials);
+      console.log('🔑 AuthService: Real API response', response.data);
       return response.data;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('🔑 AuthService: Real API error', error);
 
       // Fallback to mock API if real API fails
       try {
-        console.log('Falling back to mock API...');
+        console.log('🔑 AuthService: Falling back to mock API...');
         const mockResponse = await mockApi.login(credentials.email, credentials.password);
+        console.log('🔑 AuthService: Mock API fallback response', mockResponse);
         return {
           success: true,
           user: mockResponse.data.user,
           token: mockResponse.data.token
         };
       } catch (mockError) {
+        console.error('🔑 AuthService: Mock API fallback error', mockError);
         // Both real and mock API failed
         if (error.response) {
           return {

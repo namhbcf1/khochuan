@@ -120,17 +120,23 @@ const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 export const mockApi = {
   // Authentication
   async login(email, password) {
+    console.log('🎭 MockAPI: Login attempt', { email, password });
+    console.log('🎭 MockAPI: Available users', mockUsers.map(u => ({ email: u.email, password: u.password })));
+
     await delay();
-    
+
     const user = mockUsers.find(u => u.email === email && u.password === password);
+    console.log('🎭 MockAPI: User found?', !!user);
+
     if (!user) {
+      console.error('🎭 MockAPI: Invalid credentials');
       throw new Error('Invalid credentials');
     }
 
     const token = `mock-jwt-token-${user.id}`;
     const { password: _, ...userWithoutPassword } = user;
-    
-    return {
+
+    const response = {
       success: true,
       data: {
         user: userWithoutPassword,
@@ -138,6 +144,9 @@ export const mockApi = {
         refresh_token: `mock-refresh-token-${user.id}`
       }
     };
+
+    console.log('🎭 MockAPI: Login successful', response);
+    return response;
   },
 
   async logout() {
@@ -272,7 +281,23 @@ export const mockApi = {
 
 // Check if we should use mock API
 export const shouldUseMockApi = () => {
-  return import.meta.env.VITE_USE_MOCK_API === 'true' || 
-         import.meta.env.VITE_API_URL?.includes('localhost:8787') ||
-         !navigator.onLine;
+  const useMock = import.meta.env.VITE_USE_MOCK_API === 'true';
+  const isLocalhost = import.meta.env.VITE_API_URL?.includes('localhost:8787');
+  const isOffline = !navigator.onLine;
+  const enableMockData = import.meta.env.VITE_ENABLE_MOCK_DATA === 'true';
+
+  const result = useMock || isLocalhost || isOffline || enableMockData;
+
+  console.log('🎭 MockAPI: shouldUseMockApi check', {
+    VITE_USE_MOCK_API: import.meta.env.VITE_USE_MOCK_API,
+    VITE_ENABLE_MOCK_DATA: import.meta.env.VITE_ENABLE_MOCK_DATA,
+    VITE_API_URL: import.meta.env.VITE_API_URL,
+    useMock,
+    isLocalhost,
+    isOffline,
+    enableMockData,
+    result
+  });
+
+  return result;
 };

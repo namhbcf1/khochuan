@@ -227,22 +227,26 @@ export const AuthProvider = ({ children }) => {
 
   // Login function
   const login = async (credentials) => {
+    console.log('🔐 AuthContext: Starting login process', { email: credentials.email });
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
-    
+
     try {
       // Call API login
+      console.log('🔐 AuthContext: Calling authService.login');
       const response = await authService.login(credentials);
-      
+      console.log('🔐 AuthContext: Login response received', response);
+
       if (response.success) {
         const { user, token } = response;
-        
+        console.log('🔐 AuthContext: Login successful', { user: user.email, role: user.role });
+
         // Set auth token in axios headers
         authService.setAuthToken(token);
-        
+
         // Set session expiration (24 hours from now)
         const expiresAt = Date.now() + (24 * 60 * 60 * 1000);
         const lastActivity = Date.now();
-        
+
         // Store in localStorage
         localStorage.setItem(SESSION_CONFIG.TOKEN_KEY, token);
         localStorage.setItem(SESSION_CONFIG.USER_KEY, JSON.stringify(user));
@@ -261,13 +265,16 @@ export const AuthProvider = ({ children }) => {
         });
 
         message.success('Đăng nhập thành công!');
+        console.log('🔐 AuthContext: Login process completed successfully');
         return { success: true, user };
       } else {
+        console.error('🔐 AuthContext: Login failed', response.message);
         dispatch({ type: AUTH_ACTIONS.LOGIN_FAILURE });
         message.error(response.message || 'Email hoặc mật khẩu không đúng!');
         return { success: false, error: response.message };
       }
     } catch (error) {
+      console.error('🔐 AuthContext: Login error caught', error);
       dispatch({ type: AUTH_ACTIONS.LOGIN_FAILURE });
       message.error('Đăng nhập thất bại!');
       return { success: false, error: error.message };
