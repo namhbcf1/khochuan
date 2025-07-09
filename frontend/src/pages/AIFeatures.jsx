@@ -6,10 +6,10 @@ import {
   Modal, Drawer, Upload, message, Spin
 } from 'antd';
 import {
-  RobotOutlined, BulbOutlined, ThunderboltOutlined, TargetOutlined,
+  RobotOutlined, BulbOutlined, ThunderboltOutlined, AimOutlined,
   LineChartOutlined, UserOutlined, ShoppingCartOutlined, DollarOutlined,
   FireOutlined, StarOutlined, TrophyOutlined, RocketOutlined,
-  EyeOutlined, BrainOutlined, ExperimentOutlined, SettingOutlined,
+  EyeOutlined, ExperimentOutlined, SettingOutlined,
   CloudUploadOutlined, DownloadOutlined, PlayCircleOutlined,
   PauseCircleOutlined, ReloadOutlined, CheckCircleOutlined
 } from '@ant-design/icons';
