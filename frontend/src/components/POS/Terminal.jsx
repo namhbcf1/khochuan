@@ -37,7 +37,7 @@ import {
   PercentageOutlined
 } from '@ant-design/icons';
 import { productsAPI, ordersAPI, customersAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../auth/AuthContext';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 
 const { Text, Title } = Typography;

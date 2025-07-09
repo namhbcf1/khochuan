@@ -56,7 +56,7 @@ import {
 } from 'recharts';
 import { analyticsAPI, staffAPI } from '../../services/api';
 import { useWebSocket } from '../../contexts/WebSocketContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../auth/AuthContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;

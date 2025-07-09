@@ -12,7 +12,7 @@ import {
   BarChartOutlined, FileDoneOutlined
 } from '@ant-design/icons';
 import { formatCurrency } from '../../../utils/helpers/formatters';
-import { useAuth } from '../../../utils/hooks/useAuth';
+import { useAuth } from '../../../auth/AuthContext';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;

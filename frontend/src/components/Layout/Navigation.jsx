@@ -29,7 +29,7 @@ import {
   MoonOutlined,
   ShopOutlined
 } from '@ant-design/icons';
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext } from '../../auth/AuthContext';
 
 const { Header, Sider } = Layout;
 const { Text } = Typography;

@@ -31,7 +31,7 @@ import {
   CopyOutlined
 } from '@ant-design/icons';
 import { useReactToPrint } from 'react-to-print';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -211,7 +211,7 @@ const ReceiptPrinter = ({ orderData, visible, onClose, customerInfo }) => {
           <p style={{ margin: '5px 0' }}>Hẹn gặp lại quý khách!</p>
           {orderData?.id && (
             <div style={{ margin: '10px auto', width: '100px', height: '100px' }}>
-              <QRCode 
+              <QRCodeSVG 
                 value={`https://truongphat.com/invoice/${orderData.id}`} 
                 size={100}
                 renderAs="svg"
@@ -360,7 +360,7 @@ const ReceiptPrinter = ({ orderData, visible, onClose, customerInfo }) => {
           <div style={{ margin: '10px auto', display: 'flex', justifyContent: 'center' }}>
             {orderData?.id && (
               <div style={{ margin: '0 auto', width: '100px', height: '100px' }}>
-                <QRCode 
+                <QRCodeSVG 
                   value={`https://truongphat.com/invoice/${orderData.id}`} 
                   size={100}
                   renderAs="svg"

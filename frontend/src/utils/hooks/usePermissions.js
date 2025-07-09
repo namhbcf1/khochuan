@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext } from '../../auth/AuthContext';
 
 /**
  * Hook quản lý và kiểm tra phân quyền người dùng

@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext } from '../../auth/AuthContext';
 import { PERMISSIONS, ROLES } from '../constants/permissions';
 
 /**
@@ -330,19 +330,20 @@ const useAuth = () => {
   };
 
   return {
-    ...auth,
-    login,
-    logout,
-    updateProfile,
-    changePassword,
+    // Expose whatever auth properties and methods are needed
+    user: auth.user,
+    isAuthenticated: auth.isAuthenticated,
+    login: auth.login,
+    logout: auth.logout,
+    // Add other properties and methods as needed
     hasRole,
     hasAnyRole,
     hasAllRoles,
-    getRoleLevel,
     hasMinimumRoleLevel,
+    updateProfile,
+    changePassword,
     requireAuth,
-    getDefaultRoute,
-    getAccessibleMenus
+    getDefaultRoute
   };
 };
 

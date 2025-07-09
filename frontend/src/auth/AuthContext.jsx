@@ -100,7 +100,7 @@ const authReducer = (state, action) => {
 };
 
 // Create context
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 // Auth provider component
 export const AuthProvider = ({ children }) => {

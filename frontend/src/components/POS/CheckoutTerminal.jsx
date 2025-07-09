@@ -65,7 +65,7 @@ import {
     CalendarOutlined,
     TeamOutlined
 } from '@ant-design/icons';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../auth/AuthContext';
 
 const { Title, Text } = Typography;
 const { Search } = Input;

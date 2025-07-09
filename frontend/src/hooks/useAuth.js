@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../auth/AuthContext';
 import { 
   hasRole, 
   hasAnyRole, 
@@ -310,9 +310,7 @@ export const useAuthGuard = (requiredRole = null, requiredPermissions = []) => {
 /**
  * Default export
  */
-export default useAuth;Auth Hook - Quản lý trạng thái xác thực và phân quyền
- */
-export const useAuth = () => {
+export default useAuth = () => {
   const context = useContext(AuthContext);
   
   if (!context) {
@@ -397,6 +395,3 @@ export const usePermissions = () => {
     checkBusinessRule: (rule, value) => checkBusinessRule(user, rule, value)
   };
 };
-
-/**
- * use
