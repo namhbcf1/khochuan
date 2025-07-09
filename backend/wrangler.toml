@@ -40,7 +40,7 @@ id = "b4966461e07a48e981c78cf9f374fe4c" # ID từ KV namespace SESSIONS
 ENVIRONMENT = "production"
 JWT_SECRET = "YOUR_JWT_SECRET" # Change this in production
 API_VERSION = "v1"
-CORS_ORIGIN = "https://khochuan-pos.pages.dev"
+CORS_ORIGIN = "https://khoaugment.pages.dev"
 
 # Analytics Engine - Đã được bình luận vì chưa kích hoạt Analytics Engine
 # [[analytics_engine_datasets]]

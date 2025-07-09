@@ -38,7 +38,7 @@ echo -e "${GREEN}✓ Frontend build complete${NC}"
 
 # Deploying frontend to Cloudflare Pages
 echo -e "${BLUE}Deploying frontend to Cloudflare Pages...${NC}"
-wrangler pages deploy frontend/dist --project-name=khochuan-pos
+wrangler pages deploy frontend/dist --project-name=khoaugment
 echo -e "${GREEN}✓ Frontend deployed to Cloudflare Pages${NC}"
 
 # Deploying backend to Cloudflare Workers
@@ -58,6 +58,6 @@ echo ""
 echo -e "${GREEN}✅ Deployment complete!${NC}"
 echo ""
 echo -e "${BLUE}Your application is now available at:${NC}"
-echo -e "${YELLOW}Frontend: https://khochuan-pos.pages.dev${NC}"
+echo -e "${YELLOW}Frontend: https://khoaugment.pages.dev${NC}"
 echo -e "${YELLOW}Backend API: https://khochuan-api.<your-subdomain>.workers.dev${NC}"
 echo "" 

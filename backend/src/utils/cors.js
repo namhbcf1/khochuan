@@ -5,8 +5,9 @@
 
 // Allowed origins
 const ALLOWED_ORIGINS = [
+  'https://khoaugment.pages.dev',
   'https://khochuan-pos.pages.dev',
-  'https://khochuan-app.pages.dev', 
+  'https://khochuan-app.pages.dev',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173'
