@@ -7,7 +7,7 @@
 const mockUsers = [
   {
     id: 1,
-    email: 'admin@pos.com',
+    email: 'admin@truongphat.com',
     password: 'admin123',
     name: 'Admin User',
     role: 'admin',
@@ -19,7 +19,7 @@ const mockUsers = [
   },
   {
     id: 2,
-    email: 'cashier@pos.com',
+    email: 'cashier@truongphat.com',
     password: 'cashier123',
     name: 'Cashier User',
     role: 'cashier',
@@ -31,7 +31,7 @@ const mockUsers = [
   },
   {
     id: 3,
-    email: 'staff@pos.com',
+    email: 'staff@truongphat.com',
     password: 'staff123',
     name: 'Staff User',
     role: 'staff',

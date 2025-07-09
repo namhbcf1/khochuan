@@ -156,12 +156,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1767,
+                      "duration": 1649,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-07-09T13:25:11.015Z",
+                      "startTime": "2025-07-09T13:41:16.080Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -176,7 +176,7 @@
             },
             {
               "title": "Admin login works",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -189,58 +189,18 @@
                     {
                       "workerIndex": 1,
                       "parallelIndex": 1,
-                      "status": "failed",
-                      "duration": 12110,
-                      "error": {
-                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/dashboard\" until \"load\"\n============================================================",
-                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/dashboard\" until \"load\"\n============================================================\n    at C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js:26:16",
-                        "location": {
-                          "file": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js",
-                          "column": 16,
-                          "line": 26
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m     \n \u001b[90m 25 |\u001b[39m     \u001b[90m// Wait for redirect and check dashboard\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1, h2, h3'\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Dashboard'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js",
-                            "column": 16,
-                            "line": 26
-                          },
-                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/dashboard\" until \"load\"\n============================================================\n\n\u001b[0m \u001b[90m 24 |\u001b[39m     \n \u001b[90m 25 |\u001b[39m     \u001b[90m// Wait for redirect and check dashboard\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/admin/dashboard'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1, h2, h3'\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'Dashboard'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js:26:16\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 2641,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-07-09T13:25:11.010Z",
+                      "startTime": "2025-07-09T13:41:16.063Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\test-results\\basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\test-results\\basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\test-results\\basic-test-KhoChuan-POS-System-Basic-Tests-Admin-login-works-chromium\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js",
-                        "column": 16,
-                        "line": 26
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "081bef5c14113d5587c6-d64fa82f7a0b47d32e0e",
@@ -250,7 +210,7 @@
             },
             {
               "title": "Cashier login redirects to POS",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -263,58 +223,18 @@
                     {
                       "workerIndex": 2,
                       "parallelIndex": 2,
-                      "status": "failed",
-                      "duration": 12089,
-                      "error": {
-                        "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/pos\" until \"load\"\n============================================================",
-                        "stack": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/pos\" until \"load\"\n============================================================\n    at C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js:40:16",
-                        "location": {
-                          "file": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js",
-                          "column": 16,
-                          "line": 40
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 38 |\u001b[39m     \n \u001b[90m 39 |\u001b[39m     \u001b[90m// Wait for redirect and check POS terminal\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 40 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/admin/pos'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 41 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1, h2, h3'\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'POS Terminal'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 42 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 43 |\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js",
-                            "column": 16,
-                            "line": 40
-                          },
-                          "message": "TimeoutError: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/pos\" until \"load\"\n============================================================\n\n\u001b[0m \u001b[90m 38 |\u001b[39m     \n \u001b[90m 39 |\u001b[39m     \u001b[90m// Wait for redirect and check POS terminal\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 40 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m'**/admin/pos'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 41 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'h1, h2, h3'\u001b[39m))\u001b[33m.\u001b[39mtoContainText(\u001b[32m'POS Terminal'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 42 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 43 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js:40:16\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 2227,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-07-09T13:25:10.993Z",
+                      "startTime": "2025-07-09T13:41:16.078Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\test-results\\basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\test-results\\basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\test-results\\basic-test-KhoChuan-POS-Sy-df04e-hier-login-redirects-to-POS-chromium\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\ADMIN\\Desktop\\kho augment\\frontend\\basic-test.spec.js",
-                        "column": 16,
-                        "line": 40
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "081bef5c14113d5587c6-73caf91d0fc3f2c12e02",
@@ -338,12 +258,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1146,
+                      "duration": 858,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-07-09T13:25:11.014Z",
+                      "startTime": "2025-07-09T13:41:16.063Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -353,7 +273,7 @@
               ],
               "id": "081bef5c14113d5587c6-e2135e75da66f1485746",
               "file": "basic-test.spec.js",
-              "line": 44,
+              "line": 45,
               "column": 3
             },
             {
@@ -372,12 +292,12 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "passed",
-                      "duration": 1816,
+                      "duration": 1507,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-07-09T13:25:10.993Z",
+                      "startTime": "2025-07-09T13:41:16.079Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -387,7 +307,7 @@
               ],
               "id": "081bef5c14113d5587c6-eddcfe143e79049bcff7",
               "file": "basic-test.spec.js",
-              "line": 58,
+              "line": 59,
               "column": 3
             },
             {
@@ -406,12 +326,12 @@
                       "workerIndex": 5,
                       "parallelIndex": 5,
                       "status": "passed",
-                      "duration": 1729,
+                      "duration": 1575,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-07-09T13:25:11.010Z",
+                      "startTime": "2025-07-09T13:41:16.081Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -421,7 +341,7 @@
               ],
               "id": "081bef5c14113d5587c6-832e20d4707a577bcba4",
               "file": "basic-test.spec.js",
-              "line": 68,
+              "line": 69,
               "column": 3
             }
           ]
@@ -431,11 +351,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-07-09T13:25:10.243Z",
-    "duration": 13302.434,
-    "expected": 4,
+    "startTime": "2025-07-09T13:41:15.406Z",
+    "duration": 3682.018,
+    "expected": 6,
     "skipped": 0,
-    "unexpected": 2,
+    "unexpected": 0,
     "flaky": 0
   }
 }
