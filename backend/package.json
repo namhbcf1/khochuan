@@ -23,9 +23,9 @@
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20241106.0",
-<<<<<<< HEAD
-    "itty-router": "^4.0.25",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.2",
+    "hono": "^4.8.4",
+    "itty-router": "^5.0.18",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
@@ -39,13 +39,4 @@
   ],
   "author": "Enterprise POS Team",
   "license": "MIT"
-=======
-    "bcryptjs": "^3.0.2",
-    "hono": "^4.8.4",
-    "itty-router": "^5.0.18"
-  },
-  "devDependencies": {
-    "wrangler": "^3.88.0"
-  }
->>>>>>> 6806c702f54d85aaf87695d8ea5a7e4205f1eb0c
 }

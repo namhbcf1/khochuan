@@ -1,25 +1,20 @@
-name = "khochuan-api"
+name = "khoaugment-api"
 main = "src/index.js"
 compatibility_date = "2024-01-15"
 compatibility_flags = ["nodejs_compat"]
 
 [env.production]
-name = "khochuan-api"
+name = "khoaugment-api"
 
 [env.staging]
-name = "khochuan-api-staging"
+name = "khoaugment-api-staging"
 
 # D1 Database Configuration
 [[d1_databases]]
 binding = "DB"
-<<<<<<< HEAD
-database_name = "smart-pos-db"
-database_id = "dfd20fc4-d3a1-47f6-86fa-424fa5a68ca0"
-migrations_dir = "database/migrations"
-=======
 database_name = "pos-database"
 database_id = "813d3eca-d422-40ed-9b8f-ce21b1785967" # Đã được cập nhật với ID thực
->>>>>>> 6806c702f54d85aaf87695d8ea5a7e4205f1eb0c
+migrations_dir = "database/migrations"
 
 # KV Storage Configuration
 [[kv_namespaces]]
@@ -59,5 +54,5 @@ new_sqlite_classes = ["RealtimeHandler"]
 
 # Development Configuration
 [env.development]
-name = "khochuan-api-dev"
+name = "khoaugment-api-dev"
 vars = { ENVIRONMENT = "development", CORS_ORIGIN = "http://localhost:5173" }
