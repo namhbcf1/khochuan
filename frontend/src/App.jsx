@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import { AuthProvider } from './auth/AuthContext';
+import { CartProvider } from './utils/context/CartContext';
 import AppRoutes from './routes.jsx';
 import './styles/globals.css';
 
@@ -58,13 +59,15 @@ function App() {
   return (
     <ConfigProvider locale={viVN} theme={theme}>
       <AuthProvider>
-        <Router>
-          <div className="app">
-            <Suspense fallback={<LoadingFallback />}>
-              <AppRoutes />
-            </Suspense>
-          </div>
-        </Router>
+        <CartProvider>
+          <Router>
+            <div className="app">
+              <Suspense fallback={<LoadingFallback />}>
+                <AppRoutes />
+              </Suspense>
+            </div>
+          </Router>
+        </CartProvider>
       </AuthProvider>
     </ConfigProvider>
   );
