@@ -1,167 +1,76 @@
 // frontend/src/components/ui/LoadingSpinner/LoadingSpinner.jsx
 import React from 'react';
-import { Spin, Typography, Space, Card } from 'antd';
+import { Spin, Row, Col, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-import './LoadingSpinner.css';
+import './styles.css';
 
 const { Text } = Typography;
 
-const LoadingSpinner = ({
-  size = 'large',
-  message = 'Đang tải...',
-  tip,
-  spinning = true,
-  children,
-  overlay = false,
+/**
+ * Component hiển thị loading spinner tùy chỉnh.
+ * 
+ * @param {Object} props
+ * @param {string} props.size - Kích thước spinner: 'small', 'default', 'large'
+ * @param {string} props.tip - Thông báo hiển thị bên dưới spinner
+ * @param {boolean} props.fullscreen - Hiển thị toàn màn hình hay không
+ * @param {Object} props.style - CSS styles bổ sung
+ * @param {string} props.className - CSS class bổ sung
+ */
+const LoadingSpinner = ({ 
+  size = 'default',
+  tip = 'Đang tải...',
   fullscreen = false,
-  delay = 0,
-  className = '',
   style = {},
-  icon,
-  wrapperClassName = ''
+  className = '',
+  children,
 }) => {
-  // Custom loading icon
-  const loadingIcon = icon || <LoadingOutlined style={{ fontSize: size === 'large' ? 24 : 16 }} spin />;
+  // Icon tùy chỉnh dựa trên size
+  const getSpinnerSize = () => {
+    const sizeMap = {
+      small: 20,
+      default: 32,
+      large: 48,
+    };
+    return sizeMap[size] || sizeMap.default;
+  };
 
-  // Fullscreen loading
-  if (fullscreen) {
+  const antIcon = <LoadingOutlined style={{ fontSize: getSpinnerSize() }} spin />;
+
+  // Component chỉ hiển thị spinner
+  const spinner = (
+    <Spin 
+      indicator={antIcon} 
+      tip={tip ? <Text className="loading-tip">{tip}</Text> : null}
+      className={`custom-spinner ${className}`}
+      style={style}
+    />
+  );
+
+  // Trường hợp có children, cho phép spinner overlay trên nội dung
+  if (children) {
     return (
-      <div className={`fullscreen-loading ${className}`} style={style}>
-        <div className="loading-content">
-          <Spin 
-            indicator={loadingIcon} 
-            size={size}
-            spinning={spinning}
-            delay={delay}
-          />
-          {message && (
-            <div style={{ marginTop: 16 }}>
-              <Text type="secondary">{message}</Text>
-            </div>
-          )}
+      <div className="spinner-container">
+        {children}
+        <div className="spinner-overlay">
+          {spinner}
         </div>
       </div>
     );
   }
-
-  // Overlay loading
-  if (overlay) {
-    return (
-      <div className={`loading-overlay ${wrapperClassName}`}>
-        <Spin
-          indicator={loadingIcon}
-          size={size}
-          spinning={spinning}
-          tip={tip || message}
-          delay={delay}
-          className={className}
-          style={style}
-        >
-          {children}
-        </Spin>
-      </div>
-    );
-  }
-
-  // Wrapper loading
-  if (children) {
-    return (
-      <Spin
-        indicator={loadingIcon}
-        size={size}
-        spinning={spinning}
-        tip={tip || message}
-        delay={delay}
-        className={className}
-        style={style}
-        wrapperClassName={wrapperClassName}
-      >
-        {children}
-      </Spin>
-    );
-  }
-
-  // Simple loading
-  return (
-    <div className={`loading-spinner ${className}`} style={{ textAlign: 'center', padding: '20px', ...style }}>
-      <Space direction="vertical" align="center">
-        <Spin 
-          indicator={loadingIcon} 
-          size={size}
-          spinning={spinning}
-          delay={delay}
-        />
-        {message && (
-          <Text type="secondary">{message}</Text>
-        )}
-      </Space>
-    </div>
-  );
-};
-
-// Skeleton loading for different content types
-export const SkeletonLoading = ({ 
-  type = 'card', 
-  rows = 3, 
-  count = 1,
-  avatar = false,
-  title = true,
-  paragraph = true,
-  className = ''
-}) => {
-  const { Skeleton } = require('antd');
   
-  if (type === 'table') {
+  // Trường hợp hiển thị toàn màn hình
+  if (fullscreen) {
     return (
-      <div className={className}>
-        {Array.from({ length: count }, (_, i) => (
-          <Card key={i} style={{ marginBottom: 16 }}>
-            <Skeleton 
-              loading 
-              avatar={avatar}
-              title={title}
-              paragraph={{ rows }}
-              active
-            />
-          </Card>
-        ))}
+      <div className="spinner-fullscreen">
+        <Row justify="center" align="middle" style={{ height: '100%' }}>
+          <Col>{spinner}</Col>
+        </Row>
       </div>
     );
   }
-
-  if (type === 'list') {
-    return (
-      <div className={className}>
-        {Array.from({ length: count }, (_, i) => (
-          <div key={i} style={{ padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <Skeleton 
-              loading 
-              avatar={avatar}
-              title={title}
-              paragraph={{ rows: 1 }}
-              active
-            />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className={className}>
-      {Array.from({ length: count }, (_, i) => (
-        <Card key={i} style={{ marginBottom: 16 }}>
-          <Skeleton 
-            loading 
-            avatar={avatar}
-            title={title}
-            paragraph={{ rows }}
-            active
-          />
-        </Card>
-      ))}
-    </div>
-  );
+  
+  // Trường hợp mặc định
+  return spinner;
 };
 
 export default LoadingSpinner;
