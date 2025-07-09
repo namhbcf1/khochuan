@@ -1,254 +1,131 @@
 /**
  * Role-Based Access Control (RBAC) Middleware
- * Provides fine-grained permissions for different user roles
+ * Manages access control for the system
  */
 
-// Role hierarchy and permissions
-const ROLES = {
-    admin: {
-      level: 3,
-      permissions: [
-        'users:create', 'users:read', 'users:update', 'users:delete',
-        'products:create', 'products:read', 'products:update', 'products:delete',
-        'orders:create', 'orders:read', 'orders:update', 'orders:cancel',
-        'customers:create', 'customers:read', 'customers:update', 'customers:delete',
-        'staff:read', 'staff:manage', 'staff:reports',
-        'analytics:read', 'analytics:export',
-        'settings:read', 'settings:update',
-        'inventory:manage', 'inventory:adjust',
-        'reports:generate', 'reports:export',
-        'pos:operate', 'pos:refund'
-      ]
-    },
-    staff: {
-      level: 2,
-      permissions: [
-        'products:create', 'products:read', 'products:update',
-        'orders:read', 'orders:update',
-        'customers:create', 'customers:read', 'customers:update',
-        'inventory:read', 'inventory:adjust',
-        'analytics:read',
-        'pos:operate'
-      ]
-    },
-    cashier: {
-      level: 1,
-      permissions: [
-        'products:read',
-        'orders:create', 'orders:read',
-        'customers:create', 'customers:read', 'customers:update',
-        'pos:operate'
-      ]
-    }
+import { corsHeaders } from '../utils/cors';
+
+/**
+ * Permission definitions
+ */
+export const PERMISSIONS = {
+  // Admin permissions
+  'admin:full_access': 'Full system access',
+  'admin:users': 'Manage users',
+  'admin:settings': 'Manage system settings',
+  
+  // Cashier permissions
+  'cashier:sales': 'Process sales',
+  'cashier:orders': 'Manage orders',
+  'cashier:inventory': 'View inventory',
+  
+  // Staff permissions
+  'staff:profile': 'View and update profile',
+  'staff:sales': 'View sales',
+  'staff:reports': 'View reports',
+  
+  // Customer permissions
+  'customer:orders': 'View orders',
+  'customer:profile': 'View and update profile'
+};
+
+/**
+ * Role definitions with associated permissions
+ */
+export const ROLES = {
+  admin: [
+    'admin:full_access',
+    'admin:users',
+    'admin:settings',
+    'cashier:sales',
+    'cashier:orders',
+    'cashier:inventory',
+    'staff:profile',
+    'staff:sales',
+    'staff:reports'
+  ],
+  cashier: [
+    'cashier:sales',
+    'cashier:orders',
+    'cashier:inventory',
+    'staff:profile',
+    'staff:sales'
+  ],
+  staff: [
+    'staff:profile',
+    'staff:sales',
+    'staff:reports'
+  ],
+  customer: [
+    'customer:orders',
+    'customer:profile'
+  ]
+};
+
+/**
+ * Check if user has required permission
+ * @param {Object} user - User object with role
+ * @param {String} permission - Required permission
+ * @returns {Boolean} - True if user has permission
+ */
+export function hasPermission(user, permission) {
+  if (!user || !user.role) {
+    return false;
   }
   
-  // Resource-specific permissions
-  const RESOURCE_PERMISSIONS = {
-    // User management
-    'GET /api/users': ['users:read'],
-    'POST /api/users': ['users:create'],
-    'PUT /api/users/:id': ['users:update'],
-    'DELETE /api/users/:id': ['users:delete'],
-    
-    // Product management
-    'GET /api/products': ['products:read'],
-    'POST /api/products': ['products:create'],
-    'PUT /api/products/:id': ['products:update'],
-    'DELETE /api/products/:id': ['products:delete'],
-    'PUT /api/products/:id/stock': ['inventory:manage'],
-    
-    // Order management
-    'GET /api/orders': ['orders:read'],
-    'POST /api/orders': ['orders:create'],
-    'PUT /api/orders/:id': ['orders:update'],
-    'DELETE /api/orders/:id': ['orders:cancel'],
-    
-    // Customer management
-    'GET /api/customers': ['customers:read'],
-    'POST /api/customers': ['customers:create'],
-    'PUT /api/customers/:id': ['customers:update'],
-    'DELETE /api/customers/:id': ['customers:delete'],
-    
-    // Staff management
-    'GET /api/staff': ['staff:read'],
-    'PUT /api/staff/:id': ['staff:manage'],
-    'GET /api/staff/leaderboard': ['staff:reports'],
-    
-    // Analytics
-    'GET /api/analytics': ['analytics:read'],
-    'POST /api/analytics/export': ['analytics:export'],
-    
-    // Settings
-    'GET /api/settings': ['settings:read'],
-    'PUT /api/settings': ['settings:update'],
-    
-    // Inventory
-    'GET /api/inventory': ['inventory:read'],
-    'PUT /api/inventory/:id': ['inventory:adjust'],
-    
-    // Reports
-    'GET /api/reports': ['reports:generate'],
-    'POST /api/reports/export': ['reports:export']
+  const rolePermissions = ROLES[user.role] || [];
+  return rolePermissions.includes(permission);
+}
+
+/**
+ * Permission check middleware
+ * @param {String|Array} requiredPermissions - Required permission(s)
+ * @returns {Function} - Middleware function
+ */
+export const requirePermission = (requiredPermissions) => (request) => {
+  // Skip for OPTIONS requests
+  if (request.method === 'OPTIONS') {
+    return;
   }
   
-  /**
-   * Check if user has required permission
-   */
-  function hasPermission(userRole, requiredPermission) {
-    const role = ROLES[userRole]
-    if (!role) return false
-    
-    return role.permissions.includes(requiredPermission)
-  }
-  
-  /**
-   * Check if user has any of the required permissions
-   */
-  function hasAnyPermission(userRole, requiredPermissions) {
-    return requiredPermissions.some(permission => hasPermission(userRole, permission))
-  }
-  
-  /**
-   * Check if user has all required permissions
-   */
-  function hasAllPermissions(userRole, requiredPermissions) {
-    return requiredPermissions.every(permission => hasPermission(userRole, permission))
-  }
-  
-  /**
-   * Check role hierarchy (if user role is equal or higher than required role)
-   */
-  function hasRoleLevel(userRole, requiredRole) {
-    const userRoleData = ROLES[userRole]
-    const requiredRoleData = ROLES[requiredRole]
-    
-    if (!userRoleData || !requiredRoleData) return false
-    
-    return userRoleData.level >= requiredRoleData.level
-  }
-  
-  /**
-   * Get permissions for route
-   */
-  function getRoutePermissions(method, path) {
-    // Try exact match first
-    const exactKey = `${method} ${path}`
-    if (RESOURCE_PERMISSIONS[exactKey]) {
-      return RESOURCE_PERMISSIONS[exactKey]
-    }
-    
-    // Try pattern matching for parameterized routes
-    for (const [routePattern, permissions] of Object.entries(RESOURCE_PERMISSIONS)) {
-      if (routePattern.startsWith(method)) {
-        const pattern = routePattern.substring(method.length + 1) // Remove "METHOD "
-        const regex = new RegExp('^' + pattern.replace(/:[^/]+/g, '[^/]+') + '$')
-        
-        if (regex.test(path)) {
-          return permissions
-        }
+  // Ensure user is authenticated
+  if (!request.user) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: 'Authentication required'
+    }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
       }
-    }
-    
-    return []
+    });
   }
   
-  /**
-   * Main RBAC middleware factory
-   * @param {string|string[]} requiredRoles - Required role(s) for access
-   * @param {string|string[]} requiredPermissions - Required permission(s) for access
-   * @param {object} options - Additional options
-   */
-  export function rbacMiddleware(requiredRoles = [], requiredPermissions = [], options = {}) {
-    // Normalize to arrays
-    if (typeof requiredRoles === 'string') requiredRoles = [requiredRoles]
-    if (typeof requiredPermissions === 'string') requiredPermissions = [requiredPermissions]
-    
-    return async (c, next) => {
-      try {
-        const user = c.get('user')
-        
-        if (!user) {
-          return c.json({
-            error: 'Authentication required',
-            code: 'AUTH_REQUIRED'
-          }, 401)
-        }
-        
-        const userRole = user.role
-        const method = c.req.method
-        const path = c.req.path
-        
-        // Check role-based access
-        if (requiredRoles.length > 0) {
-          const hasRequiredRole = requiredRoles.some(role => hasRoleLevel(userRole, role))
-          
-          if (!hasRequiredRole) {
-            await logAccessDenied(c.env.DB, user.id, method, path, 'insufficient_role')
-            
-            return c.json({
-              error: 'Insufficient role permissions',
-              code: 'INSUFFICIENT_ROLE',
-              required: requiredRoles,
-              current: userRole
-            }, 403)
-          }
-        }
-        
-        // Check permission-based access
-        let permissionsToCheck = requiredPermissions
-        
-        // If no permissions specified, get from route mapping
-        if (permissionsToCheck.length === 0) {
-          permissionsToCheck = getRoutePermissions(method, path)
-        }
-        
-        if (permissionsToCheck.length > 0) {
-          const hasRequiredPermission = options.requireAll 
-            ? hasAllPermissions(userRole, permissionsToCheck)
-            : hasAnyPermission(userRole, permissionsToCheck)
-          
-          if (!hasRequiredPermission) {
-            await logAccessDenied(c.env.DB, user.id, method, path, 'insufficient_permissions')
-            
-            return c.json({
-              error: 'Insufficient permissions',
-              code: 'INSUFFICIENT_PERMISSIONS',
-              required: permissionsToCheck,
-              current: ROLES[userRole]?.permissions || []
-            }, 403)
-          }
-        }
-        
-        // Resource-specific access control
-        if (options.resourceOwnership) {
-          const hasAccess = await checkResourceOwnership(c, user, options.resourceOwnership)
-          
-          if (!hasAccess) {
-            await logAccessDenied(c.env.DB, user.id, method, path, 'resource_ownership')
-            
-            return c.json({
-              error: 'Access denied to resource',
-              code: 'RESOURCE_ACCESS_DENIED'
-            }, 403)
-          }
-        }
-        
-        // Set permission context for downstream handlers
-        c.set('userPermissions', ROLES[userRole]?.permissions || [])
-        c.set('userRoleLevel', ROLES[userRole]?.level || 0)
-        
-        await next()
-        
-      } catch (error) {
-        console.error('RBAC middleware error:', error)
-        return c.json({
-          error: 'Access control error',
-          code: 'RBAC_ERROR'
-        }, 500)
+  // Normalize permissions to array
+  const permissions = Array.isArray(requiredPermissions) 
+    ? requiredPermissions 
+    : [requiredPermissions];
+  
+  // Check if user has any of the required permissions
+  const hasRequiredPermission = permissions.some(
+    permission => hasPermission(request.user, permission)
+  );
+  
+  if (!hasRequiredPermission) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: 'You do not have permission to perform this action'
+    }), {
+      status: 403,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
       }
-    }
+    });
   }
   
+<<<<<<< HEAD
   /**
    * Quick role check middleware
    */
@@ -405,3 +282,8 @@ const ROLES = {
 
   // Export rbac as alias for rbacMiddleware
   export const rbac = rbacMiddleware;
+=======
+  // Continue processing
+  return;
+};
+>>>>>>> 6806c702f54d85aaf87695d8ea5a7e4205f1eb0c
