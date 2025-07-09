@@ -29,11 +29,11 @@ const AUTH_ACTIONS = {
 // Session configuration
 const SESSION_CONFIG = {
   TIMEOUT_DURATION: 30 * 60 * 1000, // 30 minutes
-  STORAGE_PREFIX: 'truongphat_',
-  TOKEN_KEY: 'truongphat_token',
-  USER_KEY: 'truongphat_user',
-  EXPIRES_KEY: 'truongphat_expires',
-  ACTIVITY_KEY: 'truongphat_last_activity',
+  STORAGE_PREFIX: 'khochuan_',
+  TOKEN_KEY: 'khochuan_token',
+  USER_KEY: 'khochuan_user',
+  EXPIRES_KEY: 'khochuan_expires',
+  ACTIVITY_KEY: 'khochuan_last_activity',
 };
 
 // Auth reducer
@@ -266,30 +266,40 @@ export const AuthProvider = ({ children }) => {
     // Mock user accounts
     const validUsers = [
       {
-        email: 'admin@truongphat.com',
+        email: 'admin@khochuan.com',
+        username: 'admin',
         password: 'admin123',
         name: 'Quản trị viên',
         role: 'admin',
       },
       {
-        email: 'cashier@truongphat.com',
+        email: 'cashier@khochuan.com',
+        username: 'cashier',
         password: 'cashier123',
         name: 'Thu ngân',
         role: 'cashier',
       },
       {
-        email: 'staff@truongphat.com',
+        email: 'staff@khochuan.com',
+        username: 'staff',
         password: 'staff123',
         name: 'Nhân viên bán hàng',
         role: 'staff',
       }
     ];
 
-    // Find matching user
-    const user = validUsers.find(u => 
-      u.email.toLowerCase() === credentials.email.toLowerCase() && 
-      u.password === credentials.password
-    );
+    // Find matching user by email or username
+    const user = validUsers.find(u => {
+      const inputIdentifier = credentials.email || credentials.username || '';
+      const inputPassword = credentials.password || '';
+      
+      // Check if the input matches either email or username
+      const identifierMatch = 
+        inputIdentifier.toLowerCase() === u.email.toLowerCase() || 
+        inputIdentifier.toLowerCase() === u.username.toLowerCase();
+      
+      return identifierMatch && u.password === inputPassword;
+    });
 
     if (user) {
       // Create user object without password
@@ -306,7 +316,7 @@ export const AuthProvider = ({ children }) => {
       return {
         success: true,
         user: userWithPermissions,
-        token: 'truongphat-jwt-token-' + Date.now()
+        token: 'khochuan-jwt-token-' + Date.now()
       };
     }
 

@@ -1,17 +1,32 @@
 {
-  "name": "smart-pos-system",
+  "name": "khochuan-main",
   "version": "1.0.0",
-  "private": true,
+  "description": "KhoChuan POS System",
   "scripts": {
     "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && npm install --include=dev && npm install --save-dev terser && npm run build",
-    "deploy": "npm run build && echo 'Deploy completed'",
-    "clean": "cd frontend && npm run clean"
+    "build": "cd frontend && npm run build",
+    "test": "npx playwright test",
+    "test:auth": "npx playwright test tests/authentication.spec.js --project=chromium",
+    "test:dashboard": "npx playwright test tests/dashboard.spec.js --project=chromium",
+    "test:pos": "npx playwright test tests/pos.spec.js --project=chromium",
+    "test:ui": "npx playwright test --ui",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report",
+    "test:visual": "npx playwright test tests/visual-regression.spec.js --project=chromium",
+    "test:inventory": "npx playwright test tests/inventory.spec.js --project=chromium",
+    "test:customers": "npx playwright test tests/customers.spec.js --project=chromium",
+    "test:chromium": "npx playwright test --project=chromium",
+    "setup-testing": "node setup-testing.js"
   },
-  "dependencies": {
-    "react-helmet-async": "^2.0.5"
-  },
+  "keywords": [
+    "pos",
+    "inventory",
+    "management",
+    "retail"
+  ],
+  "author": "KhoChuan Team",
+  "license": "MIT",
   "devDependencies": {
-    "terser": "^5.28.1"
+    "@playwright/test": "^1.42.1"
   }
 }

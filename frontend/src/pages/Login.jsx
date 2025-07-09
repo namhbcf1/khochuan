@@ -40,7 +40,15 @@ const Login = () => {
     
     try {
       const { username, password, remember } = values;
-      await login(username, password, remember);
+      const result = await login({ 
+        username: username, // Pass username directly
+        email: username, // Also pass as email for backward compatibility
+        password: password 
+      });
+      
+      if (!result.success) {
+        setLoginError(result.error || 'Đăng nhập không thành công. Vui lòng kiểm tra thông tin đăng nhập.');
+      }
       // Chuyển hướng sẽ được xử lý bởi useEffect
     } catch (error) {
       console.error('Login error:', error);
@@ -76,8 +84,8 @@ const Login = () => {
               }}
             >
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <Title level={2} style={{ marginBottom: 0 }}>🖥️ Trường Phát POS</Title>
-                <Paragraph type="secondary">Đăng nhập để tiếp tục</Paragraph>
+                <Title level={2} style={{ marginBottom: 0 }}>📦 KhoChuan POS</Title>
+                <Paragraph type="secondary">Hệ thống quản lý bán hàng thông minh</Paragraph>
               </div>
 
               {loginError && (
@@ -210,7 +218,7 @@ const Login = () => {
               
               <div style={{ textAlign: 'center', marginTop: '24px' }}>
                 <Text type="secondary">
-                  © {new Date().getFullYear()} Trường Phát Computer Hòa Bình
+                  © {new Date().getFullYear()} KhoChuan POS
                 </Text>
               </div>
             </Card>
