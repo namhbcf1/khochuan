@@ -13,21 +13,21 @@ name = "khochuan-api-staging"
 [[d1_databases]]
 binding = "DB"
 database_name = "pos-database"
-database_id = "YOUR_D1_DATABASE_ID" # Update this after creating the database
+database_id = "813d3eca-d422-40ed-9b8f-ce21b1785967" # Đã được cập nhật với ID thực
 
 # KV Storage Configuration
 [[kv_namespaces]]
 binding = "CACHE"
-id = "YOUR_KV_NAMESPACE_ID" # Update this after creating the KV namespace
+id = "46b31b2c6ca449aaa3114d0ebb4fe645" # ID từ KV namespace CACHE
 
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "YOUR_SESSIONS_KV_ID" # Update this after creating the KV namespace
+id = "b4966461e07a48e981c78cf9f374fe4c" # ID từ KV namespace SESSIONS
 
-# R2 Storage Configuration
-[[r2_buckets]]
-binding = "STORAGE"
-bucket_name = "khochuan-files"
+# R2 Storage Configuration - Đã được bình luận vì chưa kích hoạt R2
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "khochuan-files"
 
 # Environment Variables
 [vars]
@@ -36,15 +36,20 @@ JWT_SECRET = "YOUR_JWT_SECRET" # Change this in production
 API_VERSION = "v1"
 CORS_ORIGIN = "https://khochuan-pos.pages.dev"
 
-# Analytics Engine
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-dataset = "khochuan_events"
+# Analytics Engine - Đã được bình luận vì chưa kích hoạt Analytics Engine
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "khochuan_events"
 
 # Durable Objects
 [[durable_objects.bindings]]
 name = "REALTIME"
 class_name = "RealtimeHandler"
+
+# Durable Objects Migrations
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RealtimeHandler"]
 
 # Development Configuration
 [env.development]

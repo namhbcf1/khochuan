@@ -38,6 +38,26 @@ router.all('*', () => {
   });
 });
 
+// Durable Objects definition
+export class RealtimeHandler {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+    this.storage = state.storage;
+    this.connections = new Map();
+  }
+  
+  // Handle fetch requests
+  async fetch(request) {
+    // Simple response for verification
+    return new Response(JSON.stringify({ message: 'RealtimeHandler ready' }), {
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
+  }
+  
+  // WebSocket handlers would go here in a real implementation
+}
+
 // Export default worker handler
 export default {
   async fetch(request, env, ctx) {
