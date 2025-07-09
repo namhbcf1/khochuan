@@ -11,7 +11,7 @@ import {
   DollarCircleOutlined, InboxOutlined, ShoppingOutlined, UserOutlined,
   SyncOutlined, ExclamationCircleOutlined, InfoCircleOutlined, PlusOutlined
 } from '@ant-design/icons';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
@@ -80,7 +80,7 @@ const OrderManagement = () => {
     const paymentMethods = ['cash', 'credit_card', 'bank_transfer', 'ewallet'];
     
     return Array.from({ length: 50 }, (_, i) => {
-      const date = moment().subtract(Math.floor(Math.random() * 30), 'days');
+      const date = dayjs().subtract(Math.floor(Math.random() * 30), 'days');
       const status = statuses[Math.floor(Math.random() * statuses.length)];
       const paymentStatus = paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
       const totalItems = Math.floor(Math.random() * 10) + 1;
@@ -137,7 +137,7 @@ const OrderManagement = () => {
     // Date range filter
     let matchesDateRange = true;
     if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
-      const orderDate = moment(order.date);
+      const orderDate = dayjs(order.date);
       const startDate = filters.dateRange[0].startOf('day');
       const endDate = filters.dateRange[1].endOf('day');
       matchesDateRange = orderDate.isBetween(startDate, endDate, undefined, '[]');
@@ -254,7 +254,7 @@ const OrderManagement = () => {
       title: 'Ngày',
       dataIndex: 'date',
       key: 'date',
-      sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix(),
+      sorter: (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
     },
     {
       title: 'Tổng tiền',
@@ -466,12 +466,12 @@ const OrderManagement = () => {
         // Mock timeline data
         const timelineData = [
           {
-            time: moment(order.date).format('YYYY-MM-DD HH:mm:ss'),
+            time: dayjs(order.date).format('YYYY-MM-DD HH:mm:ss'),
             status: 'Đơn hàng được tạo',
             user: 'Khách hàng',
           },
           {
-            time: moment(order.date).add(1, 'hours').format('YYYY-MM-DD HH:mm:ss'),
+            time: dayjs(order.date).add(1, 'hours').format('YYYY-MM-DD HH:mm:ss'),
             status: 'Đơn hàng được xác nhận',
             user: 'Nhân viên',
           },
@@ -479,7 +479,7 @@ const OrderManagement = () => {
 
         if (order.status === 'processing' || order.status === 'shipped' || order.status === 'completed') {
           timelineData.push({
-            time: moment(order.date).add(2, 'hours').format('YYYY-MM-DD HH:mm:ss'),
+            time: dayjs(order.date).add(2, 'hours').format('YYYY-MM-DD HH:mm:ss'),
             status: 'Đang chuẩn bị hàng',
             user: 'Nhân viên kho',
           });
@@ -487,7 +487,7 @@ const OrderManagement = () => {
         
         if (order.status === 'shipped' || order.status === 'completed') {
           timelineData.push({
-            time: moment(order.date).add(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+            time: dayjs(order.date).add(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
             status: 'Đã giao cho đơn vị vận chuyển',
             user: 'Nhân viên kho',
           });
@@ -495,7 +495,7 @@ const OrderManagement = () => {
         
         if (order.status === 'completed') {
           timelineData.push({
-            time: moment(order.date).add(3, 'days').format('YYYY-MM-DD HH:mm:ss'),
+            time: dayjs(order.date).add(3, 'days').format('YYYY-MM-DD HH:mm:ss'),
             status: 'Giao hàng thành công',
             user: 'Đơn vị vận chuyển',
           });
@@ -503,7 +503,7 @@ const OrderManagement = () => {
         
         if (order.status === 'canceled') {
           timelineData.push({
-            time: moment(order.date).add(5, 'hours').format('YYYY-MM-DD HH:mm:ss'),
+            time: dayjs(order.date).add(5, 'hours').format('YYYY-MM-DD HH:mm:ss'),
             status: 'Đơn hàng bị huỷ',
             user: 'Khách hàng',
           });
@@ -763,7 +763,7 @@ const OrderManagement = () => {
                   />
                   <Statistic
                     title="Ngày đặt hàng"
-                    value={moment(selectedOrder.date).format('DD/MM/YYYY')}
+                    value={dayjs(selectedOrder.date).format('DD/MM/YYYY')}
                     valueStyle={{ color: '#722ed1' }}
                   />
                 </Space>

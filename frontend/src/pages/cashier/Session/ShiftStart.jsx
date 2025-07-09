@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import { formatCurrency } from '../../../utils/helpers/formatters';
 import { useAuth } from '../../../utils/hooks/useAuth';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -338,7 +338,7 @@ const ShiftStart = () => {
             <Result
               status="success"
               title="Mở ca làm việc thành công!"
-              subTitle={`Mã ca: ${shiftData?.shiftId || 'N/A'} - Thời gian bắt đầu: ${moment(shiftData?.startTime).format('DD/MM/YYYY HH:mm:ss')}`}
+              subTitle={`Mã ca: ${shiftData?.shiftId || 'N/A'} - Thời gian bắt đầu: ${dayjs(shiftData?.startTime).format('DD/MM/YYYY HH:mm:ss')}`}
               extra={[
                 <Button 
                   type="primary" 

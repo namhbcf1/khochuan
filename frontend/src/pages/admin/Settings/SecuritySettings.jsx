@@ -48,7 +48,7 @@ import {
   ClockCircleOutlined,
   DownloadOutlined
 } from '@ant-design/icons';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -700,7 +700,7 @@ const SecuritySettings = () => {
                         2
                       </Descriptions.Item>
                       <Descriptions.Item label="Thay đổi mật khẩu gần đây">
-                        {moment().subtract(10, 'days').format('DD/MM/YYYY')}
+                        {dayjs().subtract(10, 'days').format('DD/MM/YYYY')}
                       </Descriptions.Item>
                     </Descriptions>
                   </Card>

@@ -36,7 +36,8 @@ import {
   DeleteOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
-import moment from 'moment';
+import uploadImage from '../../../utils/helpers/uploadImage';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -443,7 +444,7 @@ const CompanyProfile = () => {
                   <Col span={8}>
                     <TimePicker 
                       format="HH:mm"
-                      value={moment(hours.openTime, 'HH:mm')}
+                      value={dayjs(hours.openTime, 'HH:mm')}
                       onChange={(time, timeString) => handleBusinessHoursChange(index, 'openTime', timeString)}
                       disabled={!hours.open}
                       style={{ width: '100%' }}
@@ -452,7 +453,7 @@ const CompanyProfile = () => {
                   <Col span={8}>
                     <TimePicker 
                       format="HH:mm"
-                      value={moment(hours.closeTime, 'HH:mm')}
+                      value={dayjs(hours.closeTime, 'HH:mm')}
                       onChange={(time, timeString) => handleBusinessHoursChange(index, 'closeTime', timeString)}
                       disabled={!hours.open}
                       style={{ width: '100%' }}

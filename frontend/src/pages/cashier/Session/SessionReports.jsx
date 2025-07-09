@@ -32,7 +32,8 @@ import {
   CloseCircleOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
-import moment from 'moment';
+import { formatCurrency } from '../../../utils/helpers/formatters';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -201,7 +202,7 @@ const mockSessionData = {
 const SessionReports = () => {
   const [loading, setLoading] = useState(true);
   const [sessionData, setSessionData] = useState(null);
-  const [dateRange, setDateRange] = useState([moment().startOf('week'), moment()]);
+  const [dateRange, setDateRange] = useState([dayjs().startOf('week'), dayjs()]);
   const [cashier, setCashier] = useState('all');
   const [sessionStatus, setSessionStatus] = useState('all');
 
@@ -216,7 +217,7 @@ const SessionReports = () => {
 
   // Format date
   const formatDate = (dateString) => {
-    return moment(dateString).format('DD/MM/YYYY HH:mm');
+    return dayjs(dateString).format('DD/MM/YYYY HH:mm');
   };
 
   // Load data on component mount

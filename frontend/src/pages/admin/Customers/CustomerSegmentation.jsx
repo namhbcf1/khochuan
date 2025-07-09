@@ -31,7 +31,7 @@ import {
   FireOutlined
 } from '@ant-design/icons';
 import { Pie, Scatter, Column, Line, Heatmap } from '@ant-design/plots';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -154,7 +154,7 @@ const CustomerSegmentation = () => {
   // Tạo dữ liệu giá trị vòng đời khách hàng
   const generateLifetimeValueData = () => {
     const data = [];
-    const startDate = moment().subtract(12, 'months');
+    const startDate = dayjs().subtract(12, 'months');
     
     for (let i = 0; i < 12; i++) {
       const month = startDate.clone().add(i, 'months').format('MM/YYYY');
@@ -355,7 +355,7 @@ const CustomerSegmentation = () => {
       title: 'Mua gần nhất',
       dataIndex: 'lastOrder',
       key: 'lastOrder',
-      render: (text) => moment(text).format('DD/MM/YYYY'),
+      render: (text) => dayjs(text).format('DD/MM/YYYY'),
     },
     {
       title: 'Phân khúc',

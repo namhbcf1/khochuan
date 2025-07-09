@@ -52,7 +52,7 @@ import {
   TrophyOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -108,7 +108,7 @@ const CustomerManagement = () => {
         .replace(/\s+/g, '')
         .toLowerCase() + '@gmail.com';
       
-      const createdDate = moment()
+      const createdDate = dayjs()
         .subtract(Math.floor(Math.random() * 365), 'days')
         .format('YYYY-MM-DD');
       
@@ -130,7 +130,7 @@ const CustomerManagement = () => {
         membership,
         createdDate,
         lastOrderDate: orders > 0 
-          ? moment(createdDate).add(Math.floor(Math.random() * moment().diff(moment(createdDate), 'days')), 'days').format('YYYY-MM-DD')
+          ? dayjs(createdDate).add(Math.floor(Math.random() * dayjs().diff(dayjs(createdDate), 'days')), 'days').format('YYYY-MM-DD')
           : null,
         orders,
         totalSpent,
@@ -366,8 +366,8 @@ const CustomerManagement = () => {
       title: 'Ngày tạo',
       dataIndex: 'createdDate',
       key: 'createdDate',
-      sorter: (a, b) => moment(a.createdDate).unix() - moment(b.createdDate).unix(),
-      render: (date) => moment(date).format('DD/MM/YYYY'),
+      sorter: (a, b) => dayjs(a.createdDate).unix() - dayjs(b.createdDate).unix(),
+      render: (date) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
       title: 'Lần mua cuối',
@@ -376,9 +376,9 @@ const CustomerManagement = () => {
       sorter: (a, b) => {
         if (!a.lastOrderDate) return 1;
         if (!b.lastOrderDate) return -1;
-        return moment(a.lastOrderDate).unix() - moment(b.lastOrderDate).unix();
+        return dayjs(a.lastOrderDate).unix() - dayjs(b.lastOrderDate).unix();
       },
-      render: (date) => date ? moment(date).format('DD/MM/YYYY') : <Text type="secondary">Chưa mua</Text>,
+      render: (date) => date ? dayjs(date).format('DD/MM/YYYY') : <Text type="secondary">Chưa mua</Text>,
     },
     {
       title: 'Hạng thành viên',
@@ -694,7 +694,7 @@ const CustomerManagement = () => {
             <Divider orientation="left">Thông tin tài khoản</Divider>
             
             <p>
-              <ClockCircleOutlined /> Ngày tạo: {moment(currentCustomer.createdDate).format('DD/MM/YYYY')}
+              <ClockCircleOutlined /> Ngày tạo: {dayjs(currentCustomer.createdDate).format('DD/MM/YYYY')}
             </p>
             <p>
               <ShoppingOutlined /> Tổng đơn hàng: {currentCustomer.orders}
@@ -742,7 +742,7 @@ const CustomerManagement = () => {
                     dataSource={Array(Math.min(currentCustomer.orders, 5)).fill().map((_, i) => ({
                       key: i,
                       code: `ORD-${100000 + i}`,
-                      date: moment(currentCustomer.lastOrderDate)
+                      date: dayjs(currentCustomer.lastOrderDate)
                         .subtract(i * 15, 'days')
                         .format('DD/MM/YYYY'),
                       value: formatCurrency(Math.floor(Math.random() * 5000000) + 500000),
@@ -755,21 +755,21 @@ const CustomerManagement = () => {
               <TabPane tab="Lịch sử" key="history">
                 <Timeline>
                   <Timeline.Item color="green">
-                    Tạo tài khoản - {moment(currentCustomer.createdDate).format('DD/MM/YYYY')}
+                    Tạo tài khoản - {dayjs(currentCustomer.createdDate).format('DD/MM/YYYY')}
                   </Timeline.Item>
                   {currentCustomer.orders > 0 && (
                     <Timeline.Item color="blue">
-                      Đơn hàng đầu tiên - {moment(currentCustomer.createdDate).add(5, 'days').format('DD/MM/YYYY')}
+                      Đơn hàng đầu tiên - {dayjs(currentCustomer.createdDate).add(5, 'days').format('DD/MM/YYYY')}
                     </Timeline.Item>
                   )}
                   {currentCustomer.membership && (
                     <Timeline.Item color="gold">
-                      Đạt hạng {currentCustomer.membership} - {moment(currentCustomer.createdDate).add(30, 'days').format('DD/MM/YYYY')}
+                      Đạt hạng {currentCustomer.membership} - {dayjs(currentCustomer.createdDate).add(30, 'days').format('DD/MM/YYYY')}
                     </Timeline.Item>
                   )}
                   {currentCustomer.orders > 3 && (
                     <Timeline.Item color="purple">
-                      Lần mua hàng gần nhất - {moment(currentCustomer.lastOrderDate).format('DD/MM/YYYY')}
+                      Lần mua hàng gần nhất - {dayjs(currentCustomer.lastOrderDate).format('DD/MM/YYYY')}
                     </Timeline.Item>
                   )}
                 </Timeline>

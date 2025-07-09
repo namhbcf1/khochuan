@@ -32,7 +32,7 @@ import {
   InfoCircleOutlined
 } from '@ant-design/icons';
 import { Area, Column, Line, Pie } from '@ant-design/plots';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -45,7 +45,7 @@ const { TabPane } = Tabs;
 const RevenueOverview = () => {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('month');
-  const [dateRange, setDateRange] = useState([moment().subtract(30, 'days'), moment()]);
+  const [dateRange, setDateRange] = useState([dayjs().subtract(30, 'days'), dayjs()]);
   const [data, setData] = useState({
     summary: {},
     revenueData: [],
@@ -92,7 +92,7 @@ const RevenueOverview = () => {
   // Tạo dữ liệu doanh thu theo thời gian
   const generateRevenueData = () => {
     const data = [];
-    const startDate = moment().subtract(30, 'days');
+    const startDate = dayjs().subtract(30, 'days');
     const categories = ['Laptop', 'PC', 'Màn hình', 'Linh kiện', 'Phụ kiện', 'Âm thanh'];
     
     for (let i = 0; i < 30; i++) {
@@ -261,19 +261,19 @@ const RevenueOverview = () => {
     // Cập nhật dateRange dựa trên khoảng thời gian đã chọn
     switch (value) {
       case 'week':
-        setDateRange([moment().subtract(7, 'days'), moment()]);
+        setDateRange([dayjs().subtract(7, 'days'), dayjs()]);
         break;
       case 'month':
-        setDateRange([moment().subtract(30, 'days'), moment()]);
+        setDateRange([dayjs().subtract(30, 'days'), dayjs()]);
         break;
       case 'quarter':
-        setDateRange([moment().subtract(90, 'days'), moment()]);
+        setDateRange([dayjs().subtract(90, 'days'), dayjs()]);
         break;
       case 'year':
-        setDateRange([moment().subtract(365, 'days'), moment()]);
+        setDateRange([dayjs().subtract(365, 'days'), dayjs()]);
         break;
       default:
-        setDateRange([moment().subtract(30, 'days'), moment()]);
+        setDateRange([dayjs().subtract(30, 'days'), dayjs()]);
     }
   };
 

@@ -41,7 +41,7 @@ import {
   CloseCircleOutlined
 } from '@ant-design/icons';
 import { Column, Pie } from '@ant-design/plots';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text, Link } = Typography;
@@ -120,7 +120,7 @@ const InventoryDashboard = () => {
         cost: product.cost,
         value: stock * product.cost,
         status: stock <= 0 ? 'out_of_stock' : stock <= lowStockThreshold ? 'low_stock' : 'in_stock',
-        lastUpdated: moment().subtract(Math.floor(Math.random() * 30), 'days').format('YYYY-MM-DD'),
+        lastUpdated: dayjs().subtract(Math.floor(Math.random() * 30), 'days').format('YYYY-MM-DD'),
         location: `Kệ ${String.fromCharCode(65 + Math.floor(Math.random() * 6))}-${Math.floor(Math.random() * 20) + 1}`,
         incoming: Math.random() > 0.7 ? Math.floor(Math.random() * 10) + 1 : 0,
       };
@@ -327,7 +327,7 @@ const InventoryDashboard = () => {
       title: 'Cập nhật',
       dataIndex: 'lastUpdated',
       key: 'lastUpdated',
-      render: date => moment(date).format('DD/MM/YYYY'),
+      render: date => dayjs(date).format('DD/MM/YYYY'),
     },
     {
       title: 'Thao tác',

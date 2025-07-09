@@ -13,7 +13,7 @@ import {
 } from '@ant-design/icons';
 import { formatCurrency } from '../../../utils/helpers/formatters';
 import { useAuth } from '../../../utils/hooks/useAuth';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 const { Step } = Steps;
@@ -134,7 +134,7 @@ const ShiftEnd = () => {
           shiftId: mockShiftData.shiftId,
           posTerminal: mockShiftData.posTerminal,
           register: mockShiftData.register,
-          startTime: moment(mockShiftData.startTime).format('DD/MM/YYYY HH:mm'),
+          startTime: dayjs(mockShiftData.startTime).format('DD/MM/YYYY HH:mm'),
           startAmount: mockShiftData.startAmount,
           expectedDrawerAmount: expected
         });
@@ -556,7 +556,7 @@ const ShiftEnd = () => {
             <Result
               status="success"
               title="Đóng ca làm việc thành công!"
-              subTitle={`Mã ca: ${shiftData?.shiftId || 'N/A'} - Thời gian kết thúc: ${moment().format('DD/MM/YYYY HH:mm:ss')}`}
+              subTitle={`Mã ca: ${shiftData?.shiftId || 'N/A'} - Thời gian kết thúc: ${dayjs().format('DD/MM/YYYY HH:mm:ss')}`}
               extra={[
                 <Button 
                   type="primary" 
@@ -580,10 +580,10 @@ const ShiftEnd = () => {
                 <Descriptions.Item label="Nhân viên">{shiftData?.cashier}</Descriptions.Item>
                 <Descriptions.Item label="Máy POS">{shiftData?.posTerminal}</Descriptions.Item>
                 <Descriptions.Item label="Thời gian bắt đầu">
-                  {moment(shiftData?.startTime).format('DD/MM/YYYY HH:mm')}
+                  {dayjs(shiftData?.startTime).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
                 <Descriptions.Item label="Thời gian kết thúc">
-                  {moment(shiftData?.endTime).format('DD/MM/YYYY HH:mm')}
+                  {dayjs(shiftData?.endTime).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
                 <Descriptions.Item label="Tiền đầu ca">
                   {formatCurrency(shiftData?.startAmount)}

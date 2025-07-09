@@ -31,7 +31,7 @@ import {
   LineChartOutlined
 } from '@ant-design/icons';
 import { Line, Pie, Column, Area } from '@ant-design/plots';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -45,8 +45,8 @@ const OrderAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('month');
   const [dateRange, setDateRange] = useState([
-    moment().subtract(30, 'days'),
-    moment(),
+    dayjs().subtract(30, 'days'),
+    dayjs(),
   ]);
   const [data, setData] = useState({
     summary: {},
@@ -101,7 +101,7 @@ const OrderAnalytics = () => {
   // Tạo dữ liệu xu hướng đơn hàng
   const generateOrderTrends = () => {
     const data = [];
-    const startDate = moment().subtract(30, 'days');
+    const startDate = dayjs().subtract(30, 'days');
 
     for (let i = 0; i < 30; i++) {
       const date = startDate.clone().add(i, 'days').format('YYYY-MM-DD');
@@ -263,19 +263,19 @@ const OrderAnalytics = () => {
 
     switch (value) {
       case 'week':
-        setDateRange([moment().subtract(7, 'days'), moment()]);
+        setDateRange([dayjs().subtract(7, 'days'), dayjs()]);
         break;
       case 'month':
-        setDateRange([moment().subtract(30, 'days'), moment()]);
+        setDateRange([dayjs().subtract(30, 'days'), dayjs()]);
         break;
       case 'quarter':
-        setDateRange([moment().subtract(90, 'days'), moment()]);
+        setDateRange([dayjs().subtract(90, 'days'), dayjs()]);
         break;
       case 'year':
-        setDateRange([moment().subtract(365, 'days'), moment()]);
+        setDateRange([dayjs().subtract(365, 'days'), dayjs()]);
         break;
       default:
-        setDateRange([moment().subtract(30, 'days'), moment()]);
+        setDateRange([dayjs().subtract(30, 'days'), dayjs()]);
     }
   };
 

@@ -44,7 +44,7 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -453,8 +453,8 @@ const ProductManagement = () => {
       title: 'Cập nhật lần cuối',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
-      render: (text) => moment(text).format('DD/MM/YYYY'),
-      sorter: (a, b) => moment(a.updatedAt).unix() - moment(b.updatedAt).unix(),
+      render: (text) => dayjs(text).format('DD/MM/YYYY'),
+      sorter: (a, b) => dayjs(a.updatedAt).unix() - dayjs(b.updatedAt).unix(),
       responsive: ['lg'],
     },
     {
