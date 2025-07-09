@@ -1,1 +1,7 @@
-// CORS middleware for cross-origin requests 
+/**
+ * CORS Middleware
+ */
+
+import { corsHeaders } from '../utils/cors';
+
+export { corsHeaders }; 

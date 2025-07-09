@@ -6,107 +6,162 @@
 import { corsHeaders } from '../utils/cors';
 
 /**
- * Verify JWT token from Authorization header
- * @param {Request} request - The incoming request
- * @param {Object} env - Environment variables
+ * Giải mã JWT token
+ * @param {string} token - JWT token string
+ * @param {string} secret - Secret key for verification
  * @returns {Object|null} - Decoded token payload or null if invalid
  */
-export async function verifyToken(request, env) {
+async function verifyJWT(token, secret) {
   try {
-    // Get authorization header
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Split token parts
+    const parts = token.split('.');
+    if (parts.length !== 3) {
       return null;
     }
     
-    // Extract token
-    const token = authHeader.split(' ')[1];
-    if (!token) {
+    // Decode header and payload
+    const [headerB64, payloadB64, signatureB64] = parts;
+    
+    // Verify signature
+    const signatureVerified = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    ).then(key => crypto.subtle.verify(
+      { name: 'HMAC', hash: 'SHA-256' },
+      key,
+      Uint8Array.from(atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)),
+      new TextEncoder().encode(`${headerB64}.${payloadB64}`)
+    ));
+    
+    if (!signatureVerified) {
       return null;
     }
     
-    // Verify token using Workers JWT library or KV store
-    // This is a simplified example - in production, use proper JWT verification
-    const tokenData = await env.AUTH_STORE.get(`token:${token}`);
-    if (!tokenData) {
+    // Decode payload
+    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+    
+    // Check token expiration
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
       return null;
     }
     
-    // Parse token data
-    return JSON.parse(tokenData);
+    return payload;
   } catch (error) {
-    console.error('Token verification error:', error);
+    console.error('JWT verification error:', error);
     return null;
   }
 }
 
 /**
  * Authentication middleware
- * @param {Request} request - The incoming request
  * @param {Object} env - Environment variables
- * @returns {Response|null} - Error response or null to continue
+ * @returns {Function} - Middleware function
  */
-export async function authMiddleware(request, env) {
+export const auth = (env) => async (request) => {
   // Skip auth for OPTIONS requests (CORS preflight)
   if (request.method === 'OPTIONS') {
-    return null;
+    return;
   }
   
-  // Verify token
-  const user = await verifyToken(request, env);
-  if (!user) {
-    return new Response(JSON.stringify({ 
-      error: 'Unauthorized',
+  // Get authorization header
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({
+      success: false,
       message: 'Authentication required'
-    }), { 
-      status: 401, 
-      headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+    }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
     });
   }
   
-  // Attach user to request for handlers
-  request.user = user;
+  // Extract token
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: 'Invalid token format'
+    }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+  
+  // Verify token
+  const payload = await verifyJWT(token, env.JWT_SECRET || 'khochuan-secret-key');
+  if (!payload) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: 'Invalid or expired token'
+    }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+  
+  // Attach user info to request
+  request.user = {
+    id: payload.sub,
+    name: payload.name,
+    email: payload.email,
+    role: payload.role
+  };
   
   // Continue processing
-  return null;
-}
+  return;
+};
 
 /**
  * Role-based access control middleware
- * @param {Array<String>} allowedRoles - Roles allowed to access the route
+ * @param {Array<String>} roles - Roles allowed to access the route
  * @returns {Function} - Middleware function
  */
-export function roleCheck(allowedRoles) {
-  return async (request, env) => {
-    // Skip for OPTIONS requests
-    if (request.method === 'OPTIONS') {
-      return null;
-    }
-    
-    // Ensure user is authenticated
-    const user = request.user || await verifyToken(request, env);
-    if (!user) {
-      return new Response(JSON.stringify({ 
-        error: 'Unauthorized',
-        message: 'Authentication required'
-      }), { 
-        status: 401, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      });
-    }
-    
-    // Check if user has allowed role
-    if (!allowedRoles.includes(user.role)) {
-      return new Response(JSON.stringify({ 
-        error: 'Forbidden',
-        message: 'You do not have permission to access this resource'
-      }), { 
-        status: 403, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      });
-    }
-    
-    // Continue processing
-    return null;
-  };
-}
+export const rbac = (roles) => (request) => {
+  // Skip for OPTIONS requests
+  if (request.method === 'OPTIONS') {
+    return;
+  }
+  
+  // Ensure user is authenticated
+  if (!request.user) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: 'Authentication required'
+    }), {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+  
+  // Check if user has allowed role
+  if (!roles.includes(request.user.role)) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: 'You do not have permission to access this resource'
+    }), {
+      status: 403,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+  
+  // Continue processing
+  return;
+};
