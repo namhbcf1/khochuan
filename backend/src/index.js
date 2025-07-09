@@ -3,6 +3,7 @@ import { handleCors, addCorsHeaders } from './utils/cors';
 
 // Import routes
 import authRoutes from './routes/auth_simple';
+import productsRoutes from './routes/products';
 
 // Create the router
 const router = Router();
@@ -12,6 +13,8 @@ router.options('*', handleCors);
 
 // Route definitions
 router.all('/auth/*', authRoutes.handle);
+router.all('/products/*', productsRoutes.handle);
+router.all('/products', productsRoutes.handle);
 
 // Root route - API info
 router.get('/', () => {

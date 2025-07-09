@@ -82,9 +82,13 @@ const POS = () => {
     try {
       setLoading(true);
       const response = await api.get('/products', {
-        params: { active: true, include_inventory: true }
+        params: { page: 1, limit: 50 }
       });
-      setProducts(response.data || getMockProducts());
+      if (response.data.success) {
+        setProducts(response.data.data.products || []);
+      } else {
+        setProducts(getMockProducts());
+      }
     } catch (error) {
       console.error('Failed to load products:', error);
       setProducts(getMockProducts());
@@ -95,11 +99,18 @@ const POS = () => {
 
   const loadCategories = async () => {
     try {
-      const response = await api.get('/products/categories');
-      setCategories([
-        { id: 'all', name: 'All Products' },
-        ...(response.data || getMockCategories())
-      ]);
+      const response = await api.get('/categories');
+      if (response.data.success) {
+        setCategories([
+          { id: 'all', name: 'All Products' },
+          ...(response.data.data.categories || [])
+        ]);
+      } else {
+        setCategories([
+          { id: 'all', name: 'All Products' },
+          ...getMockCategories()
+        ]);
+      }
     } catch (error) {
       console.error('Failed to load categories:', error);
       setCategories([
@@ -114,7 +125,11 @@ const POS = () => {
       const response = await api.get('/customers', {
         params: { limit: 100 }
       });
-      setCustomers(response.data || getMockCustomers());
+      if (response.data.success) {
+        setCustomers(response.data.data.customers || []);
+      } else {
+        setCustomers(getMockCustomers());
+      }
     } catch (error) {
       console.error('Failed to load customers:', error);
       setCustomers(getMockCustomers());
