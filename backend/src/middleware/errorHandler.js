@@ -57,4 +57,7 @@ export function handleError(error) {
       }
     }
   );
-} 
+}
+
+// Alias for compatibility
+export const errorHandler = handleError;

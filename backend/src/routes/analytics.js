@@ -10,7 +10,7 @@ import { DatabaseService } from '../services/database.js';
 const router = Router();
 
 // Real-time dashboard data
-analytics.get('/dashboard', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/dashboard', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { period = '30d' } = c.req.query();
     const db = new DatabaseService(c.env.DB);
@@ -224,7 +224,7 @@ analytics.get('/dashboard', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Sales report with detailed breakdown
-analytics.get('/sales', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/sales', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { 
       startDate, 
@@ -362,7 +362,7 @@ analytics.get('/sales', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Product performance report
-analytics.get('/products', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/products', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { 
       startDate, 
@@ -492,7 +492,7 @@ analytics.get('/products', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Customer analytics
-analytics.get('/customers', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/customers', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { 
       startDate, 
@@ -635,7 +635,7 @@ analytics.get('/customers', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Staff performance report
-analytics.get('/staff', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/staff', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { 
       startDate, 
@@ -766,7 +766,7 @@ analytics.get('/staff', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Revenue chart data for visualizations
-analytics.get('/revenue-chart', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/revenue-chart', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { period = '30d', groupBy = 'day' } = c.req.query();
 
@@ -843,7 +843,7 @@ analytics.get('/revenue-chart', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Product chart data for visualizations
-analytics.get('/product-chart', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/product-chart', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { period = '30d', type = 'top-selling' } = c.req.query();
 
@@ -935,7 +935,7 @@ analytics.get('/product-chart', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Real-time statistics
-analytics.get('/realtime', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/realtime', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     
@@ -1010,7 +1010,7 @@ analytics.get('/realtime', auth, rbac(['admin', 'manager']), async (c) => {
 });
 
 // Export report data
-analytics.get('/export/:type', auth, rbac(['admin', 'manager']), async (c) => {
+router.get('/export/:type', auth, rbac(['admin', 'manager']), async (c) => {
   try {
     const { type } = c.req.param();
     const { format = 'json', ...params } = c.req.query();

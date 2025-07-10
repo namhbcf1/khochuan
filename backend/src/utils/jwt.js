@@ -202,3 +202,7 @@ export function decodeJWT(token) {
     return null;
   }
 }
+
+// Aliases for compatibility
+export const generateJWT = createJWT;
+export const generateRefreshToken = createRefreshToken;

@@ -167,26 +167,77 @@ export const requirePermissionMiddleware = (requiredPermissions) => (request) =>
 };
 
 /**
+ * Main RBAC middleware
+ */
+export function rbacMiddleware(allowedRoles = [], requiredPermissions = [], options = {}) {
+  return (request) => {
+    // Skip for OPTIONS requests
+    if (request.method === 'OPTIONS') {
+      return;
+    }
+
+    // Ensure user is authenticated
+    if (!request.user) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: 'Authentication required'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check role if specified
+    if (allowedRoles.length > 0 && !allowedRoles.includes(request.user.role)) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: 'Insufficient role permissions'
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check permissions if specified
+    if (requiredPermissions.length > 0) {
+      const hasPermissions = options.requireAll
+        ? requiredPermissions.every(p => hasPermission(request.user, p))
+        : requiredPermissions.some(p => hasPermission(request.user, p));
+
+      if (!hasPermissions) {
+        return new Response(JSON.stringify({
+          success: false,
+          message: 'Insufficient permissions'
+        }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+  };
+}
+
+/**
  * Quick role check middleware
  */
 export function requireRole(roles) {
   return rbacMiddleware(roles)
 }
-  
+
   /**
    * Quick permission check middleware
    */
   export function requirePermission(permissions, requireAll = false) {
     return rbacMiddleware([], permissions, { requireAll })
   }
-  
+
   /**
    * Admin only middleware
    */
   export function adminOnly() {
     return rbacMiddleware(['admin'])
   }
-  
+
   /**
    * Staff or Admin middleware
    */

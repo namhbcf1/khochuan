@@ -281,3 +281,43 @@ function sanitizeValue(value, type) {
       return value;
   }
 }
+
+/**
+ * Validate email address
+ * @param {string} email - Email to validate
+ * @returns {boolean} - True if valid
+ */
+export function validateEmail(email) {
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim().toLowerCase());
+}
+
+/**
+ * Validate password strength
+ * @param {string} password - Password to validate
+ * @returns {Object} - Validation result with isValid and errors
+ */
+export function validatePassword(password) {
+  const errors = [];
+
+  if (!password || typeof password !== 'string') {
+    return { isValid: false, errors: ['Password is required'] };
+  }
+
+  if (password.length < 6) {
+    errors.push('Password must be at least 6 characters long');
+  }
+
+  if (password.length > 128) {
+    errors.push('Password must be less than 128 characters');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
