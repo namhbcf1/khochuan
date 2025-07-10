@@ -11,7 +11,7 @@ import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 
 // Import REAL routes - NO MOCK DATA
-import authRoutes from './routes/auth_real';
+import authRoutes from './routes/auth.js';
 import productsRoutes from './routes/products_real';
 import analyticsRoutes from './routes/analytics';
 import inventoryRoutes from './routes/inventory';
