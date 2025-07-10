@@ -1,570 +1,419 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Row, 
-  Col, 
-  Typography, 
-  Button, 
-  Space, 
-  Statistic, 
-  Table,
-  Select, 
-  Tabs, 
-  Tooltip,
-  Tag,
-  Divider,
-  Alert,
-  Spin,
-  Radio
-} from 'antd';
-import {
-  UserOutlined,
-  WalletOutlined,
-  ShoppingOutlined,
-  RiseOutlined,
-  ReloadOutlined,
-  DownloadOutlined,
-  PieChartOutlined,
-  BarsOutlined,
-  DotChartOutlined,
-  ClockCircleOutlined,
-  FireOutlined
-} from '@ant-design/icons';
-import { Pie, Scatter, Column, Line, Heatmap } from '@ant-design/plots';
-import dayjs from 'dayjs';
+import { Card, Row, Col, Select, Button, Table, Spin, Statistic, Alert, Tabs, Tag, Tooltip, Progress } from 'antd';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import { UserOutlined, ClockCircleOutlined, DollarOutlined, ShoppingOutlined } from '@ant-design/icons';
+import api from '../../../services/api';
+import { useAuth } from '../../../hooks/useAuth';
 
-const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
 const { TabPane } = Tabs;
+const { Option } = Select;
 
-/**
- * Trang phân tích và phân khúc khách hàng
- */
+// Define colors for segments
+const SEGMENT_COLORS = {
+  'Champions': '#52c41a',
+  'Loyal': '#1890ff',
+  'Potential Loyalists': '#13c2c2',
+  'New Customers': '#722ed1',
+  'Promising': '#2f54eb',
+  'Needs Attention': '#faad14',
+  'At Risk': '#fa8c16',
+  'Can\'t Lose': '#fa541c',
+  'Lost': '#f5222d'
+};
+
 const CustomerSegmentation = () => {
-  const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState('year');
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [segmentData, setSegmentData] = useState([]);
-  const [customerValue, setCustomerValue] = useState([]);
-  const [recencyData, setRecencyData] = useState([]);
-  const [rfmMatrix, setRfmMatrix] = useState([]);
-  const [lifetimeValueData, setLifetimeValueData] = useState([]);
-  const [ageDistribution, setAgeDistribution] = useState([]);
-  const [topCustomers, setTopCustomers] = useState([]);
-
-  // Tải dữ liệu mẫu
+  const [timeframe, setTimeframe] = useState('90d');
+  const [includeMetrics, setIncludeMetrics] = useState(true);
+  const [processingIndicator, setProcessingIndicator] = useState(false);
+  const [segmentationResults, setSegmentationResults] = useState(null);
+  
   useEffect(() => {
+    fetchSegmentData();
+  }, [timeframe]);
+
+  const fetchSegmentData = async () => {
     setLoading(true);
-    // Giả lập API call
-    setTimeout(() => {
-      // Tạo dữ liệu mẫu
-      const segmentData = [
-        { segment: 'Khách hàng VIP', value: 52, percentage: 5.2, color: '#722ed1' },
-        { segment: 'Khách hàng trung thành', value: 187, percentage: 18.7, color: '#2f54eb' },
-        { segment: 'Khách hàng tiềm năng', value: 245, percentage: 24.5, color: '#1890ff' },
-        { segment: 'Khách hàng mới', value: 321, percentage: 32.1, color: '#52c41a' },
-        { segment: 'Khách hàng không hoạt động', value: 195, percentage: 19.5, color: '#faad14' },
-      ];
-      
-      const rfmMatrix = generateRfmMatrix();
-      const customerValue = generateCustomerValue();
-      const recencyData = generateRecencyData();
-      const lifetimeValueData = generateLifetimeValueData();
-      const ageDistribution = generateAgeDistribution();
-      const topCustomers = generateTopCustomers();
-      
-      setSegmentData(segmentData);
-      setRfmMatrix(rfmMatrix);
-      setCustomerValue(customerValue);
-      setRecencyData(recencyData);
-      setLifetimeValueData(lifetimeValueData);
-      setAgeDistribution(ageDistribution);
-      setTopCustomers(topCustomers);
-      
-      setLoading(false);
-    }, 1500);
-  }, [period]);
-
-  // Tạo dữ liệu ma trận RFM
-  const generateRfmMatrix = () => {
-    const rfmData = [];
+    setProcessingIndicator(true);
+    setError(null);
     
-    // RFM Scores (1-5 for each dimension)
-    for (let r = 1; r <= 5; r++) {
-      for (let f = 1; f <= 5; f++) {
-        for (let m = 1; m <= 5; m++) {
-          // Calculate segment and customer count
-          let segment = '';
-          let value = 0;
-          
-          if (r >= 4 && f >= 4 && m >= 4) {
-            segment = 'VIP';
-            value = Math.floor(Math.random() * 10) + 5;
-          } else if (r >= 3 && f >= 3 && m >= 3) {
-            segment = 'Trung thành';
-            value = Math.floor(Math.random() * 20) + 10;
-          } else if (r >= 3 && (f >= 3 || m >= 3)) {
-            segment = 'Tiềm năng';
-            value = Math.floor(Math.random() * 30) + 15;
-          } else if (r <= 2 && f <= 2 && m <= 2) {
-            segment = 'Ngủ đông';
-            value = Math.floor(Math.random() * 25) + 10;
-          } else {
-            segment = 'Trung bình';
-            value = Math.floor(Math.random() * 40) + 20;
-          }
-          
-          rfmData.push({
-            r,
-            f,
-            m,
-            segment,
-            value,
-          });
+    try {
+      const response = await api.get(`/ai/customers/segment?timeframe=${timeframe}&include_metrics=${includeMetrics}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      }
-    }
-    
-    return rfmData;
-  };
-
-  // Tạo dữ liệu giá trị khách hàng
-  const generateCustomerValue = () => {
-    return [
-      { category: 'Dưới 1tr', value: 352, color: '#d9d9d9' },
-      { category: '1tr - 5tr', value: 421, color: '#faad14' },
-      { category: '5tr - 15tr', value: 127, color: '#52c41a' },
-      { category: '15tr - 30tr', value: 68, color: '#1890ff' },
-      { category: 'Trên 30tr', value: 32, color: '#722ed1' },
-    ];
-  };
-
-  // Tạo dữ liệu độ gần đây của khách hàng
-  const generateRecencyData = () => {
-    return [
-      { time: '0-7 ngày', value: 143 },
-      { time: '8-30 ngày', value: 205 },
-      { time: '31-60 ngày', value: 187 },
-      { time: '61-90 ngày', value: 139 },
-      { time: '91-180 ngày', value: 117 },
-      { time: '181-365 ngày', value: 112 },
-      { time: 'Trên 365 ngày', value: 97 },
-    ];
-  };
-
-  // Tạo dữ liệu giá trị vòng đời khách hàng
-  const generateLifetimeValueData = () => {
-    const data = [];
-    const startDate = dayjs().subtract(12, 'months');
-    
-    for (let i = 0; i < 12; i++) {
-      const month = startDate.clone().add(i, 'months').format('MM/YYYY');
-      data.push({
-        month,
-        'Mới': Math.floor(Math.random() * 200000) + 100000,
-        '0-6 tháng': Math.floor(Math.random() * 500000) + 300000,
-        '6-12 tháng': Math.floor(Math.random() * 800000) + 500000,
-        '1-2 năm': Math.floor(Math.random() * 1200000) + 800000,
-        'Trên 2 năm': Math.floor(Math.random() * 2000000) + 1200000,
       });
+      
+      if (response.data.success) {
+        setSegmentData(response.data.data.segments);
+        setSegmentationResults(response.data.data);
+        console.log('Segmentation data:', response.data.data);
+      } else {
+        setError('Failed to load customer segments');
+      }
+    } catch (err) {
+      console.error('Error fetching customer segments:', err);
+      setError(`Error: ${err.message || 'Failed to load customer segments'}`);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setProcessingIndicator(false), 800); // Keep indicator visible briefly for UX
     }
-    
-    return data;
   };
 
-  // Tạo dữ liệu phân bố độ tuổi
-  const generateAgeDistribution = () => {
-    return [
-      { age: '18-24', male: 87, female: 95 },
-      { age: '25-34', male: 147, female: 158 },
-      { age: '35-44', male: 118, female: 103 },
-      { age: '45-54', male: 73, female: 67 },
-      { age: '55-64', male: 52, female: 48 },
-      { age: '65+', male: 32, female: 20 },
-    ];
+  const handleTimeframeChange = (value) => {
+    setTimeframe(value);
   };
 
-  // Tạo dữ liệu top khách hàng
-  const generateTopCustomers = () => {
-    return [
-      { id: 1, name: 'Nguyễn Văn A', orders: 12, totalSpent: 45800000, lastOrder: '2023-06-18', segment: 'VIP' },
-      { id: 2, name: 'Trần Thị B', orders: 8, totalSpent: 38500000, lastOrder: '2023-06-22', segment: 'Trung thành' },
-      { id: 3, name: 'Lê Minh C', orders: 15, totalSpent: 37200000, lastOrder: '2023-06-10', segment: 'VIP' },
-      { id: 4, name: 'Phạm Văn D', orders: 10, totalSpent: 32600000, lastOrder: '2023-06-15', segment: 'Trung thành' },
-      { id: 5, name: 'Hoàng Thị E', orders: 7, totalSpent: 28900000, lastOrder: '2023-06-05', segment: 'Tiềm năng' },
-    ];
+  const handleRefresh = () => {
+    fetchSegmentData();
   };
 
-  // Format tiền tệ
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(value);
-  };
+  // Prepare data for pie chart
+  const pieChartData = segmentData.map(segment => ({
+    name: segment.segment_name,
+    value: segment.customer_count,
+    color: SEGMENT_COLORS[segment.segment_name] || '#8c8c8c'
+  }));
 
-  // Xử lý thay đổi khoảng thời gian
-  const handlePeriodChange = (value) => {
-    setPeriod(value);
-    setLoading(true);
-    
-    // Giả lập tải dữ liệu mới
-    setTimeout(() => setLoading(false), 1000);
-  };
+  // Prepare data for bar chart
+  const barChartData = segmentData.map(segment => ({
+    name: segment.segment_name,
+    recency: segment.avg_recency,
+    frequency: segment.avg_frequency,
+    monetary: segment.avg_monetary
+  }));
 
-  // Cấu hình biểu đồ phân khúc khách hàng
-  const segmentPieConfig = {
-    data: segmentData,
-    angleField: 'value',
-    colorField: 'segment',
-    radius: 0.8,
-    label: {
-      type: 'outer',
-      content: '{name}: {percentage}',
-    },
-    color: ({ segment }) => {
-      const item = segmentData.find(d => d.segment === segment);
-      return item ? item.color : '#1890ff';
-    },
-    interactions: [{ type: 'element-active' }],
-  };
-
-  // Cấu hình biểu đồ RFM
-  const rfmHeatmapConfig = {
-    data: rfmMatrix,
-    xField: 'r',
-    yField: 'f',
-    colorField: 'value',
-    shape: 'square',
-    sizeField: 'value',
-    color: ['#BAE7FF', '#1890FF', '#0050B3'],
-    label: {
-      style: {
-        fill: '#fff',
-        shadowBlur: 2,
-        shadowColor: 'rgba(0, 0, 0, .45)',
-      },
-    },
-    meta: {
-      r: { alias: 'Recency (độ gần đây)' },
-      f: { alias: 'Frequency (tần suất)' },
-      value: { alias: 'Số lượng' },
-    },
-  };
-
-  // Cấu hình biểu đồ giá trị khách hàng
-  const customerValuePieConfig = {
-    data: customerValue,
-    angleField: 'value',
-    colorField: 'category',
-    radius: 0.8,
-    label: {
-      type: 'inner',
-      content: '{percentage}',
-    },
-    color: ({ category }) => {
-      const item = customerValue.find(d => d.category === category);
-      return item ? item.color : '#1890ff';
-    },
-    interactions: [{ type: 'element-active' }],
-  };
-
-  // Cấu hình biểu đồ độ gần đây
-  const recencyBarConfig = {
-    data: recencyData,
-    xField: 'time',
-    yField: 'value',
-    color: '#1890ff',
-    label: {
-      position: 'middle',
-      style: {
-        fill: '#FFFFFF',
-        opacity: 0.6,
-      },
-    },
-  };
-
-  // Cấu hình biểu đồ giá trị vòng đời
-  const lifetimeValueConfig = {
-    data: lifetimeValueData,
-    xField: 'month',
-    yField: 'value',
-    seriesField: 'segment',
-    isStack: true,
-    label: false,
-    legend: { position: 'top' },
-    color: ['#1890ff', '#52c41a', '#faad14', '#eb2f96', '#722ed1'],
-  };
-
-  // Transform data for lifetime value chart
-  const lifetimeValueChartData = lifetimeValueData.reduce((acc, item) => {
-    const { month, ...segments } = item;
-    Object.entries(segments).forEach(([segment, value]) => {
-      acc.push({ month, segment, value });
-    });
-    return acc;
-  }, []);
-
-  // Cấu hình biểu đồ phân bố độ tuổi
-  const ageDistributionConfig = {
-    data: ageDistribution,
-    xField: 'age',
-    yField: ['male', 'female'],
-    isGroup: true,
-    color: ['#1890ff', '#eb2f96'],
-    label: {
-      position: 'middle',
-      layout: [
-        { type: 'interval-adjust-position' },
-        { type: 'interval-hide-overlap' },
-        { type: 'adjust-color' },
-      ],
-    },
-    legend: {
-      position: 'top-right',
-      itemName: {
-        formatter: (text) => {
-          if (text === 'male') return 'Nam';
-          if (text === 'female') return 'Nữ';
-          return text;
-        },
-      },
-    },
-  };
-
-  // Cột cho bảng top khách hàng
-  const topCustomersColumns = [
+  // Columns for the segments table
+  const columns = [
     {
-      title: 'Khách hàng',
-      dataIndex: 'name',
-      key: 'name',
+      title: 'Segment',
+      dataIndex: 'segment_name',
+      key: 'segment_name',
+      render: (text) => (
+        <Tag color={SEGMENT_COLORS[text] || 'default'} style={{ fontSize: '14px', padding: '4px 8px' }}>
+          {text}
+        </Tag>
+      ),
     },
     {
-      title: 'Đơn hàng',
-      dataIndex: 'orders',
-      key: 'orders',
-      align: 'right',
+      title: 'Description',
+      dataIndex: 'segment_description',
+      key: 'segment_description',
     },
     {
-      title: 'Tổng chi tiêu',
-      dataIndex: 'totalSpent',
-      key: 'totalSpent',
-      align: 'right',
-      render: (text) => formatCurrency(text),
+      title: 'Customers',
+      dataIndex: 'customer_count',
+      key: 'customer_count',
+      sorter: (a, b) => a.customer_count - b.customer_count,
     },
     {
-      title: 'Mua gần nhất',
-      dataIndex: 'lastOrder',
-      key: 'lastOrder',
-      render: (text) => dayjs(text).format('DD/MM/YYYY'),
+      title: 'Percentage',
+      dataIndex: 'percentage',
+      key: 'percentage',
+      render: (text) => `${text}%`,
+      sorter: (a, b) => a.percentage - b.percentage,
     },
     {
-      title: 'Phân khúc',
-      dataIndex: 'segment',
-      key: 'segment',
-      render: (text) => {
-        let color = '';
-        switch (text) {
-          case 'VIP':
-            color = '#722ed1';
-            break;
-          case 'Trung thành':
-            color = '#2f54eb';
-            break;
-          case 'Tiềm năng':
-            color = '#1890ff';
-            break;
-          default:
-            color = '#1890ff';
-        }
-        return <Tag color={color}>{text}</Tag>;
-      },
+      title: 'Avg. Recency',
+      dataIndex: 'avg_recency',
+      key: 'avg_recency',
+      render: (value) => (
+        <Tooltip title={`${value} out of 5`}>
+          <Progress percent={value * 20} size="small" strokeColor={value > 3.5 ? "#52c41a" : value > 2.5 ? "#faad14" : "#f5222d"} />
+        </Tooltip>
+      ),
+      sorter: (a, b) => a.avg_recency - b.avg_recency,
+    },
+    {
+      title: 'Avg. Frequency',
+      dataIndex: 'avg_frequency',
+      key: 'avg_frequency',
+      render: (value) => (
+        <Tooltip title={`${value} out of 5`}>
+          <Progress percent={value * 20} size="small" strokeColor={value > 3.5 ? "#52c41a" : value > 2.5 ? "#faad14" : "#f5222d"} />
+        </Tooltip>
+      ),
+      sorter: (a, b) => a.avg_frequency - b.avg_frequency,
+    },
+    {
+      title: 'Avg. Monetary',
+      dataIndex: 'avg_monetary',
+      key: 'avg_monetary',
+      render: (value) => (
+        <Tooltip title={`${value} out of 5`}>
+          <Progress percent={value * 20} size="small" strokeColor={value > 3.5 ? "#52c41a" : value > 2.5 ? "#faad14" : "#f5222d"} />
+        </Tooltip>
+      ),
+      sorter: (a, b) => a.avg_monetary - b.avg_monetary,
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Button type="link" onClick={() => console.log('View customers in segment:', record.segment_name)}>
+          View Customers
+        </Button>
+      ),
     },
   ];
 
-  // Render component
   return (
     <div className="customer-segmentation-page">
-      <Title level={1}>Customer Segmentation</Title>
+      <h1>Customer Segmentation</h1>
       
-      <div className="segmentation-controls">
-        <Card>
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <Row justify="space-between" align="middle">
-              <Col>
-                <Space>
-                  <Select
-                    value={period}
-                    onChange={handlePeriodChange}
-                    style={{ width: 150 }}
-                  >
-                    <Option value="week">This Week</Option>
-                    <Option value="month">This Month</Option>
-                    <Option value="quarter">This Quarter</Option>
-                    <Option value="year">This Year</Option>
-                    <Option value="all">All Time</Option>
-                  </Select>
-                  
-                  <Button 
-                    type="primary" 
-                    icon={<PieChartOutlined />}
-                    loading={loading}
-                    onClick={() => {
-                      setLoading(true);
-                      setTimeout(() => setLoading(false), 2000);
-                    }}
-                  >
-                    Run Segmentation
-                  </Button>
-                </Space>
-              </Col>
-              <Col>
-                <Space>
-                  <Button icon={<DownloadOutlined />}>Export Segments</Button>
-                  <Button icon={<BarsOutlined />}>Segment Manager</Button>
-                </Space>
-              </Col>
-            </Row>
-            
-            {loading && (
-              <div className="processing-indicator">
-                <Alert
-                  message="Processing Customer Segmentation"
-                  description="AI is analyzing your customer data. This may take a few moments..."
-                  type="info"
-                  showIcon
-                />
-              </div>
-            )}
-          </Space>
-        </Card>
-      </div>
-      
-      <div className="segmentation-results">
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-          <Col xs={24} md={8}>
-            <Card title="Customer Segments" className="segments-summary">
-              <div className="segment-chart">
-                <Pie {...segmentPieConfig} />
-              </div>
-              
-              <Divider />
-              
-              <div className="segment-list">
-                {segmentData.map((segment, index) => (
-                  <div key={index} className="segment-item">
-                    <div className="segment-header">
-                      <Tag color={segment.color} style={{ marginRight: 8 }}>{segment.segment}</Tag>
-                      <Text strong>{segment.value}</Text>
-                      <Text type="secondary"> customers ({segment.percentage}%)</Text>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
+      <Card className="control-card">
+        <Row gutter={16} align="middle">
+          <Col xs={24} sm={8} md={6} lg={4}>
+            <label>Time Period:</label>
+            <Select
+              style={{ width: '100%', marginTop: 8 }}
+              value={timeframe}
+              onChange={handleTimeframeChange}
+              disabled={loading}
+            >
+              <Option value="30d">Last 30 Days</Option>
+              <Option value="90d">Last 90 Days</Option>
+              <Option value="180d">Last 180 Days</Option>
+              <Option value="365d">Last 365 Days</Option>
+              <Option value="all">All Time</Option>
+            </Select>
           </Col>
-          
-          <Col xs={24} md={16}>
-            <Card title="Customer Value Distribution" className="segment-details">
-              <Row gutter={[16, 16]}>
-                <Col span={12}>
-                  <div className="segment-value-chart">
-                    <Column
-                      data={customerValue}
-                      xField="category"
-                      yField="value"
-                      color={({ category }) => {
-                        const item = customerValue.find(d => d.category === category);
-                        return item ? item.color : '#1890ff';
-                      }}
-                    />
-                  </div>
+          <Col xs={24} sm={8} md={6} lg={4}>
+            <Button 
+              type="primary" 
+              onClick={handleRefresh} 
+              loading={loading}
+              style={{ marginTop: 32 }}
+            >
+              Analyze Customers
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+
+      {error && (
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginTop: 16 }}
+        />
+      )}
+
+      {processingIndicator && (
+        <Card className="processing-indicator" style={{ marginTop: 16, textAlign: 'center' }}>
+          <Spin size="large" />
+          <p style={{ marginTop: 16 }}>Processing customer data...</p>
+        </Card>
+      )}
+
+      {!processingIndicator && segmentationResults && (
+        <div className="segmentation-results">
+          <Row gutter={16} style={{ marginTop: 16 }}>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic
+                  title="Total Customers"
+                  value={segmentationResults.metrics.total_customers}
+                  prefix={<UserOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic
+                  title="Analyzed Customers"
+                  value={segmentationResults.metrics.analyzed_customers}
+                  prefix={<ShoppingOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic
+                  title="Time Period"
+                  value={segmentationResults.metrics.time_period}
+                  prefix={<ClockCircleOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} md={6}>
+              <Card>
+                <Statistic
+                  title="Segments"
+                  value={segmentData.length}
+                  prefix={<DollarOutlined />}
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          <Tabs defaultActiveKey="overview" style={{ marginTop: 16 }}>
+            <TabPane tab="Overview" key="overview">
+              <Row gutter={16}>
+                <Col xs={24} lg={12}>
+                  <Card title="Customer Segment Distribution">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={pieChartData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {pieChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Legend />
+                        <RechartsTooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </Card>
                 </Col>
-                
-                <Col span={12}>
-                  <div className="segment-recency-chart">
-                    <Column
-                      data={recencyData}
-                      xField="time"
-                      yField="value"
-                      color="#1890ff"
-                    />
-                  </div>
+                <Col xs={24} lg={12}>
+                  <Card title="RFM Metrics by Segment">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart
+                        data={barChartData}
+                        margin={{
+                          top: 20,
+                          right: 30,
+                          left: 20,
+                          bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <RechartsTooltip />
+                        <Legend />
+                        <Bar dataKey="recency" name="Recency" fill="#8884d8" />
+                        <Bar dataKey="frequency" name="Frequency" fill="#82ca9d" />
+                        <Bar dataKey="monetary" name="Monetary" fill="#ffc658" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Card>
                 </Col>
               </Row>
-            </Card>
-            
-            <Card title="RFM Analysis" style={{ marginTop: 16 }} className="rfm-analysis segment-details">
-              <Heatmap {...rfmHeatmapConfig} />
-            </Card>
-          </Col>
-        </Row>
-        
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-          <Col span={24}>
-            <Card title="Top Customers" className="top-customers segment-details">
-              <Table
-                dataSource={topCustomers}
-                columns={[
-                  {
-                    title: 'Customer',
-                    dataIndex: 'name',
-                    key: 'name',
-                  },
-                  {
-                    title: 'Orders',
-                    dataIndex: 'orders',
-                    key: 'orders',
-                    sorter: (a, b) => a.orders - b.orders,
-                  },
-                  {
-                    title: 'Total Spent',
-                    dataIndex: 'totalSpent',
-                    key: 'totalSpent',
-                    render: (value) => formatCurrency(value),
-                    sorter: (a, b) => a.totalSpent - b.totalSpent,
-                  },
-                  {
-                    title: 'Last Order',
-                    dataIndex: 'lastOrder',
-                    key: 'lastOrder',
-                    render: (date) => dayjs(date).format('DD/MM/YYYY'),
-                  },
-                  {
-                    title: 'Segment',
-                    dataIndex: 'segment',
-                    key: 'segment',
-                    render: (segment) => {
-                      const colors = {
-                        'VIP': '#722ed1',
-                        'Trung thành': '#2f54eb',
-                        'Tiềm năng': '#1890ff',
-                      };
-                      return <Tag color={colors[segment] || '#d9d9d9'}>{segment}</Tag>;
-                    },
-                  },
-                ]}
-                pagination={false}
-              />
-            </Card>
-          </Col>
-        </Row>
-        
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-          <Col span={24}>
-            <Card title="Lifetime Value Projection" className="segment-details">
-              <div className="lifetime-value-chart">
-                <Column
-                  data={lifetimeValueData}
-                  isStack={true}
-                  xField="month"
-                  yField={['Mới', '0-6 tháng', '6-12 tháng', '1-2 năm', 'Trên 2 năm']}
-                  legend={{ position: 'top' }}
+            </TabPane>
+            <TabPane tab="Segment Details" key="details">
+              <Card>
+                <Table
+                  columns={columns}
+                  dataSource={segmentData}
+                  rowKey="segment_name"
+                  pagination={false}
+                  loading={loading}
                 />
-              </div>
-            </Card>
-          </Col>
-        </Row>
-      </div>
+              </Card>
+            </TabPane>
+            <TabPane tab="Marketing Recommendations" key="recommendations">
+              <Card title="Segment-Based Marketing Strategies">
+                {segmentData.map(segment => (
+                  <Card 
+                    key={segment.segment_name} 
+                    type="inner" 
+                    title={
+                      <span>
+                        <Tag color={SEGMENT_COLORS[segment.segment_name] || 'default'}>
+                          {segment.segment_name}
+                        </Tag>
+                        {segment.segment_name}
+                      </span>
+                    }
+                    style={{ marginBottom: 16 }}
+                  >
+                    <p><strong>Description:</strong> {segment.segment_description}</p>
+                    <p><strong>Customer Count:</strong> {segment.customer_count} ({segment.percentage}%)</p>
+                    <p><strong>Recommended Strategy:</strong></p>
+                    {segment.segment_name === 'Champions' && (
+                      <ul>
+                        <li>Reward these customers with loyalty programs</li>
+                        <li>Create referral incentives</li>
+                        <li>Ask for reviews and testimonials</li>
+                        <li>Engage them as brand ambassadors</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'Loyal' && (
+                      <ul>
+                        <li>Upsell higher-value products</li>
+                        <li>Invite to exclusive events</li>
+                        <li>Create membership programs</li>
+                        <li>Provide early access to new products</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'Potential Loyalists' && (
+                      <ul>
+                        <li>Offer personalized recommendations</li>
+                        <li>Implement targeted email campaigns</li>
+                        <li>Provide special onboarding</li>
+                        <li>Create membership benefits</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'New Customers' && (
+                      <ul>
+                        <li>Focus on excellent first experience</li>
+                        <li>Educational content about products</li>
+                        <li>Follow-up communication</li>
+                        <li>First purchase discount on next order</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'Promising' && (
+                      <ul>
+                        <li>Targeted cross-selling</li>
+                        <li>Personalized product recommendations</li>
+                        <li>Engagement through multiple channels</li>
+                        <li>Feedback surveys with incentives</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'Needs Attention' && (
+                      <ul>
+                        <li>Re-engagement campaigns</li>
+                        <li>Feedback surveys to understand issues</li>
+                        <li>Special offers to increase purchase frequency</li>
+                        <li>Product education to increase value perception</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'At Risk' && (
+                      <ul>
+                        <li>Win-back campaigns</li>
+                        <li>Special discounts or offers</li>
+                        <li>Personalized communication</li>
+                        <li>Surveys to understand why they left</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'Can\'t Lose' && (
+                      <ul>
+                        <li>Reactivation campaigns</li>
+                        <li>Special incentives to return</li>
+                        <li>Personalized outreach</li>
+                        <li>New product announcements</li>
+                      </ul>
+                    )}
+                    {segment.segment_name === 'Lost' && (
+                      <ul>
+                        <li>Final attempt win-back offers</li>
+                        <li>Feedback surveys to improve</li>
+                        <li>Consider removing from active marketing</li>
+                        <li>Analyze reasons for loss to prevent future churn</li>
+                      </ul>
+                    )}
+                  </Card>
+                ))}
+              </Card>
+            </TabPane>
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 };

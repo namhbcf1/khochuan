@@ -476,249 +476,103 @@ const PerformanceMetrics = () => {
   ];
 
   return (
-    <div>
-      <Title level={2}>Chỉ số hiệu suất kinh doanh (KPIs)</Title>
+    <div className="performance-metrics-page">
+      <h1>Performance Overview</h1>
       
-      {/* Time range selector */}
-      <Card style={{ marginBottom: 16 }}>
-        <Space>
-          <Select 
-            value={timeRange} 
-            onChange={setTimeRange} 
-            style={{ width: 150 }}
-          >
-            <Option value="week">Tuần này</Option>
-            <Option value="month">Tháng này</Option>
-            <Option value="quarter">Quý này</Option>
-            <Option value="year">Năm nay</Option>
-          </Select>
-          <RangePicker />
-          <Button 
-            type="primary"
-            icon={<ExportOutlined />}
-          >
-            Xuất báo cáo
-          </Button>
-          <Button 
-            icon={<ReloadOutlined />}
-            onClick={() => {
-              setLoading(true);
-              setTimeout(() => setLoading(false), 800);
-            }}
-          >
-            Làm mới
-          </Button>
-        </Space>
-      </Card>
-      
-      {/* KPI Summary Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        {kpiData.map((kpi, index) => (
-          <Col xs={24} sm={12} md={6} key={index}>
-            <Card>
-              <Statistic
-                title={kpi.title}
-                value={kpi.value}
-                precision={kpi.format === 'currency' ? 0 : kpi.format === 'percent' ? 1 : 0}
-                valueStyle={{ color: kpi.color }}
-                prefix={kpi.icon}
-                suffix={kpi.format === 'percent' ? '%' : null}
-                formatter={(value) => {
-                  if (kpi.format === 'currency') {
-                    return new Intl.NumberFormat('vi-VN').format(value);
-                  }
-                  return value;
-                }}
-              />
-              <div style={{ marginTop: '8px' }}>
-                <Space>
-                  {kpi.changeType === 'increase' ? (
-                    <ArrowUpOutlined style={{ color: '#52c41a' }} />
-                  ) : (
-                    <ArrowDownOutlined style={{ color: '#ff4d4f' }} />
-                  )}
-                  <Text 
-                    style={{ 
-                      color: kpi.changeType === 'increase' ? '#52c41a' : '#ff4d4f',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {kpi.changePercent}% so với tháng trước
-                  </Text>
-                </Space>
-              </div>
-            </Card>
-          </Col>
-        ))}
+      <Row gutter={[16, 24]}>
+        <Col span={24}>
+          <Card>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Row justify="space-between" align="middle">
+                <Col>
+                  <Title level={4}>Performance Metrics</Title>
+                </Col>
+                <Col>
+                  <Space>
+                    <Select 
+                      value={timeRange}
+                      onChange={(value) => setTimeRange(value)}
+                      style={{ width: 150 }}
+                    >
+                      <Option value="week">This Week</Option>
+                      <Option value="month">This Month</Option>
+                      <Option value="quarter">This Quarter</Option>
+                      <Option value="year">This Year</Option>
+                    </Select>
+                    <Button 
+                      icon={<ReloadOutlined />}
+                      onClick={() => setLoading(true)}
+                    >
+                      Refresh
+                    </Button>
+                    <Button icon={<ExportOutlined />}>
+                      Export
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
+              
+              {/* Summary KPI Cards */}
+              <Row gutter={[16, 16]} className="kpi-summary">
+                {kpiData.map((kpi, index) => (
+                  <Col xs={24} sm={12} lg={6} key={index}>
+                    <Card bordered={false} className="kpi-card">
+                      <Statistic
+                        title={
+                          <Space>
+                            {kpi.icon}
+                            {kpi.title}
+                          </Space>
+                        }
+                        value={kpi.value}
+                        formatter={(value) => formatStatValue(value, kpi.format)}
+                        valueStyle={{ color: kpi.color }}
+                        suffix={
+                          <Tag color={kpi.changeType === 'increase' ? 'success' : 'error'}>
+                            {kpi.changeType === 'increase' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                            {kpi.changePercent}%
+                          </Tag>
+                        }
+                      />
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </Space>
+          </Card>
+        </Col>
+
+        <Col span={24}>
+          <Card>
+            <Tabs activeKey={activeTab} onChange={setActiveTab}>
+              <TabPane 
+                tab={<span><LineChartOutlined /> KPI Trends</span>}
+                key="key-metrics"
+              >
+                {renderKpiTrendChart()}
+              </TabPane>
+              <TabPane 
+                tab={<span><BarChartOutlined /> Product Performance</span>}
+                key="product-performance"
+              >
+                {renderProductPerformanceChart()}
+              </TabPane>
+              <TabPane 
+                tab={<span><TeamOutlined /> Store Performance</span>}
+                key="store-performance"
+              >
+                {renderStorePerformanceTable()}
+              </TabPane>
+              <TabPane 
+                tab={<span><PieChartOutlined /> Channel Performance</span>}
+                key="channel-performance"
+              >
+                {renderChannelPerformanceTable()}
+              </TabPane>
+            </Tabs>
+          </Card>
+        </Col>
       </Row>
-      
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        {/* KPI Trends Tab */}
-        <TabPane tab="Chỉ số chính" key="key-metrics">
-          <Card title="Xu hướng hiệu suất kinh doanh" className="card-with-chart">
-            {renderKpiTrendChart()}
-          </Card>
-          
-          <Divider />
-          
-          <Row gutter={[16, 16]}>
-            <Col xs={24} md={12}>
-              <Card title="Tỷ lệ chi phí và doanh thu">
-                <List
-                  size="small"
-                  bordered
-                  dataSource={[
-                    { name: 'Chi phí vận hành / Doanh thu', value: '18.5%', status: 'normal' },
-                    { name: 'Chi phí nhân sự / Doanh thu', value: '22.4%', status: 'warning' },
-                    { name: 'Chi phí marketing / Doanh thu', value: '8.2%', status: 'success' },
-                    { name: 'Chi phí hàng hóa / Doanh thu', value: '52.8%', status: 'normal' },
-                    { name: 'Chi phí khấu hao / Doanh thu', value: '4.8%', status: 'success' }
-                  ]}
-                  renderItem={item => (
-                    <List.Item
-                      actions={[
-                        <Tag color={
-                          item.status === 'success' ? 'green' : 
-                          item.status === 'warning' ? 'orange' :
-                          'blue'
-                        }>{item.value}</Tag>
-                      ]}
-                    >
-                      <List.Item.Meta
-                        title={item.name}
-                      />
-                    </List.Item>
-                  )}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} md={12}>
-              <Card title="Hiệu quả đầu tư (ROI)">
-                <List
-                  size="small"
-                  bordered
-                  dataSource={[
-                    { name: 'ROI Marketing', value: '320%', status: 'success' },
-                    { name: 'ROI Đầu tư hàng hóa', value: '185%', status: 'normal' },
-                    { name: 'ROI Nhân sự bán hàng', value: '210%', status: 'success' },
-                    { name: 'ROI Kho vận', value: '145%', status: 'warning' },
-                    { name: 'ROI Tổng thể', value: '220%', status: 'success' }
-                  ]}
-                  renderItem={item => (
-                    <List.Item
-                      actions={[
-                        <Tag color={
-                          item.status === 'success' ? 'green' : 
-                          item.status === 'warning' ? 'orange' :
-                          'blue'
-                        }>{item.value}</Tag>
-                      ]}
-                    >
-                      <List.Item.Meta
-                        title={item.name}
-                      />
-                    </List.Item>
-                  )}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </TabPane>
-        
-        {/* Product Performance Tab */}
-        <TabPane tab="Hiệu suất sản phẩm" key="product-metrics">
-          <Card title="Hiệu suất theo danh mục sản phẩm" className="card-with-chart">
-            {renderProductPerformanceChart()}
-          </Card>
-          
-          <Card title="Chi tiết danh mục sản phẩm" style={{ marginTop: 16 }}>
-            <Table 
-              dataSource={productPerformance} 
-              columns={productColumns}
-              rowKey="category"
-              loading={loading}
-              pagination={false}
-            />
-          </Card>
-          
-          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-            <Col span={24}>
-              <Alert
-                message="Gợi ý tối ưu danh mục sản phẩm"
-                description={
-                  <ul>
-                    <li>Danh mục <strong>Phụ kiện</strong> có biên lợi nhuận cao nhất (31.6%). Cân nhắc mở rộng danh mục này.</li>
-                    <li>Danh mục <strong>Linh kiện</strong> đang có tăng trưởng âm (-2.1%). Cần xem xét lại chiến lược tiếp thị.</li>
-                    <li>Tồn kho danh mục <strong>Linh kiện</strong> đang cao (92%). Cần có chương trình khuyến mãi để giảm tồn.</li>
-                  </ul>
-                }
-                type="info"
-                showIcon
-              />
-            </Col>
-          </Row>
-        </TabPane>
-        
-        {/* Store Performance Tab */}
-        <TabPane tab="Hiệu suất cửa hàng" key="store-metrics">
-          <Card title="Chi tiết hiệu suất cửa hàng">
-            <Table 
-              dataSource={storePerformance} 
-              columns={storeColumns}
-              rowKey="store"
-              loading={loading}
-              pagination={false}
-            />
-          </Card>
-          
-          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-            <Col span={24}>
-              <Alert
-                message="Gợi ý tối ưu hoạt động cửa hàng"
-                description={
-                  <ul>
-                    <li>Cửa hàng <strong>Quận 7</strong> có tăng trưởng cao nhất (10.8%). Nghiên cứu và áp dụng các chiến lược thành công cho các cửa hàng khác.</li>
-                    <li>Cửa hàng <strong>Gò Vấp</strong> đang có tăng trưởng âm (-1.2%). Cần xem xét lại chiến lược vận hành và sản phẩm.</li>
-                    <li>Cửa hàng <strong>Quận 1</strong> có giá trị đơn hàng trung bình cao nhất. Tập trung vào upselling và cross-selling.</li>
-                  </ul>
-                }
-                type="info"
-                showIcon
-              />
-            </Col>
-          </Row>
-        </TabPane>
-        
-        {/* Channel Performance Tab */}
-        <TabPane tab="Hiệu suất kênh bán hàng" key="channel-metrics">
-          <Card title="Chi tiết hiệu suất kênh bán hàng">
-            <Table 
-              dataSource={channelPerformance} 
-              columns={channelColumns}
-              rowKey="channel"
-              loading={loading}
-              pagination={false}
-            />
-          </Card>
-          
-          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-            <Col span={24}>
-              <Alert
-                message="Gợi ý tối ưu kênh bán hàng"
-                description={
-                  <ul>
-                    <li>Kênh <strong>Ứng dụng di động</strong> có tỷ lệ chuyển đổi cao nhất (4.2%). Cân nhắc tăng đầu tư marketing cho kênh này.</li>
-                    <li>Kênh <strong>Đại lý</strong> có chi phí thu hút khách hàng thấp nhất. Đánh giá khả năng mở rộng kênh này.</li>
-                    <li>Kênh <strong>Sàn TMĐT</strong> có tỷ lệ chuyển đổi thấp (2.9%) với chi phí thu hút cao. Cần tối ưu hóa hiệu suất.</li>
-                  </ul>
-                }
-                type="info"
-                showIcon
-              />
-            </Col>
-          </Row>
-        </TabPane>
-      </Tabs>
     </div>
   );
 };

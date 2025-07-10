@@ -1,0 +1,792 @@
+# .cursorignore for KhoChuan POS System
+# This file tells Cursor AI which files to ignore when providing context
+
+# Dependencies and node_modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.vite/
+coverage/
+
+# Environment and configuration files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Grunt intermediate storage
+.grunt/
+
+# Bower dependency directory
+bower_components/
+
+# Lock files (keep only one type)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ESLint cache
+.eslintcache
+
+# Stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
+.cache/
+.parcel-cache/
+
+# Next.js build output
+.next/
+
+# Nuxt.js build / generate output
+.nuxt/
+dist/
+
+# Gatsby files
+.cache/
+public/
+
+# Storybook build outputs
+.out/
+.storybook-out/
+
+# Temporary folders
+tmp/
+temp/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cloudflare
+.wrangler/
+wrangler.toml.bak
+
+# TypeScript
+*.tsbuildinfo
+
+# Generated files that shouldn't be in context
+src/types/generated/
+src/api/generated/
+public/build/
+
+# Large media files
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mkv
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.wma
+
+# Image files (unless needed for context)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.svg
+*.ico
+*.bmp
+*.tiff
+
+# Documentation that's auto-generated
+docs/api/generated/
+docs/build/
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Cache directories
+.cache/
+.temp/
+.tmp/
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Storybook
+storybook-static/
+
+# Rush
+common/deploy/
+common/temp/
+common/autoinstallers/*/.npmrc
+**/.rush/temp/
+
+# Stores
+.store/
+
+# Generated documentation
+docs/generated/
+api-docs/
+
+# Minified files
+*.min.js
+*.min.css
+
+# Source maps
+*.map
+
+# Compiled binary addons
+build/Release/
+
+# Dependency directories
+jspm_packages/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Webpack bundle analyzer
+webpack-bundle-analyzer-report.html
+
+# Rollup bundle analyzer
+rollup-bundle-analyzer-report.html
+
+# Vite bundle analyzer
+vite-bundle-analyzer-report.html
+
+# Chrome extension artifacts
+*.crx
+*.pem
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Local development files
+.local/
+local/
+
+# Sentry
+.sentryclirc
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/
+
+# Surge
+.surge/
+
+# AWS
+.aws/
+
+# Azure
+.azure/
+
+# Google Cloud
+.gcloud/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubernetes
+*.kubeconfig
+
+# Helm
+charts/*/charts/
+charts/*/requirements.lock
+
+# Grafana
+grafana/data/
+
+# Prometheus
+prometheus/data/
+
+# InfluxDB
+influxdb/data/
+
+# Redis dumps
+dump.rdb
+
+# MongoDB dumps
+mongodump/
+
+# MySQL dumps
+*.sql
+
+# PostgreSQL dumps
+*.dump
+
+# Prisma
+prisma/migrations/dev.db*
+
+# Supabase
+supabase/.temp/
+
+# PlanetScale
+.pscale/
+
+# Railway
+.railway/
+
+# Render
+.render/
+
+# Heroku
+.heroku/
+
+# DigitalOcean
+.do/
+
+# Large JSON files that might slow down context
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated API documentation
+api-docs/
+swagger-ui/
+redoc-static/
+
+# Localization files (if too large)
+locales/*.json
+i18n/generated/
+
+# Analytics and tracking files
+analytics/
+tracking/
+metrics/
+
+# Monitoring files
+monitoring/
+logs/
+traces/
+
+# Performance testing results
+load-test-results/
+performance-reports/
+
+# Security scan results
+security-reports/
+vulnerability-reports/
+
+# Compliance reports
+compliance-reports/
+audit-reports/
+
+# Backup directories
+backups/
+snapshots/
+
+# Archive directories
+archives/
+old/
+deprecated/
+
+# Experimental features
+experimental/
+poc/
+prototypes/
+
+# Third-party integrations (if too verbose)
+integrations/vendor/
+third-party/
+
+# Mobile app builds (if applicable)
+ios/build/
+android/build/
+*.ipa
+*.apk
+*.aab
+
+# Desktop app builds (if applicable)
+electron/dist/
+tauri/target/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Vagrant
+.vagrant/
+
+# VirtualBox
+*.vbox
+*.vdi
+
+# VMware
+*.vmx
+*.vmdk
+
+# Hyper-V
+*.vhdx
+
+# QEMU
+*.qcow2
+
+# Cloud9
+.c9/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
+# SBT
+.sbt/
+project/project/
+project/target/
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala IDE
+.scala_dependencies
+.worksheet
+
+# ENSIME
+.ensime
+.ensime_cache/
+
+# Metals
+.metals/
+.bloop/
+
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+bin/
+obj/
+.vs/
+
+# MonoDevelop
+*.pidb
+*.svclog
+*.scc
+
+# Unity
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+MemoryCaptures/
+.vsconfig
+
+# Unreal Engine
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vscode/
+*.tmp
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+*.xcodeproj
+*.xcworkspace
+
+# Large data files
+*.csv
+*.json
+*.xml
+*.yaml
+*.yml
+
+# Configuration files with sensitive data
+config/production.js
+config/staging.js
+config/local.js
+
+# SSL certificates
+ssl/
+certificates/
+certs/
+
+# GPG keys
+*.gpg
+*.asc
+
+# SSH keys
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+known_hosts
+
+# AWS credentials
+.aws/credentials
+.aws/config
+
+# Google Cloud credentials
+*.json
+
+# Azure credentials
+.azure/
+
+# Kubernetes configs
+*.kubeconfig
+kube-config
+
+# Terraform state files
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+ansible.log
+
+# Chef
+.chef/
+cookbooks/
+data_bags/
+roles/
+environments/
+
+# Puppet
+.puppet/
+
+# SaltStack
+pillar/
+salt/
+
+# Vagrant
+.vagrant/
+Vagrantfile.local
+
+# Packer
+packer_cache/
+*.box
+
+# ISO files
+*.iso
+
+# Virtual machine files
+*.ova
+*.ovf
+
+# Cloud-init
+cloud-init.log
+cloud-config.yaml
+
+# Monitoring
+newrelic.ini
+datadog.yaml
+splunk.conf
+
+# APM
+elastic-apm-node.js
+dynatrace.conf
+
+# Profiling
+*.prof
+*.pprof
+*.trace
+
+# Benchmarking
+benchmark-results/
+performance-data/
+
+# A/B testing
+experiments/
+feature-flags/
+
+# Analytics
+google-analytics/
+mixpanel/
+amplitude/
+
+# Marketing
+mailchimp/
+sendgrid/
+mailgun/
+
+# Social media
+facebook/
+twitter/
+linkedin/
+
+# Communication
+slack/
+discord/
+teams/
+
+# Customer support
+zendesk/
+intercom/
+freshdesk/
+
+# Documentation tools
+gitbook/
+mkdocs/
+docusaurus/
+
+# Presentation files
+*.ppt
+*.pptx
+*.key
+*.odp
+
+# Spreadsheet files
+*.xls
+*.xlsx
+*.ods
+
+# Word processing files
+*.doc
+*.docx
+*.odt
+*.rtf
+
+# PDF files
+*.pdf
+
+# Design files
+*.psd
+*.ai
+*.sketch
+*.fig
+*.xd
+
+# 3D files
+*.obj
+*.fbx
+*.dae
+*.3ds
+*.blend
+
+# Game development
+*.unity
+*.unitypackage
+*.assetbundle
+
+# Temporary build artifacts
+.tmp/
+.temp/
+tmp/
+temp/
+
+# IDE specific temp files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/shelf/
+.idea/dataSources/
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+
+# JetBrains Rider
+.idea/.idea.*.iml
+.idea/.idea.*/riderModule.iml
+.idea/.idea.*/projectSettingsUpdater.xml
+.idea/.idea.*/modules.xml
+.idea/.idea.*/*.sln.iml
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+*~
+tags
+[._]*.un~

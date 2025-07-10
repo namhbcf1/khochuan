@@ -285,6 +285,38 @@ export const AuthProvider = ({ children }) => {
         password: 'staff123',
         name: 'Nhân viên bán hàng',
         role: 'staff',
+      },
+      {
+        email: 'customer@khochuan.com',
+        username: 'customer',
+        password: 'customer123',
+        name: 'Nguyễn Văn Khách',
+        role: 'customer',
+        phone: '0987654321',
+        address: '123 Đường Lê Lợi, Quận 1, TP.HCM',
+        loyaltyPoints: 250,
+        memberSince: '2023-01-15',
+        membershipLevel: 'Silver',
+        totalSpent: 12500000,
+        lastPurchase: '2023-06-22',
+        warrantyItems: [
+          {
+            id: 'WR-001',
+            productName: 'Laptop Dell XPS 13',
+            serialNumber: 'DL-XPS-2022-1234',
+            purchaseDate: '2023-01-15',
+            warrantyEnd: '2024-01-15',
+            status: 'active'
+          },
+          {
+            id: 'WR-002',
+            productName: 'Màn hình Dell P2419H',
+            serialNumber: 'DL-P2419H-2022-5678',
+            purchaseDate: '2023-03-10',
+            warrantyEnd: '2024-03-10',
+            status: 'active'
+          }
+        ]
       }
     ];
 
@@ -349,6 +381,315 @@ export const AuthProvider = ({ children }) => {
     return state.role === role;
   };
 
+  // Function to get accessible menu items based on user role
+  const getAccessibleMenus = () => {
+    // Default menu if no user or no role
+    if (!state.user || !state.role) return [];
+
+    const menuItems = [];
+
+    // Admin menu
+    if (state.role === 'admin') {
+      menuItems.push(
+        {
+          key: '/dashboard',
+          label: 'Dashboard',
+          path: '/dashboard',
+          icon: 'DashboardOutlined',
+        },
+        {
+          key: '/products',
+          label: 'Sản phẩm',
+          icon: 'ShoppingOutlined',
+          children: [
+            {
+              key: '/admin/products/product-management',
+              label: 'Quản lý sản phẩm',
+              path: '/admin/products/product-management',
+              icon: 'AppstoreOutlined',
+            },
+            {
+              key: '/admin/products/price-optimization',
+              label: 'Tối ưu giá',
+              path: '/admin/products/price-optimization',
+              icon: 'BarChartOutlined',
+            },
+            {
+              key: '/admin/products/bulk-operations',
+              label: 'Thao tác hàng loạt',
+              path: '/admin/products/bulk-operations',
+              icon: 'FileTextOutlined',
+            },
+          ]
+        },
+        {
+          key: '/orders',
+          label: 'Đơn hàng',
+          icon: 'ShoppingCartOutlined',
+          children: [
+            {
+              key: '/admin/orders/order-management',
+              label: 'Quản lý đơn hàng',
+              path: '/admin/orders/order-management',
+              icon: 'FileTextOutlined',
+            },
+            {
+              key: '/admin/orders/order-analytics',
+              label: 'Phân tích đơn hàng',
+              path: '/admin/orders/order-analytics',
+              icon: 'BarChartOutlined',
+            },
+            {
+              key: '/admin/orders/return-processing',
+              label: 'Xử lý đổi/trả',
+              path: '/admin/orders/return-processing',
+              icon: 'RollbackOutlined',
+            },
+          ]
+        },
+        {
+          key: '/customers',
+          label: 'Khách hàng',
+          icon: 'UserOutlined',
+          children: [
+            {
+              key: '/admin/customers/customer-management',
+              label: 'Quản lý khách hàng',
+              path: '/admin/customers/customer-management',
+              icon: 'TeamOutlined',
+            },
+            {
+              key: '/admin/customers/customer-analytics',
+              label: 'Phân tích khách hàng',
+              path: '/admin/customers/customer-analytics',
+              icon: 'BarChartOutlined',
+            },
+            {
+              key: '/admin/customers/customer-segmentation',
+              label: 'Phân khúc khách hàng',
+              path: '/admin/customers/customer-segmentation',
+              icon: 'AppstoreOutlined',
+            },
+          ]
+        },
+        {
+          key: '/staff',
+          label: 'Nhân viên',
+          icon: 'TeamOutlined',
+          children: [
+            {
+              key: '/admin/staff/performance-tracking',
+              label: 'Theo dõi hiệu suất',
+              path: '/admin/staff/performance-tracking',
+              icon: 'BarChartOutlined',
+            },
+            {
+              key: '/admin/staff/gamification-config',
+              label: 'Cấu hình gamification',
+              path: '/admin/staff/gamification-config',
+              icon: 'TrophyOutlined',
+            },
+            {
+              key: '/admin/staff/commission-settings',
+              label: 'Cài đặt hoa hồng',
+              path: '/admin/staff/commission-settings',
+              icon: 'DollarOutlined',
+            },
+          ]
+        },
+        {
+          key: '/reports',
+          label: 'Báo cáo',
+          icon: 'FileTextOutlined',
+          children: [
+            {
+              key: '/admin/reports/business-intelligence',
+              label: 'Business Intelligence',
+              path: '/admin/reports/business-intelligence',
+              icon: 'BarChartOutlined',
+            },
+            {
+              key: '/admin/reports/custom-reports',
+              label: 'Báo cáo tùy chỉnh',
+              path: '/admin/reports/custom-reports',
+              icon: 'FileTextOutlined',
+            },
+            {
+              key: '/admin/reports/inventory-report',
+              label: 'Báo cáo tồn kho',
+              path: '/admin/reports/inventory-report',
+              icon: 'ShoppingOutlined',
+            },
+          ]
+        },
+      );
+    }
+    
+    // Cashier menu
+    else if (state.role === 'cashier') {
+      menuItems.push(
+        {
+          key: '/pos',
+          label: 'POS Terminal',
+          path: '/cashier/pos/pos-terminal',
+          icon: 'ShopOutlined',
+          badge: 'Mới'
+        },
+        {
+          key: '/customers',
+          label: 'Khách hàng',
+          icon: 'UserOutlined',
+          children: [
+            {
+              key: '/cashier/customers/customer-lookup',
+              label: 'Tra cứu khách hàng',
+              path: '/cashier/customers/customer-lookup',
+              icon: 'TeamOutlined',
+            },
+            {
+              key: '/cashier/customers/loyalty-points',
+              label: 'Điểm thưởng',
+              path: '/cashier/customers/loyalty-points',
+              icon: 'TrophyOutlined',
+            },
+          ]
+        },
+        {
+          key: '/orders',
+          label: 'Đơn hàng',
+          icon: 'ShoppingCartOutlined',
+          children: [
+            {
+              key: '/cashier/orders/order-history',
+              label: 'Lịch sử đơn hàng',
+              path: '/cashier/orders/order-history',
+              icon: 'FileTextOutlined',
+            },
+            {
+              key: '/cashier/orders/returns',
+              label: 'Đổi/trả hàng',
+              path: '/cashier/orders/returns',
+              icon: 'RollbackOutlined',
+            },
+          ]
+        },
+        {
+          key: '/session',
+          label: 'Ca làm việc',
+          icon: 'ClockCircleOutlined',
+          children: [
+            {
+              key: '/cashier/session/cash-count',
+              label: 'Kiểm đếm tiền',
+              path: '/cashier/session/cash-count',
+              icon: 'BankOutlined',
+            },
+            {
+              key: '/cashier/session/shift-end',
+              label: 'Kết thúc ca',
+              path: '/cashier/session/shift-end',
+              icon: 'ClockCircleOutlined',
+            },
+          ]
+        }
+      );
+    }
+    
+    // Staff menu
+    else if (state.role === 'staff') {
+      menuItems.push(
+        {
+          key: '/dashboard',
+          label: 'Dashboard',
+          path: '/staff/dashboard/performance-overview',
+          icon: 'DashboardOutlined',
+        },
+        {
+          key: '/sales',
+          label: 'Bán hàng',
+          icon: 'ShoppingCartOutlined',
+          children: [
+            {
+              key: '/staff/sales/my-sales',
+              label: 'Doanh số của tôi',
+              path: '/staff/sales/my-sales',
+              icon: 'BarChartOutlined',
+            },
+            {
+              key: '/staff/sales/customer-insights',
+              label: 'Thông tin khách hàng',
+              path: '/staff/sales/customer-insights',
+              icon: 'UserOutlined',
+            },
+          ]
+        },
+        {
+          key: '/gamification',
+          label: 'Gamification',
+          icon: 'TrophyOutlined',
+          children: [
+            {
+              key: '/staff/gamification/achievement-center',
+              label: 'Trung tâm thành tích',
+              path: '/staff/gamification/achievement-center',
+              icon: 'TrophyOutlined',
+            },
+            {
+              key: '/staff/gamification/badge-collection',
+              label: 'Bộ sưu tập huy hiệu',
+              path: '/staff/gamification/badge-collection',
+              icon: 'TrophyOutlined',
+            },
+          ]
+        },
+      );
+    }
+    
+    // Customer menu
+    else if (state.role === 'customer') {
+      menuItems.push(
+        {
+          key: '/profile',
+          label: 'Hồ sơ cá nhân',
+          path: '/customer/profile',
+          icon: 'UserOutlined',
+        },
+        {
+          key: '/orders',
+          label: 'Lịch sử mua hàng',
+          path: '/customer/orders',
+          icon: 'ShoppingOutlined',
+        },
+        {
+          key: '/loyalty',
+          label: 'Điểm thưởng',
+          path: '/customer/loyalty',
+          icon: 'TrophyOutlined',
+        },
+        {
+          key: '/warranty',
+          label: 'Bảo hành',
+          path: '/customer/warranty',
+          icon: 'SafetyOutlined',
+        },
+        {
+          key: '/lookup',
+          label: 'Tra cứu thông tin',
+          path: '/customer/lookup',
+          icon: 'SearchOutlined',
+        },
+        {
+          key: '/terms',
+          label: 'Điều khoản bảo hành',
+          path: '/customer/terms',
+          icon: 'FileTextOutlined',
+        },
+      );
+    }
+    
+    return menuItems;
+  };
+
   // Context value
   const value = {
     ...state,
@@ -358,6 +699,7 @@ export const AuthProvider = ({ children }) => {
     hasPermission,
     hasRole,
     updateLastActivity,
+    getAccessibleMenus,
   };
 
   return (
@@ -403,6 +745,15 @@ const getPermissionsByRole = (role) => {
       'gamification.view',
       'training.view',
       'profile.view', 'profile.update',
+    ],
+    customer: [
+      'profile.view', 'profile.update',
+      'orders.view', 'orders.history',
+      'loyalty.view', 'loyalty.redeem',
+      'warranty.view', 'warranty.claim',
+      'lookup.use', 'lookup.product',
+      'qr.scan', 'terms.view',
+      'customer.dashboard'
     ],
   };
 

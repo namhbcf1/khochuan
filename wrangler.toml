@@ -1,0 +1,41 @@
+name = "khochuan-pos"
+main = "backend/src/index.js"
+compatibility_date = "2023-10-30"
+nodejs_compat = true
+account_id = "5b62d10947844251d23e0eac532531dd"
+
+[env.production]
+routes = [
+  { pattern = "api.khochuan-pos.pages.dev", custom_domain = true }
+]
+zone_id = "5b62d10947844251d23e0eac532531dd"
+
+[env.staging]
+name = "khochuan-pos-staging"
+
+[build]
+command = "cd backend && npm install && npm run build"
+watch_dir = "backend/src"
+
+[site]
+bucket = "frontend/dist"
+
+[build.upload]
+format = "service-worker"
+
+# Durable Objects configuration
+[[durable_objects.bindings]]
+name = "REALTIME"
+class_name = "RealtimeHandler"
+
+# Durable Objects migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["RealtimeHandler"]
+
+# Environment variables
+[vars]
+API_VERSION = "v1"
+NODE_ENV = "production"
+CORS_ORIGIN = "https://khochuan-pos.pages.dev" 
+JWT_SECRET = "cloudflare-khochuan-pos-jwt-secret-key-2025" 

@@ -1,613 +1,623 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Typography, 
-  Table, 
-  Button, 
-  Space, 
-  Select, 
-  Tag, 
-  Row, 
-  Col, 
-  Statistic, 
-  Progress, 
-  Slider, 
-  InputNumber,
-  Form,
-  Tabs,
-  Alert,
-  Tooltip,
-  Divider,
-  DatePicker,
-  Radio,
-  Switch,
-  Modal
-} from 'antd';
-import { 
-  DollarOutlined, 
-  LineChartOutlined, 
-  RiseOutlined, 
-  ArrowUpOutlined, 
-  ArrowDownOutlined, 
-  QuestionCircleOutlined,
-  SyncOutlined,
-  TagOutlined,
-  BarChartOutlined,
-  InfoCircleOutlined,
-  CalculatorOutlined
-} from '@ant-design/icons';
+import { Card, Row, Col, Table, Button, Select, Form, InputNumber, Spin, Alert, Tabs, Tag, Tooltip, Progress, Slider, Statistic } from 'antd';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
+import { DollarOutlined, RiseOutlined, PercentageOutlined, InfoCircleOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
+import api from '../../../services/api';
+import { useAuth } from '../../../hooks/useAuth';
 
-const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 const PriceOptimization = () => {
-  const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [products, setProducts] = useState([]);
-  const [priceStrategies, setPriceStrategies] = useState('competitive');
-  const [marginTarget, setMarginTarget] = useState(30);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [optimizationResults, setOptimizationResults] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [showApplyModal, setShowApplyModal] = useState(false);
-
-  // Mô phỏng dữ liệu sản phẩm
-  const mockProducts = [
-    {
-      key: '1',
-      name: 'Laptop Dell Inspiron 15',
-      sku: 'DELL-INS-15',
-      category: 'Laptop',
-      currentPrice: 15000000,
-      cost: 12000000,
-      suggestedPrice: 15500000,
-      margin: 20,
-      suggestedMargin: 22.58,
-      competitivePrice: {
-        min: 14500000,
-        max: 16000000,
-        avg: 15200000
-      },
-      demand: 'medium',
-      sales: 12,
-      inventory: 25
-    },
-    {
-      key: '2',
-      name: 'Màn hình Dell 24"',
-      sku: 'DELL-MON-24',
-      category: 'Màn hình',
-      currentPrice: 3500000,
-      cost: 2700000,
-      suggestedPrice: 3700000,
-      margin: 22.86,
-      suggestedMargin: 27.03,
-      competitivePrice: {
-        min: 3200000,
-        max: 3800000,
-        avg: 3450000
-      },
-      demand: 'high',
-      sales: 35,
-      inventory: 42
-    },
-    {
-      key: '3',
-      name: 'Chuột không dây Logitech',
-      sku: 'LOG-MOUSE-01',
-      category: 'Phụ kiện',
-      currentPrice: 450000,
-      cost: 280000,
-      suggestedPrice: 420000,
-      margin: 37.78,
-      suggestedMargin: 33.33,
-      competitivePrice: {
-        min: 400000,
-        max: 550000,
-        avg: 450000
-      },
-      demand: 'high',
-      sales: 56,
-      inventory: 78
-    },
-    {
-      key: '4',
-      name: 'Bàn phím cơ AKKO',
-      sku: 'AKKO-KB-01',
-      category: 'Phụ kiện',
-      currentPrice: 1200000,
-      cost: 800000,
-      suggestedPrice: 1350000,
-      margin: 33.33,
-      suggestedMargin: 40.74,
-      competitivePrice: {
-        min: 1100000,
-        max: 1450000,
-        avg: 1250000
-      },
-      demand: 'medium',
-      sales: 18,
-      inventory: 15
-    },
-    {
-      key: '5',
-      name: 'Laptop Acer Nitro 5',
-      sku: 'ACER-NIT-5',
-      category: 'Laptop',
-      currentPrice: 22000000,
-      cost: 18500000,
-      suggestedPrice: 21500000,
-      margin: 15.91,
-      suggestedMargin: 13.95,
-      competitivePrice: {
-        min: 20000000,
-        max: 22500000,
-        avg: 21200000
-      },
-      demand: 'low',
-      sales: 5,
-      inventory: 8
-    },
-  ];
-
-  // Load dữ liệu
+  const [optimizationMetadata, setOptimizationMetadata] = useState(null);
+  const [optimizationTarget, setOptimizationTarget] = useState('revenue');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [priceSimulation, setPriceSimulation] = useState(null);
+  const [processingIndicator, setProcessingIndicator] = useState(false);
+  
   useEffect(() => {
-    // Mô phỏng API call
-    setTimeout(() => {
-      setProducts(mockProducts);
-      runOptimization(mockProducts, priceStrategies, marginTarget);
-      setLoading(false);
-    }, 1500);
+    fetchCategories();
+    fetchProducts();
   }, []);
+  
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchProducts(selectedCategory);
+    }
+  }, [selectedCategory]);
 
-  // Hàm tối ưu hóa giá
-  const runOptimization = (products, strategy, targetMargin) => {
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/products/categories', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        setCategories(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  const fetchProducts = async (categoryId = null) => {
     setLoading(true);
+    setError(null);
     
-    // Mô phỏng API call để tối ưu hóa giá
-    setTimeout(() => {
-      // Trong thực tế, đây sẽ là kết quả từ thuật toán tối ưu hóa giá
-      // dựa trên dữ liệu đầu vào, thuật toán AI, v.v.
-      const results = products.map(product => {
-        let suggestedPrice;
+    try {
+      const params = new URLSearchParams();
+      if (categoryId) {
+        params.append('category_id', categoryId);
+      }
+      
+      const response = await api.get(`/products?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        setProducts(response.data.data);
+      } else {
+        setError('Failed to load products');
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError(`Error: ${err.message || 'Failed to load products'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const runPriceOptimization = async () => {
+    setProcessingIndicator(true);
+    setError(null);
+    
+    try {
+      const params = new URLSearchParams();
+      if (selectedCategory) {
+        params.append('category_id', selectedCategory);
+      }
+      params.append('optimization_target', optimizationTarget);
+      
+      const response = await api.get(`/ai/price-optimization?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        setOptimizationResults(response.data.data.optimizations);
+        setOptimizationMetadata(response.data.data.metadata);
+        console.log('Optimization data:', response.data.data);
+      } else {
+        setError('Failed to load optimization data');
+      }
+    } catch (err) {
+      console.error('Error fetching optimization data:', err);
+      setError(`Error: ${err.message || 'Failed to load optimization data'}`);
+    } finally {
+      setTimeout(() => setProcessingIndicator(false), 800); // Keep indicator visible briefly for UX
+    }
+  };
+
+  const simulatePrice = async (productId, price) => {
+    setProcessingIndicator(true);
+    setError(null);
+    
+    try {
+      const response = await api.post('/ai/price-simulation', {
+        product_id: productId,
+        price: price
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        setPriceSimulation(response.data.data);
+        console.log('Simulation data:', response.data.data);
+      } else {
+        setError('Failed to simulate price');
+      }
+    } catch (err) {
+      console.error('Error simulating price:', err);
+      setError(`Error: ${err.message || 'Failed to simulate price'}`);
+    } finally {
+      setTimeout(() => setProcessingIndicator(false), 800);
+    }
+  };
+
+  const applyOptimizedPrices = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await api.post('/products/update-prices', {
+        products: optimizationResults.map(item => ({
+          product_id: item.product_id,
+          new_price: item.optimized_price
+        }))
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        // Show success message or notification
+        fetchProducts(selectedCategory);
+      } else {
+        setError('Failed to apply optimized prices');
+      }
+    } catch (err) {
+      console.error('Error applying optimized prices:', err);
+      setError(`Error: ${err.message || 'Failed to apply optimized prices'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    setOptimizationResults([]);
+    setPriceSimulation(null);
+  };
+
+  const handleOptimizationTargetChange = (value) => {
+    setOptimizationTarget(value);
+  };
+
+  const handleProductSelect = (productId) => {
+    setSelectedProduct(productId);
+    
+    // Find product in optimization results
+    const product = optimizationResults.find(p => p.product_id === productId);
+    if (product) {
+      simulatePrice(productId, product.current_price);
+    }
+  };
+
+  // Columns for the price optimization table
+  const optimizationColumns = [
+    {
+      title: 'Product',
+      dataIndex: 'product_name',
+      key: 'product_name',
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+      key: 'sku',
+    },
+    {
+      title: 'Current Price',
+      dataIndex: 'current_price',
+      key: 'current_price',
+      render: (price) => `$${price.toFixed(2)}`,
+    },
+    {
+      title: 'Optimized Price',
+      dataIndex: 'optimized_price',
+      key: 'optimized_price',
+      render: (price, record) => {
+        const diff = ((price - record.current_price) / record.current_price) * 100;
+        const color = diff > 0 ? 'green' : diff < 0 ? 'red' : 'default';
         
-        switch (strategy) {
-          case 'competitive':
-            // Giá dựa trên thị trường cạnh tranh
-            suggestedPrice = Math.round(product.competitivePrice.avg * (0.95 + Math.random() * 0.1));
-            break;
-          case 'margin':
-            // Giá dựa trên mục tiêu biên lợi nhuận
-            suggestedPrice = Math.round(product.cost / (1 - targetMargin / 100));
-            break;
-          case 'demand':
-            // Giá dựa trên nhu cầu thị trường
-            const demandFactor = product.demand === 'high' ? 1.1 : (product.demand === 'medium' ? 1.0 : 0.9);
-            suggestedPrice = Math.round(product.currentPrice * demandFactor);
-            break;
-          case 'inventory':
-            // Giá dựa trên tồn kho
-            const inventoryFactor = product.inventory < 10 ? 1.05 : (product.inventory > 50 ? 0.95 : 1.0);
-            suggestedPrice = Math.round(product.currentPrice * inventoryFactor);
-            break;
-          default:
-            suggestedPrice = product.currentPrice;
+        return (
+          <span>
+            <span style={{ color: diff > 0 ? 'green' : diff < 0 ? 'red' : 'inherit', fontWeight: 'bold' }}>
+              ${price.toFixed(2)}
+            </span>
+            <Tag color={color} style={{ marginLeft: 8 }}>
+              {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+            </Tag>
+          </span>
+        );
+      },
+    },
+    {
+      title: 'Expected Impact',
+      key: 'impact',
+      render: (_, record) => {
+        const revenueDiff = ((record.expected_revenue - record.current_revenue) / record.current_revenue) * 100;
+        const unitsDiff = ((record.expected_units - record.current_units) / record.current_units) * 100;
+        
+        return (
+          <div>
+            <div>
+              <span style={{ marginRight: 8 }}>Revenue:</span>
+              <Tag color={revenueDiff > 0 ? 'green' : 'red'}>
+                {revenueDiff > 0 ? '+' : ''}{revenueDiff.toFixed(1)}%
+              </Tag>
+            </div>
+            <div>
+              <span style={{ marginRight: 8 }}>Units:</span>
+              <Tag color={unitsDiff > 0 ? 'green' : 'red'}>
+                {unitsDiff > 0 ? '+' : ''}{unitsDiff.toFixed(1)}%
+              </Tag>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Price Elasticity',
+      dataIndex: 'price_elasticity',
+      key: 'price_elasticity',
+      render: (elasticity) => {
+        const absElasticity = Math.abs(elasticity);
+        let description;
+        let color;
+        
+        if (absElasticity < 0.5) {
+          description = 'Inelastic';
+          color = 'green';
+        } else if (absElasticity < 1.0) {
+          description = 'Moderately elastic';
+          color = 'blue';
+        } else if (absElasticity < 1.5) {
+          description = 'Elastic';
+          color = 'orange';
+        } else {
+          description = 'Highly elastic';
+          color = 'red';
         }
         
-        const suggestedMargin = ((suggestedPrice - product.cost) / suggestedPrice * 100).toFixed(2);
-        
-        return {
-          ...product,
-          suggestedPrice,
-          suggestedMargin: parseFloat(suggestedMargin),
-          priceChange: suggestedPrice - product.currentPrice,
-          priceChangePercent: ((suggestedPrice - product.currentPrice) / product.currentPrice * 100).toFixed(2)
-        };
-      });
-      
-      setOptimizationResults(results);
-      setLoading(false);
-    }, 1000);
-  };
-
-  // Áp dụng thay đổi giá
-  const applyPriceChanges = () => {
-    if (selectedRows.length === 0) {
-      return;
-    }
-    
-    // Mô phỏng API call để cập nhật giá
-    setLoading(true);
-    setTimeout(() => {
-      // Trong thực tế, đây sẽ là API cập nhật giá
-      setProducts(prevProducts => {
-        return prevProducts.map(product => {
-          const optimizedProduct = optimizationResults.find(opt => opt.key === product.key);
-          const isSelected = selectedRows.some(row => row.key === product.key);
-          
-          if (isSelected && optimizedProduct) {
-            return {
-              ...product,
-              currentPrice: optimizedProduct.suggestedPrice,
-              margin: optimizedProduct.suggestedMargin
-            };
-          }
-          
-          return product;
-        });
-      });
-      
-      setLoading(false);
-      setShowApplyModal(false);
-      setSelectedRows([]);
-      
-      // Chạy lại tối ưu hóa
-      runOptimization(products, priceStrategies, marginTarget);
-    }, 1000);
-  };
-
-  // Xử lý thay đổi chiến lược giá
-  const handleStrategyChange = (value) => {
-    setPriceStrategies(value);
-    runOptimization(products, value, marginTarget);
-  };
-
-  // Xử lý thay đổi mục tiêu biên lợi nhuận
-  const handleMarginChange = (value) => {
-    setMarginTarget(value);
-    runOptimization(products, priceStrategies, value);
-  };
-
-  // Cấu hình bảng
-  const columns = [
+        return (
+          <Tooltip title={`${description}: Demand changes by ${absElasticity.toFixed(2)}% for each 1% change in price`}>
+            <Tag color={color}>
+              {elasticity.toFixed(2)}
+            </Tag>
+          </Tooltip>
+        );
+      },
+    },
     {
-      title: 'Sản phẩm',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text, record) => (
-        <div>
-          <div>{text}</div>
-          <Text type="secondary">{record.sku}</Text>
-        </div>
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Button type="primary" size="small" onClick={() => handleProductSelect(record.product_id)}>
+          Simulate
+        </Button>
       ),
-    },
-    {
-      title: 'Danh mục',
-      dataIndex: 'category',
-      key: 'category',
-      render: (text) => <Tag color="blue">{text}</Tag>,
-      filters: [...new Set(products.map(item => item.category))].map(category => ({
-        text: category,
-        value: category
-      })),
-      onFilter: (value, record) => record.category === value,
-    },
-    {
-      title: 'Giá hiện tại',
-      dataIndex: 'currentPrice',
-      key: 'currentPrice',
-      sorter: (a, b) => a.currentPrice - b.currentPrice,
-      render: (text) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(text),
-    },
-    {
-      title: 'Giá đề xuất',
-      dataIndex: 'suggestedPrice',
-      key: 'suggestedPrice',
-      sorter: (a, b) => a.suggestedPrice - b.suggestedPrice,
-      render: (text) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(text),
-    },
-    {
-      title: 'Thay đổi',
-      dataIndex: 'priceChange',
-      key: 'priceChange',
-      sorter: (a, b) => a.priceChange - b.priceChange,
-      render: (text, record) => {
-        const color = text > 0 ? '#52c41a' : (text < 0 ? '#f5222d' : '');
-        const icon = text > 0 ? <ArrowUpOutlined /> : (text < 0 ? <ArrowDownOutlined /> : null);
-        
-        return (
-          <Space>
-            <span style={{ color }}>
-              {icon} {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(text)}
-            </span>
-            <span style={{ color }}>
-              ({record.priceChangePercent}%)
-            </span>
-          </Space>
-        );
-      },
-    },
-    {
-      title: 'Biên LN hiện tại',
-      dataIndex: 'margin',
-      key: 'margin',
-      sorter: (a, b) => a.margin - b.margin,
-      render: (text) => `${text}%`,
-    },
-    {
-      title: 'Biên LN đề xuất',
-      dataIndex: 'suggestedMargin',
-      key: 'suggestedMargin',
-      sorter: (a, b) => a.suggestedMargin - b.suggestedMargin,
-      render: (text, record) => {
-        const diff = (text - record.margin).toFixed(2);
-        const color = diff > 0 ? '#52c41a' : (diff < 0 ? '#f5222d' : '');
-        
-        return (
-          <Space>
-            <span>{text}%</span>
-            <span style={{ color }}>({diff > 0 ? '+' : ''}{diff}%)</span>
-          </Space>
-        );
-      },
     },
   ];
 
-  // Cấu hình lựa chọn hàng
-  const rowSelection = {
-    onChange: (_, selectedRows) => {
-      setSelectedRows(selectedRows);
-    },
-  };
-
-  // Tính toán số liệu thống kê
-  const getTotalStats = () => {
-    if (!optimizationResults.length) return { totalChange: 0, averageMarginChange: 0, productsIncreased: 0, productsDecreased: 0 };
+  // Prepare data for elasticity curve chart
+  const prepareElasticityCurveData = (product) => {
+    if (!product || !product.elasticity_curve) return [];
     
-    const totalChange = optimizationResults.reduce((sum, item) => sum + item.priceChange, 0);
-    const totalMarginChange = optimizationResults.reduce((sum, item) => sum + (item.suggestedMargin - item.margin), 0);
-    const averageMarginChange = totalMarginChange / optimizationResults.length;
-    const productsIncreased = optimizationResults.filter(item => item.priceChange > 0).length;
-    const productsDecreased = optimizationResults.filter(item => item.priceChange < 0).length;
-    
-    return { totalChange, averageMarginChange, productsIncreased, productsDecreased };
+    return product.elasticity_curve.map(point => ({
+      price: point.price,
+      demand: point.expected_demand,
+      revenue: point.price * point.expected_demand,
+      profit: (point.price - product.cost) * point.expected_demand
+    }));
   };
-
-  const stats = getTotalStats();
 
   return (
-    <div className="price-optimization">
-      <Card>
-        <Title level={2}>Tối ưu hóa giá sản phẩm</Title>
-        <Paragraph type="secondary">
-          Tối ưu hóa giá sản phẩm dựa trên nhiều yếu tố: chi phí, nhu cầu thị trường, giá cạnh tranh và tồn kho.
-        </Paragraph>
-
-        <Tabs defaultActiveKey="optimization">
-          <TabPane 
-            tab={
-              <span><CalculatorOutlined /> Tối ưu hóa giá</span>
-            } 
-            key="optimization"
-          >
-            <Row gutter={[16, 16]}>
-              <Col span={24}>
-                <Card title="Chiến lược tối ưu hóa">
-                  <Row gutter={16}>
-                    <Col xs={24} sm={12} lg={6}>
-                      <Form.Item label="Chiến lược giá">
-                        <Select 
-                          value={priceStrategies} 
-                          onChange={handleStrategyChange}
-                          style={{ width: '100%' }}
-                        >
-                          <Option value="competitive">Dựa trên giá cạnh tranh</Option>
-                          <Option value="margin">Dựa trên biên lợi nhuận</Option>
-                          <Option value="demand">Dựa trên nhu cầu thị trường</Option>
-                          <Option value="inventory">Dựa trên tồn kho</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    
-                    {priceStrategies === 'margin' && (
-                      <Col xs={24} sm={12} lg={6}>
-                        <Form.Item 
-                          label={
-                            <span>
-                              Mục tiêu biên lợi nhuận 
-                              <Tooltip title="Biên lợi nhuận mục tiêu (%) cho chiến lược giá">
-                                <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                              </Tooltip>
-                            </span>
-                          }
-                        >
-                          <Slider
-                            min={0}
-                            max={50}
-                            value={marginTarget}
-                            onChange={handleMarginChange}
-                            marks={{
-                              0: '0%',
-                              10: '10%',
-                              20: '20%',
-                              30: '30%',
-                              40: '40%',
-                              50: '50%'
-                            }}
-                          />
-                        </Form.Item>
-                      </Col>
-                    )}
-                    
-                    <Col xs={24} sm={12} lg={6}>
-                      <Form.Item label="Thời gian áp dụng">
-                        <RangePicker style={{ width: '100%' }} />
-                      </Form.Item>
-                    </Col>
-                    
-                    <Col xs={24} sm={12} lg={6}>
-                      <Form.Item label="Hành động">
-                        <Button 
-                          type="primary" 
-                          loading={loading}
-                          onClick={() => runOptimization(products, priceStrategies, marginTarget)}
-                          icon={<SyncOutlined />}
-                          style={{ width: '100%' }}
-                        >
-                          Chạy tối ưu hóa
-                        </Button>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-
-              {/* Thống kê tối ưu hóa */}
-              <Col span={24}>
-                <Row gutter={16}>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card>
-                      <Statistic
-                        title="Tổng thay đổi"
-                        value={stats.totalChange}
-                        precision={0}
-                        valueStyle={{ color: stats.totalChange >= 0 ? '#3f8600' : '#cf1322' }}
-                        prefix={stats.totalChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                        suffix="VND"
-                        formatter={(value) => new Intl.NumberFormat('vi-VN').format(value)}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card>
-                      <Statistic
-                        title="Thay đổi biên LN trung bình"
-                        value={stats.averageMarginChange}
-                        precision={2}
-                        valueStyle={{ color: stats.averageMarginChange >= 0 ? '#3f8600' : '#cf1322' }}
-                        prefix={stats.averageMarginChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                        suffix="%"
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card>
-                      <Statistic
-                        title="Sản phẩm tăng giá"
-                        value={stats.productsIncreased}
-                        valueStyle={{ color: '#3f8600' }}
-                        prefix={<ArrowUpOutlined />}
-                        suffix={`/${optimizationResults.length}`}
-                      />
-                    </Card>
-                  </Col>
-                  <Col xs={24} sm={12} md={6}>
-                    <Card>
-                      <Statistic
-                        title="Sản phẩm giảm giá"
-                        value={stats.productsDecreased}
-                        valueStyle={{ color: '#cf1322' }}
-                        prefix={<ArrowDownOutlined />}
-                        suffix={`/${optimizationResults.length}`}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-              </Col>
-
-              {/* Bảng kết quả */}
-              <Col span={24}>
-                <Card title="Kết quả tối ưu hóa giá">
-                  <div style={{ marginBottom: 16 }}>
-                    <Space>
-                      <Button
-                        type="primary"
-                        disabled={selectedRows.length === 0}
-                        onClick={() => setShowApplyModal(true)}
-                      >
-                        Áp dụng giá đã chọn ({selectedRows.length})
-                      </Button>
-                    </Space>
-                  </div>
-                  
-                  <Table
-                    rowSelection={{
-                      type: 'checkbox',
-                      ...rowSelection,
-                    }}
-                    columns={columns}
-                    dataSource={optimizationResults}
-                    loading={loading}
-                    pagination={{ pageSize: 5 }}
-                    rowKey="key"
-                  />
-                </Card>
-              </Col>
-            </Row>
-          </TabPane>
-          
-          <TabPane 
-            tab={
-              <span><LineChartOutlined /> Phân tích giá</span>
-            } 
-            key="analysis"
-          >
-            <Alert
-              message="Phân tích giá"
-              description="Công cụ phân tích giá cả thị trường và xu hướng giá đang được phát triển."
-              type="info"
-              showIcon
-              style={{ marginBottom: 16 }}
-            />
-            
-            <Card title="Phân tích giá cả thị trường">
-              <Paragraph>
-                Tính năng này sẽ hiển thị:
-              </Paragraph>
-              <ul>
-                <li>So sánh giá của bạn với đối thủ cạnh tranh</li>
-                <li>Xu hướng giá theo thời gian</li>
-                <li>Phân tích độ nhạy cảm giá</li>
-                <li>Phân tích tác động của giá đến doanh số</li>
-              </ul>
-            </Card>
-          </TabPane>
-        </Tabs>
+    <div className="price-optimization-page">
+      <h1>Price Optimization</h1>
+      
+      <Card className="control-card">
+        <Row gutter={16} align="middle">
+          <Col xs={24} sm={8} md={6} lg={4}>
+            <label>Category:</label>
+            <Select
+              style={{ width: '100%', marginTop: 8 }}
+              placeholder="All Categories"
+              onChange={handleCategoryChange}
+              allowClear
+              disabled={loading}
+            >
+              {categories.map(category => (
+                <Option key={category.id} value={category.id}>{category.name}</Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={8} md={6} lg={4}>
+            <label>Optimization Target:</label>
+            <Select
+              style={{ width: '100%', marginTop: 8 }}
+              value={optimizationTarget}
+              onChange={handleOptimizationTargetChange}
+              disabled={loading}
+            >
+              <Option value="revenue">Maximize Revenue</Option>
+              <Option value="profit">Maximize Profit</Option>
+              <Option value="units">Maximize Units Sold</Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={8} md={6} lg={4}>
+            <Button 
+              type="primary" 
+              icon={<ReloadOutlined />}
+              onClick={runPriceOptimization} 
+              loading={loading}
+              style={{ marginTop: 32 }}
+            >
+              Run Optimization
+            </Button>
+          </Col>
+          {optimizationResults.length > 0 && (
+            <Col xs={24} sm={8} md={6} lg={4}>
+              <Button 
+                type="primary" 
+                icon={<SaveOutlined />}
+                onClick={applyOptimizedPrices} 
+                loading={loading}
+                style={{ marginTop: 32 }}
+              >
+                Apply All Prices
+              </Button>
+            </Col>
+          )}
+        </Row>
       </Card>
 
-      {/* Modal xác nhận áp dụng giá */}
-      <Modal
-        title="Xác nhận thay đổi giá"
-        open={showApplyModal}
-        onOk={applyPriceChanges}
-        onCancel={() => setShowApplyModal(false)}
-        okText="Áp dụng"
-        cancelText="Hủy"
-      >
-        <p>Bạn có chắc chắn muốn áp dụng giá mới cho {selectedRows.length} sản phẩm đã chọn?</p>
-        {selectedRows.length > 0 && (
-          <>
-            <Divider />
-            <div>
-              {selectedRows.map(row => {
-                const result = optimizationResults.find(r => r.key === row.key);
-                if (!result) return null;
-                
-                const change = result.priceChange;
-                const color = change > 0 ? '#52c41a' : (change < 0 ? '#f5222d' : '');
-                const icon = change > 0 ? <ArrowUpOutlined /> : (change < 0 ? <ArrowDownOutlined /> : null);
-                
-                return (
-                  <div key={row.key} style={{ marginBottom: 8 }}>
-                    <Text strong>{row.name}</Text>
-                    <div>
-                      <Text type="secondary">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.currentPrice)}
-                        {' → '}
-                        <span style={{ color }}>
-                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(result.suggestedPrice)}
-                          {' '}
-                          {icon} {result.priceChangePercent}%
-                        </span>
-                      </Text>
+      {error && (
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginTop: 16 }}
+        />
+      )}
+
+      {processingIndicator && (
+        <Card className="processing-indicator" style={{ marginTop: 16, textAlign: 'center' }}>
+          <Spin size="large" />
+          <p style={{ marginTop: 16 }}>Processing price optimization...</p>
+        </Card>
+      )}
+
+      {!processingIndicator && optimizationResults.length > 0 && (
+        <>
+          <Card title="Price Optimization Results" style={{ marginTop: 16 }}>
+            {optimizationMetadata && (
+              <div className="optimization-summary" style={{ marginBottom: 16 }}>
+                <Row gutter={16}>
+                  <Col xs={24} md={8}>
+                    <Statistic
+                      title="Potential Revenue Increase"
+                      value={optimizationMetadata.total_revenue_increase_percentage}
+                      precision={1}
+                      valueStyle={{ color: '#3f8600' }}
+                      prefix={<RiseOutlined />}
+                      suffix="%"
+                    />
+                  </Col>
+                  <Col xs={24} md={8}>
+                    <Statistic
+                      title="Potential Profit Increase"
+                      value={optimizationMetadata.total_profit_increase_percentage}
+                      precision={1}
+                      valueStyle={{ color: '#3f8600' }}
+                      prefix={<DollarOutlined />}
+                      suffix="%"
+                    />
+                  </Col>
+                  <Col xs={24} md={8}>
+                    <Statistic
+                      title="Average Price Change"
+                      value={optimizationMetadata.average_price_change_percentage}
+                      precision={1}
+                      valueStyle={{ color: optimizationMetadata.average_price_change_percentage > 0 ? '#3f8600' : '#cf1322' }}
+                      prefix={<PercentageOutlined />}
+                      suffix="%"
+                    />
+                  </Col>
+                </Row>
+              </div>
+            )}
+            
+            <Table
+              columns={optimizationColumns}
+              dataSource={optimizationResults}
+              rowKey="product_id"
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+
+          {selectedProduct && priceSimulation && (
+            <Card title="Price Simulation" style={{ marginTop: 16 }}>
+              <Row gutter={16}>
+                <Col xs={24} lg={12}>
+                  <Card type="inner" title="Price Elasticity Curve">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart
+                        data={prepareElasticityCurveData(priceSimulation)}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="price" 
+                          label={{ value: 'Price ($)', position: 'insideBottom', offset: -5 }}
+                          tickFormatter={(value) => `$${value}`}
+                        />
+                        <YAxis 
+                          yAxisId="left"
+                          label={{ value: 'Demand (Units)', angle: -90, position: 'insideLeft' }}
+                        />
+                        <YAxis 
+                          yAxisId="right"
+                          orientation="right"
+                          label={{ value: 'Revenue ($)', angle: 90, position: 'insideRight' }}
+                        />
+                        <RechartsTooltip formatter={(value, name) => {
+                          if (name === 'demand') return [`${value} units`, 'Demand'];
+                          if (name === 'revenue') return [`$${value.toFixed(2)}`, 'Revenue'];
+                          if (name === 'profit') return [`$${value.toFixed(2)}`, 'Profit'];
+                          return [value, name];
+                        }} />
+                        <Legend />
+                        <Line 
+                          yAxisId="left"
+                          type="monotone" 
+                          dataKey="demand" 
+                          stroke="#8884d8" 
+                          name="Demand"
+                          dot={false}
+                        />
+                        <Line 
+                          yAxisId="right"
+                          type="monotone" 
+                          dataKey="revenue" 
+                          stroke="#82ca9d" 
+                          name="Revenue"
+                          dot={false}
+                        />
+                        <Line 
+                          yAxisId="right"
+                          type="monotone" 
+                          dataKey="profit" 
+                          stroke="#ff7300" 
+                          name="Profit"
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </Card>
+                </Col>
+                <Col xs={24} lg={12}>
+                  <Card type="inner" title="Price Simulator">
+                    <Form layout="vertical">
+                      <Form.Item label="Product">
+                        <strong>{priceSimulation.product_name}</strong>
+                      </Form.Item>
+                      <Form.Item label="Current Price">
+                        <strong>${priceSimulation.current_price.toFixed(2)}</strong>
+                      </Form.Item>
+                      <Form.Item label="Optimized Price">
+                        <strong>${priceSimulation.optimized_price.toFixed(2)}</strong>
+                      </Form.Item>
+                      <Form.Item label="Cost">
+                        <strong>${priceSimulation.cost.toFixed(2)}</strong>
+                      </Form.Item>
+                      <Form.Item label="Price Elasticity">
+                        <strong>{priceSimulation.price_elasticity.toFixed(2)}</strong>
+                        <Tooltip title="Price elasticity measures how sensitive demand is to price changes. A value of -1.0 means a 1% price increase leads to a 1% demand decrease.">
+                          <InfoCircleOutlined style={{ marginLeft: 8 }} />
+                        </Tooltip>
+                      </Form.Item>
+                      <Form.Item label="Simulate Custom Price">
+                        <Row gutter={16}>
+                          <Col span={18}>
+                            <Slider
+                              min={Math.max(priceSimulation.cost, priceSimulation.current_price * 0.5)}
+                              max={priceSimulation.current_price * 1.5}
+                              step={0.01}
+                              defaultValue={priceSimulation.current_price}
+                              onChange={(value) => simulatePrice(selectedProduct, value)}
+                              tipFormatter={(value) => `$${value.toFixed(2)}`}
+                            />
+                          </Col>
+                          <Col span={6}>
+                            <InputNumber
+                              min={Math.max(priceSimulation.cost, priceSimulation.current_price * 0.5)}
+                              max={priceSimulation.current_price * 1.5}
+                              step={0.01}
+                              value={priceSimulation.simulated_price}
+                              onChange={(value) => simulatePrice(selectedProduct, value)}
+                              formatter={(value) => `$ ${value}`}
+                              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                              style={{ width: '100%' }}
+                            />
+                          </Col>
+                        </Row>
+                      </Form.Item>
+                    </Form>
+                    
+                    <div className="simulation-results" style={{ marginTop: 24 }}>
+                      <h4>Simulation Results</h4>
+                      <Row gutter={16}>
+                        <Col span={8}>
+                          <Statistic
+                            title="Expected Demand"
+                            value={priceSimulation.simulated_demand}
+                            precision={0}
+                            suffix="units"
+                          />
+                          <div style={{ marginTop: 8 }}>
+                            <small>
+                              vs. Current: {priceSimulation.current_demand} units
+                              <Tag color={priceSimulation.simulated_demand > priceSimulation.current_demand ? 'green' : 'red'} style={{ marginLeft: 8 }}>
+                                {((priceSimulation.simulated_demand - priceSimulation.current_demand) / priceSimulation.current_demand * 100).toFixed(1)}%
+                              </Tag>
+                            </small>
+                          </div>
+                        </Col>
+                        <Col span={8}>
+                          <Statistic
+                            title="Expected Revenue"
+                            value={priceSimulation.simulated_revenue}
+                            precision={2}
+                            prefix="$"
+                          />
+                          <div style={{ marginTop: 8 }}>
+                            <small>
+                              vs. Current: ${priceSimulation.current_revenue.toFixed(2)}
+                              <Tag color={priceSimulation.simulated_revenue > priceSimulation.current_revenue ? 'green' : 'red'} style={{ marginLeft: 8 }}>
+                                {((priceSimulation.simulated_revenue - priceSimulation.current_revenue) / priceSimulation.current_revenue * 100).toFixed(1)}%
+                              </Tag>
+                            </small>
+                          </div>
+                        </Col>
+                        <Col span={8}>
+                          <Statistic
+                            title="Expected Profit"
+                            value={priceSimulation.simulated_profit}
+                            precision={2}
+                            prefix="$"
+                          />
+                          <div style={{ marginTop: 8 }}>
+                            <small>
+                              vs. Current: ${priceSimulation.current_profit.toFixed(2)}
+                              <Tag color={priceSimulation.simulated_profit > priceSimulation.current_profit ? 'green' : 'red'} style={{ marginLeft: 8 }}>
+                                {((priceSimulation.simulated_profit - priceSimulation.current_profit) / priceSimulation.current_profit * 100).toFixed(1)}%
+                              </Tag>
+                            </small>
+                          </div>
+                        </Col>
+                      </Row>
+                      
+                      <div style={{ marginTop: 24 }}>
+                        <Button 
+                          type="primary"
+                          onClick={() => {
+                            // Apply this single price change
+                            console.log(`Apply price ${priceSimulation.simulated_price} to product ${selectedProduct}`);
+                          }}
+                        >
+                          Apply This Price
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </Modal>
+                  </Card>
+                </Col>
+              </Row>
+            </Card>
+          )}
+        </>
+      )}
+      
+      {!processingIndicator && optimizationResults.length === 0 && !error && (
+        <Card style={{ marginTop: 16, textAlign: 'center' }}>
+          <p>Select a category and click "Run Optimization" to see price recommendations.</p>
+        </Card>
+      )}
     </div>
   );
 };

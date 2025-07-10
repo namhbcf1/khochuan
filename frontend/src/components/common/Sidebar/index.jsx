@@ -1,218 +1,361 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Layout, Menu, Tooltip, Typography, Avatar, Badge, Drawer 
-} from 'antd';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Layout, Menu, Button } from 'antd';
 import {
-  DashboardOutlined, ShoppingOutlined, ShoppingCartOutlined, 
-  UserOutlined, TeamOutlined, BarChartOutlined, SettingOutlined,
-  ShopOutlined, MobileOutlined, AppstoreOutlined, FileTextOutlined,
-  BankOutlined, ClockCircleOutlined, TrophyOutlined, BookOutlined,
-  MailOutlined, BellOutlined, CalendarOutlined, LogoutOutlined,
-  HomeOutlined, RollbackOutlined, LaptopOutlined, DesktopOutlined
+  DashboardOutlined,
+  ShoppingOutlined,
+  UserOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  BarChartOutlined,
+  ShopOutlined,
+  FileTextOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  TagOutlined,
+  DollarOutlined,
+  RobotOutlined,
+  AppstoreOutlined,
+  GlobalOutlined
 } from '@ant-design/icons';
-import { useAuth } from '../../../auth/AuthContext';
+import { useAuth } from '../../../hooks/useAuth';
 import './styles.css';
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
-const { Text } = Typography;
 
-/**
- * Sidebar component với menu phân quyền theo role
- */
-const Sidebar = ({ 
-  collapsed, 
-  onCollapse, 
-  isMobile = false,
-  visible,
-  onClose
-}) => {
-  const navigate = useNavigate();
+const Sidebar = () => {
   const location = useLocation();
-  const { user, hasRole, hasPermission, getAccessibleMenus } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
+  const { user } = useAuth();
   
-  const [selectedKeys, setSelectedKeys] = useState([]);
-  const [openKeys, setOpenKeys] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
-
-  // Xác định menu item đang được chọn dựa trên URL
-  useEffect(() => {
-    const pathSnippets = location.pathname.split('/').filter(i => i);
-    const currentKey = '/' + pathSnippets.join('/');
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed);
+  };
+  
+  // Define the navigation items based on user role
+  const getNavItems = () => {
+    const role = user?.role || 'guest';
     
-    setSelectedKeys([currentKey]);
+    const adminItems = [
+      {
+        key: 'dashboard',
+        icon: <DashboardOutlined />,
+        label: 'Dashboard',
+        path: '/admin/dashboard'
+      },
+      {
+        key: 'ai',
+        icon: <RobotOutlined />,
+        label: 'AI Insights',
+        path: '/admin/ai-insights'
+      },
+      {
+        key: 'products',
+        icon: <ShoppingOutlined />,
+        label: 'Products',
+        children: [
+          {
+            key: 'product-management',
+            label: 'Product Management',
+            path: '/admin/products'
+          },
+          {
+            key: 'price-optimization',
+            label: 'Price Optimization',
+            path: '/admin/products/price-optimization'
+          },
+          {
+            key: 'categories',
+            label: 'Categories',
+            path: '/admin/products/categories'
+          },
+          {
+            key: 'inventory',
+            label: 'Inventory',
+            path: '/admin/inventory'
+          }
+        ]
+      },
+      {
+        key: 'customers',
+        icon: <UserOutlined />,
+        label: 'Customers',
+        children: [
+          {
+            key: 'customer-management',
+            label: 'Customer Management',
+            path: '/admin/customers'
+          },
+          {
+            key: 'customer-segmentation',
+            label: 'Customer Segmentation',
+            path: '/admin/customers/segmentation'
+          },
+          {
+            key: 'loyalty',
+            label: 'Loyalty Program',
+            path: '/admin/customers/loyalty'
+          }
+        ]
+      },
+      {
+        key: 'orders',
+        icon: <FileTextOutlined />,
+        label: 'Orders',
+        children: [
+          {
+            key: 'order-management',
+            label: 'Order Management',
+            path: '/admin/orders'
+          },
+          {
+            key: 'returns',
+            label: 'Returns & Refunds',
+            path: '/admin/orders/returns'
+          }
+        ]
+      },
+      {
+        key: 'staff',
+        icon: <TeamOutlined />,
+        label: 'Staff',
+        children: [
+          {
+            key: 'staff-management',
+            label: 'Staff Management',
+            path: '/admin/staff'
+          },
+          {
+            key: 'gamification',
+            label: 'Gamification',
+            path: '/admin/staff/gamification'
+          },
+          {
+            key: 'performance',
+            label: 'Performance',
+            path: '/admin/staff/performance'
+          }
+        ]
+      },
+      {
+        key: 'analytics',
+        icon: <BarChartOutlined />,
+        label: 'Analytics',
+        children: [
+          {
+            key: 'sales-analytics',
+            label: 'Sales Analytics',
+            path: '/admin/analytics/sales'
+          },
+          {
+            key: 'inventory-analytics',
+            label: 'Inventory Analytics',
+            path: '/admin/analytics/inventory'
+          },
+          {
+            key: 'customer-analytics',
+            label: 'Customer Analytics',
+            path: '/admin/analytics/customers'
+          },
+          {
+            key: 'reports',
+            label: 'Reports',
+            path: '/admin/analytics/reports'
+          }
+        ]
+      },
+      {
+        key: 'integrations',
+        icon: <GlobalOutlined />,
+        label: 'Integrations',
+        children: [
+          {
+            key: 'ecommerce',
+            label: 'E-commerce',
+            path: '/admin/integrations/ecommerce'
+          },
+          {
+            key: 'payment',
+            label: 'Payment Gateways',
+            path: '/admin/integrations/payment'
+          },
+          {
+            key: 'api',
+            label: 'API Management',
+            path: '/admin/integrations/api'
+          }
+        ]
+      },
+      {
+        key: 'settings',
+        icon: <SettingOutlined />,
+        label: 'Settings',
+        path: '/admin/settings'
+      }
+    ];
     
-    if (pathSnippets.length > 1) {
-      setOpenKeys(prev => {
-        const newOpenKeys = [`/${pathSnippets[0]}`];
-        // Không thay đổi các openKeys khác nếu đã có
-        return [...new Set([...prev, ...newOpenKeys])];
-      });
-    }
-  }, [location.pathname]);
-
-  // Tạo menu items dựa trên role
-  useEffect(() => {
-    const accessibleMenus = getAccessibleMenus ? getAccessibleMenus() : [];
-    setMenuItems(accessibleMenus);
-  }, [user, getAccessibleMenus]);
-
-  // Xử lý khi menu item được click
-  const handleMenuClick = (e) => {
-    navigate(e.key);
-    if (isMobile && onClose) {
-      onClose();
+    const cashierItems = [
+      {
+        key: 'pos',
+        icon: <ShopOutlined />,
+        label: 'POS Terminal',
+        path: '/cashier/pos'
+      },
+      {
+        key: 'customers',
+        icon: <UserOutlined />,
+        label: 'Customers',
+        path: '/cashier/customers'
+      },
+      {
+        key: 'orders',
+        icon: <FileTextOutlined />,
+        label: 'Orders',
+        path: '/cashier/orders'
+      },
+      {
+        key: 'session',
+        icon: <DollarOutlined />,
+        label: 'Session',
+        path: '/cashier/session'
+      }
+    ];
+    
+    const staffItems = [
+      {
+        key: 'dashboard',
+        icon: <DashboardOutlined />,
+        label: 'Dashboard',
+        path: '/staff/dashboard'
+      },
+      {
+        key: 'sales',
+        icon: <TagOutlined />,
+        label: 'My Sales',
+        path: '/staff/sales'
+      },
+      {
+        key: 'profile',
+        icon: <UserOutlined />,
+        label: 'My Profile',
+        path: '/staff/profile'
+      },
+      {
+        key: 'gamification',
+        icon: <AppstoreOutlined />,
+        label: 'Achievements',
+        path: '/staff/gamification'
+      }
+    ];
+    
+    switch (role) {
+      case 'admin':
+        return adminItems;
+      case 'cashier':
+        return cashierItems;
+      case 'staff':
+        return staffItems;
+      default:
+        return [];
     }
   };
-
-  // Map icon component từ tên icon
-  const getIconComponent = (iconName) => {
-    const iconMap = {
-      'DashboardOutlined': <DashboardOutlined />,
-      'ShoppingOutlined': <ShoppingOutlined />,
-      'ShoppingCartOutlined': <ShoppingCartOutlined />,
-      'UserOutlined': <UserOutlined />,
-      'TeamOutlined': <TeamOutlined />,
-      'BarChartOutlined': <BarChartOutlined />,
-      'SettingOutlined': <SettingOutlined />,
-      'ShopOutlined': <ShopOutlined />,
-      'MobileOutlined': <MobileOutlined />,
-      'AppstoreOutlined': <AppstoreOutlined />,
-      'FileTextOutlined': <FileTextOutlined />,
-      'BankOutlined': <BankOutlined />,
-      'ClockCircleOutlined': <ClockCircleOutlined />,
-      'TrophyOutlined': <TrophyOutlined />,
-      'BookOutlined': <BookOutlined />,
-      'MailOutlined': <MailOutlined />,
-      'BellOutlined': <BellOutlined />,
-      'CalendarOutlined': <CalendarOutlined />,
-      'LogoutOutlined': <LogoutOutlined />,
-      'HomeOutlined': <HomeOutlined />,
-      'RollbackOutlined': <RollbackOutlined />,
-      'LaptopOutlined': <LaptopOutlined />,
-      'DesktopOutlined': <DesktopOutlined />
-    };
-    
-    return iconMap[iconName] || <AppstoreOutlined />;
-  };
-
-  // Tạo các menu item từ data
+  
   const renderMenuItems = (items) => {
     return items.map(item => {
       if (item.children) {
         return (
-          <SubMenu 
-            key={item.key} 
-            icon={getIconComponent(item.icon)} 
-            title={item.label}
-          >
+          <SubMenu key={item.key} icon={item.icon} title={item.label}>
             {renderMenuItems(item.children)}
           </SubMenu>
         );
       }
+      
       return (
-        <Menu.Item 
-          key={item.path} 
-          icon={getIconComponent(item.icon)}
-        >
-          {item.label}
-          {item.badge && (
-            <Badge count={item.badge} size="small" offset={[10, 0]} />
-          )}
+        <Menu.Item key={item.key} icon={item.icon}>
+          <Link to={item.path}>{item.label}</Link>
         </Menu.Item>
       );
     });
   };
-
-  // Menu cố định ngoài những menu động
-  const staticMenu = [
-    {
-      key: 'home',
-      label: 'Trang chủ',
-      path: '/',
-      icon: 'HomeOutlined',
-    }
-  ];
-
-  // Nội dung của sidebar
-  const sidebarContent = (
-    <>
-      <div className="logo">
-        {!collapsed && (
-          <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
-            Trường Phát
-          </Typography.Title>
-        )}
-      </div>
+  
+  const getSelectedKeys = () => {
+    const path = location.pathname;
+    const navItems = getNavItems();
+    
+    // Flatten all navigation items
+    const flattenItems = (items) => {
+      return items.reduce((acc, item) => {
+        if (item.children) {
+          return [...acc, ...flattenItems(item.children)];
+        }
+        return [...acc, item];
+      }, []);
+    };
+    
+    const allItems = flattenItems(navItems);
+    
+    // Find the item that matches the current path
+    const matchedItem = allItems.find(item => path === item.path || path.startsWith(item.path + '/'));
+    
+    return matchedItem ? [matchedItem.key] : [];
+  };
+  
+  const getOpenKeys = () => {
+    const selectedKeys = getSelectedKeys();
+    if (selectedKeys.length === 0) return [];
+    
+    const navItems = getNavItems();
+    
+    // Find parent keys
+    const findParentKeys = (items, targetKey, parents = []) => {
+      for (const item of items) {
+        if (item.key === targetKey) {
+          return parents;
+        }
+        
+        if (item.children) {
+          const result = findParentKeys(item.children, targetKey, [...parents, item.key]);
+          if (result.length > 0) {
+            return result;
+          }
+        }
+      }
       
-      <div className="sidebar-user">
-        <Avatar 
-          size={collapsed ? 'default' : 'large'}
-          icon={<UserOutlined />}
-          src={user?.avatar}
-        />
-        {!collapsed && (
-          <div className="user-info">
-            <Text strong style={{ color: '#fff' }}>
-              {user?.name || 'Người dùng'}
-            </Text>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Khách'}
-            </Text>
-          </div>
-        )}
+      return [];
+    };
+    
+    return findParentKeys(navItems, selectedKeys[0]);
+  };
+  
+  return (
+    <Sider 
+      collapsible 
+      collapsed={collapsed} 
+      onCollapse={toggleCollapsed}
+      className="app-sidebar"
+    >
+      <div className="logo">
+        {collapsed ? 'KC' : 'KhoChuan POS'}
       </div>
       
       <Menu
         theme="dark"
         mode="inline"
-        selectedKeys={selectedKeys}
-        openKeys={openKeys}
-        onOpenChange={setOpenKeys}
-        onClick={handleMenuClick}
+        selectedKeys={getSelectedKeys()}
+        defaultOpenKeys={getOpenKeys()}
       >
-        {/* Menu cố định */}
-        {renderMenuItems(staticMenu)}
-        
-        {/* Divider nếu có menu động */}
-        {menuItems.length > 0 && (
-          <Menu.Divider />
-        )}
-        
-        {/* Menu động dựa trên role */}
-        {renderMenuItems(menuItems)}
+        {renderMenuItems(getNavItems())}
       </Menu>
-    </>
-  );
-
-  // Trường hợp mobile: hiển thị Drawer
-  if (isMobile) {
-    return (
-      <Drawer
-        placement="left"
-        closable={true}
-        onClose={onClose}
-        open={visible}
-        className="sidebar-drawer"
-        width={256}
-        bodyStyle={{ padding: 0, backgroundColor: '#001529' }}
-      >
-        {sidebarContent}
-      </Drawer>
-    );
-  }
-
-  // Trường hợp desktop: hiển thị Sider
-  return (
-    <Sider
-      collapsible
-      collapsed={collapsed}
-      onCollapse={onCollapse}
-      width={256}
-      className="app-sidebar"
-    >
-      {sidebarContent}
+      
+      <div className="sidebar-footer">
+        <Button 
+          type="text" 
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={toggleCollapsed}
+          className="collapse-button"
+        />
+      </div>
     </Sider>
   );
 };

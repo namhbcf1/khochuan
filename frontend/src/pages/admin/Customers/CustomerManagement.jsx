@@ -502,14 +502,14 @@ const CustomerManagement = () => {
 
   return (
     <div className="customer-management-page">
-      <Title level={1}>Customer Management</Title>
+      <h1>Customer Management</h1>
       
       <Card bordered={false} className="header-card">
         <Row justify="space-between" align="middle" gutter={[24, 24]}>
           <Col xs={24} sm={12}>
-            <Title level={1}>Customer Management</Title>
+            <Title level={2}>Customer Management</Title>
             <Text type="secondary">
-              Quản lý thông tin và dữ liệu khách hàng
+              Manage customer information and data
             </Text>
           </Col>
           <Col xs={24} sm={12}>

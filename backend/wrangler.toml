@@ -1,73 +1,29 @@
-name = "smart-pos-api"
+name = "khochuan-pos-api"
 main = "src/index.js"
-compatibility_date = "2024-01-15"
+compatibility_date = "2023-10-30"
 compatibility_flags = ["nodejs_compat"]
 
-[env.production]
-name = "smart-pos-api"
-route = { pattern = "api.smartpos.dev/*", zone_name = "smartpos.dev" }
+# Environment variables
+[vars]
+API_VERSION = "v1"
+NODE_ENV = "production"
+CORS_ORIGIN = "https://khochuan-pos.pages.dev"
+JWT_SECRET = "cloudflare-khochuan-pos-jwt-secret-key-2025"
 
-[env.staging]
-name = "smart-pos-api-staging"
-
-# D1 Database Configuration
+# D1 Database binding
 [[d1_databases]]
 binding = "DB"
-database_name = "smart-pos-db"
-database_id = "your-d1-database-id"
+database_name = "khochuan-pos-db"
+database_id = "khochuan-pos-db-id"
 
-# KV Storage Configuration
+# KV Namespace binding for caching
 [[kv_namespaces]]
 binding = "CACHE"
-id = "your-kv-namespace-id"
-preview_id = "your-kv-preview-id"
+id = "khochuan-pos-cache-id"
+preview_id = "khochuan-pos-cache-preview-id"
 
-[[kv_namespaces]]
-binding = "SESSIONS"
-id = "your-sessions-kv-id"
-preview_id = "your-sessions-preview-id"
-
-# R2 Storage Configuration
+# R2 Storage for file uploads
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "smart-pos-files"
-
-# Environment Variables
-[vars]
-ENVIRONMENT = "production"
-JWT_SECRET = "your-jwt-secret-key"
-ENCRYPTION_KEY = "your-encryption-key"
-API_VERSION = "v1"
-CORS_ORIGIN = "https://smartpos.pages.dev"
-
-# AI Configuration
-[ai]
-binding = "AI"
-
-# Durable Objects
-[[durable_objects.bindings]]
-name = "REALTIME"
-class_name = "RealtimeHandler"
-
-# Analytics Engine
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-dataset = "smart_pos_events"
-
-# Services (for microservices communication)
-[[services]]
-binding = "PAYMENT_SERVICE"
-service = "payment-processor"
-
-# Limits and Performance
-[build]
-command = "npm run build"
-cwd = "."
-
-[placement]
-mode = "smart"
-
-# Development Configuration
-[env.development]
-name = "smart-pos-api-dev"
-vars = { ENVIRONMENT = "development", CORS_ORIGIN = "http://localhost:3000" }
+bucket_name = "khochuan-pos-storage"
+preview_bucket_name = "khochuan-pos-storage-preview"

@@ -1,8 +1,8 @@
-# Smart POS System
+# Smart POS System - KHO CHUAN
 
 ## Giới thiệu
 
-Hệ thống POS thông minh với tính năng game hóa, AI, và đa kênh bán hàng. Được phát triển với React, Node.js, và hệ thống cơ sở dữ liệu hiện đại.
+Hệ thống POS thông minh KhoChuan với tính năng game hóa, AI, và đa kênh bán hàng. Được phát triển với React, Node.js, và hệ thống cơ sở dữ liệu hiện đại.
 
 ## Cấu trúc hệ thống
 
@@ -95,33 +95,101 @@ client/src/
 
 - ✅ Cấu trúc thư mục và kiến trúc ứng dụng
 - ✅ Hệ thống xác thực và phân quyền
-- ✅ Giao diện Admin
-- ✅ Giao diện Thu ngân
-- ✅ Giao diện Nhân viên với game hóa
-- ✅ Ma trận phân quyền chi tiết
+- ✅ Giao diện cơ bản của POS Terminal
+- ⏳ Dashboard và báo cáo Admin (đang phát triển)
+- ⏳ Quản lý khách hàng (đang phát triển)
+- ✅ Kiểm thử và QA
+- ✅ Triển khai lên Cloudflare
 - ⏳ Tích hợp AI (đang phát triển)
 - ⏳ Tích hợp sàn TMĐT (đang phát triển)
 - ⏳ Kết nối phần cứng (đang phát triển)
+
+## Kết quả kiểm tra
+
+### Các phần đã vượt qua test
+- **Xác thực**: 6/6 tests pass
+- **POS Terminal**: 5/5 tests pass
+- **Visual Regression**: 6/6 tests pass
+
+### Các phần đang phát triển
+- Dashboard: Đang cải thiện UI/UX và các thành phần
+- Quản lý khách hàng: Đang xây dựng các tính năng
+
+## Framework kiểm thử triển khai
+
+Hệ thống KhoChuan bao gồm framework kiểm thử triển khai tự động để đảm bảo chất lượng sau khi triển khai:
+
+### Cấu trúc
+- `tests/deployment.spec.js`: Test case kiểm tra ứng dụng đã triển khai
+- `tests/run-deployment-tests.js`: Script chạy các test kiểm tra triển khai
+- `scripts/verify-deployment.sh`: Script bash kiểm tra triển khai (Linux/Mac)
+- `scripts/verify-deployment.ps1`: Script PowerShell kiểm tra triển khai (Windows)
+- `verify-deployment.cmd`: Script batch để chạy trên Windows
+- `.github/workflows/verify-deployment.yml`: Workflow CI/CD tự động kiểm tra
+
+### Cách sử dụng
+
+Trên Windows:
+```cmd
+verify-deployment.cmd [url] [api-url]
+```
+
+Trên Linux/Mac:
+```bash
+./scripts/verify-deployment.sh [url] [api-url]
+```
+
+Tự động qua GitHub Actions:
+- Tự động chạy khi có deployment thành công
+- Có thể kích hoạt thủ công qua workflow_dispatch
+
+### Kết quả
+- Kết quả được lưu vào file CHUAN.MD
+- Báo cáo chi tiết với screenshots ở thư mục playwright-report
+- Xem báo cáo bằng lệnh: `npx playwright show-report`
+
+## Deployment URLs
+
+- **Frontend**: https://khochuan-pos.pages.dev
+- **Latest Preview**: https://b64046e8.khochuan-pos.pages.dev
+- **Testing Framework Branch**: https://testing-framework.khochuan-pos.pages.dev
+- **Backend API**: https://khochuan-pos-api.bangachieu2.workers.dev
 
 ## Hướng dẫn cài đặt
 
 ### Yêu cầu hệ thống
 - Node.js 14+
 - NPM hoặc Yarn
-- MongoDB 4+
+- MongoDB 4+ (hoặc sử dụng Cloudflare KV)
 
 ### Cài đặt frontend
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev     # Chạy môi trường phát triển
+npm run build   # Build cho production
 ```
 
 ### Cài đặt backend
 ```bash
 cd backend
 npm install
-npm start
+npm run dev     # Chạy môi trường phát triển
+```
+
+### Chạy tests
+```bash
+# Các test xác thực
+npm run test:auth
+
+# Các test POS
+npm run test:pos
+
+# Kiểm tra hình ảnh
+npm run test:visual
+
+# Chạy tất cả test
+npm test
 ```
 
 ## Đăng nhập thử nghiệm
@@ -130,4 +198,12 @@ Sử dụng các tài khoản sau để trải nghiệm hệ thống:
 
 - Admin: admin@example.com / password
 - Thu ngân: cashier@example.com / password
-- Nhân viên: staff@example.com / password 
+- Nhân viên: staff@example.com / password
+
+## Tài liệu tham khảo
+
+- [Tài liệu API](docs/API_DOCUMENTATION.md)
+- [Hướng dẫn triển khai](DEPLOYMENT.md) 
+- [Báo cáo kiểm tra](TEST-REPORT-SUMMARY.md)
+- [Kế hoạch triển khai](IMPLEMENTATION-PLAN.md)
+- [Thông tin dự án chi tiết](CHUAN.MD) 

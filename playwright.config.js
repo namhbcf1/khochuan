@@ -29,7 +29,7 @@ module.exports = defineConfig({
   // Shared settings cho tất cả các projects
   use: {
     // Base URL to use in actions like `await page.goto('/')`
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.TEST_DEPLOYED ? 'https://khochuan-pos.pages.dev' : 'http://localhost:3000',
 
     // Collect trace khi retrying a test
     trace: 'on-first-retry',
@@ -93,11 +93,23 @@ module.exports = defineConfig({
         ...devices['Desktop Chrome'],
         colorScheme: 'dark',
       },
+    },
+
+    // Cấu hình cho testing trang đã deployed
+    {
+      name: 'deployed',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://khochuan-pos.pages.dev',
+        // Increased timeouts for deployed site
+        navigationTimeout: 30000,
+        actionTimeout: 15000,
+      },
     }
   ],
 
-  // Cấu hình web server
-  webServer: {
+  // Cấu hình web server - chỉ chạy khi không test trang deployed
+  webServer: process.env.TEST_DEPLOYED ? undefined : {
     command: 'cd frontend && npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,

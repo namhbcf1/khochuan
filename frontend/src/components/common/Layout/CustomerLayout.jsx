@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import { Layout, Typography, Menu, Button, Drawer, theme } from 'antd';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { MenuOutlined, HomeOutlined, FileSearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { 
+  MenuOutlined, 
+  HomeOutlined, 
+  FileSearchOutlined, 
+  InfoCircleOutlined,
+  UserOutlined,
+  SafetyCertificateOutlined,
+  TrophyOutlined
+} from '@ant-design/icons';
+import { useAuth } from '../../../auth/AuthContext';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
@@ -10,8 +19,29 @@ const CustomerLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { token } = theme.useToken();
+  const { isAuthenticated, user } = useAuth();
 
-  const menuItems = [
+  // Menu items for authenticated customers
+  const authenticatedMenuItems = [
+    {
+      key: '/customer/profile',
+      icon: <UserOutlined />,
+      label: <Link to="/customer/profile">Hồ sơ cá nhân</Link>,
+    },
+    {
+      key: '/customer/warranty',
+      icon: <SafetyCertificateOutlined />,
+      label: <Link to="/customer/warranty">Bảo hành</Link>,
+    },
+    {
+      key: '/customer/loyalty',
+      icon: <TrophyOutlined />,
+      label: <Link to="/customer/loyalty">Điểm thưởng</Link>,
+    },
+  ];
+
+  // Menu items for non-authenticated users
+  const publicMenuItems = [
     {
       key: '/customer-lookup',
       icon: <FileSearchOutlined />,
@@ -23,6 +53,11 @@ const CustomerLayout = () => {
       label: <Link to="/terms">Điều khoản bảo hành</Link>,
     },
   ];
+
+  // Use authenticated menu if user is logged in, otherwise use public menu
+  const menuItems = isAuthenticated && user?.role === 'customer' 
+    ? authenticatedMenuItems 
+    : publicMenuItems;
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);

@@ -198,8 +198,9 @@ const ProductManagement = () => {
     },
   ];
 
-  // Load data
+  // Fetch products on component mount
   useEffect(() => {
+    setLoading(true);
     // Simulate API call
     setTimeout(() => {
       setProducts(mockProducts);
@@ -208,124 +209,120 @@ const ProductManagement = () => {
     }, 1000);
   }, []);
 
-  // Filter products based on search text and filters
+  // Apply filters when search text, category or status changes
   useEffect(() => {
     let result = [...products];
     
     // Apply search filter
     if (searchText) {
       result = result.filter(
-        (product) =>
+        product =>
           product.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          product.sku.toLowerCase().includes(searchText.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchText.toLowerCase())
+          product.sku.toLowerCase().includes(searchText.toLowerCase())
       );
     }
     
     // Apply category filter
     if (categoryFilter !== 'all') {
-      result = result.filter((product) => product.category === categoryFilter);
+      result = result.filter(product => product.category === categoryFilter);
     }
     
     // Apply status filter
     if (statusFilter !== 'all') {
-      result = result.filter((product) => product.status === statusFilter);
+      result = result.filter(product => product.status === statusFilter);
     }
     
     setFilteredProducts(result);
   }, [searchText, categoryFilter, statusFilter, products]);
 
-  // Get unique categories for filter
-  const categories = [...new Set(products.map((product) => product.category))];
-
-  // Handle row selection
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys),
-  };
-
-  // Handle product deletion
+  // Delete a product
   const handleDelete = (product) => {
     setProductToDelete(product);
     setIsDeleteModalVisible(true);
   };
 
+  // Confirm delete
   const confirmDelete = () => {
-    if (productToDelete) {
-      // In a real app, this would be an API call
-      const updatedProducts = products.filter((p) => p.id !== productToDelete.id);
-      setProducts(updatedProducts);
-      setFilteredProducts(
-        filteredProducts.filter((p) => p.id !== productToDelete.id)
-      );
-      message.success(`Đã xóa sản phẩm "${productToDelete.name}"`);
-    }
-    setIsDeleteModalVisible(false);
-    setProductToDelete(null);
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id));
+      message.success(`Sản phẩm "${productToDelete.name}" đã được xóa`);
+      setIsDeleteModalVisible(false);
+      setProductToDelete(null);
+      setLoading(false);
+    }, 1000);
   };
 
-  // Handle bulk actions
+  // Bulk delete selected products
   const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một sản phẩm để xóa');
+      return;
+    }
+    
     Modal.confirm({
-      title: 'Xác nhận xóa hàng loạt',
+      title: 'Xác nhận xóa nhiều sản phẩm',
       content: `Bạn có chắc chắn muốn xóa ${selectedRowKeys.length} sản phẩm đã chọn?`,
       okText: 'Xóa',
       okType: 'danger',
       cancelText: 'Hủy',
-      onOk: () => {
-        // In a real app, this would be an API call
-        const updatedProducts = products.filter(
-          (p) => !selectedRowKeys.includes(p.id)
-        );
-        setProducts(updatedProducts);
-        setFilteredProducts(
-          filteredProducts.filter((p) => !selectedRowKeys.includes(p.id))
-        );
-        setSelectedRowKeys([]);
-        message.success(`Đã xóa ${selectedRowKeys.length} sản phẩm`);
+      onOk() {
+        setLoading(true);
+        // Simulate API call
+        setTimeout(() => {
+          setProducts(prevProducts => 
+            prevProducts.filter(p => !selectedRowKeys.includes(p.id))
+          );
+          message.success(`Đã xóa ${selectedRowKeys.length} sản phẩm`);
+          setSelectedRowKeys([]);
+          setLoading(false);
+        }, 1000);
       },
     });
   };
 
-  // Toggle product status (active/inactive)
+  // Toggle product status
   const toggleProductStatus = (product) => {
+    setLoading(true);
     const newStatus = product.status === 'active' ? 'inactive' : 'active';
     
-    // In a real app, this would be an API call
-    const updatedProducts = products.map(p => 
-      p.id === product.id ? { ...p, status: newStatus } : p
-    );
-    
-    setProducts(updatedProducts);
-    setFilteredProducts(
-      updatedProducts.filter(p => 
-        categoryFilter === 'all' || p.category === categoryFilter
-      )
-    );
-    
-    message.success(`Đã ${newStatus === 'active' ? 'kích hoạt' : 'vô hiệu hoá'} sản phẩm ${product.name}`);
+    // Simulate API call
+    setTimeout(() => {
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === product.id ? { ...p, status: newStatus } : p
+        )
+      );
+      
+      message.success(
+        `Sản phẩm "${product.name}" đã được ${
+          newStatus === 'active' ? 'kích hoạt' : 'vô hiệu hóa'
+        }`
+      );
+      setLoading(false);
+    }, 1000);
   };
 
-  // Render status badge
+  // Render product status
   const renderStatus = (status) => {
     switch (status) {
       case 'active':
-        return <Badge status="success" text="Đang bán" />;
-      case 'out_of_stock':
-        return <Badge status="error" text="Hết hàng" />;
-      case 'low_stock':
-        return <Badge status="warning" text="Sắp hết hàng" />;
+        return <Tag color="success">Đang bán</Tag>;
       case 'inactive':
-        return <Badge status="default" text="Ngừng bán" />;
+        return <Tag color="error">Ngưng bán</Tag>;
+      case 'out_of_stock':
+        return <Tag color="warning">Hết hàng</Tag>;
+      case 'low_stock':
+        return <Tag color="warning">Sắp hết hàng</Tag>;
       default:
-        return <Badge status="processing" text={status} />;
+        return <Tag>Unknown</Tag>;
     }
   };
 
-  // Handle search
+  // Handle search input change
   const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchText(value);
+    setSearchText(e.target.value);
   };
 
   // Handle category filter change
@@ -338,335 +335,345 @@ const ProductManagement = () => {
     setStatusFilter(value);
   };
 
-  // Reset filters
+  // Reset all filters
   const handleResetFilters = () => {
     setSearchText('');
     setCategoryFilter('all');
     setStatusFilter('all');
   };
 
-  // More actions dropdown menu
+  // Dropdown menu for actions
   const moreActions = (record) => (
     <Menu>
-      <Menu.Item 
-        key="view" 
-        icon={<EyeOutlined />}
-        onClick={() => navigate(`/admin/products/view/${record.id}`)}
-      >
-        Chi tiết
+      <Menu.Item key="edit" onClick={() => navigate(`/admin/products/edit/${record.id}`)}>
+        <EditOutlined /> Chỉnh sửa
       </Menu.Item>
-      <Menu.Item 
-        key="edit" 
-        icon={<EditOutlined />}
-        onClick={() => navigate(`/admin/products/edit/${record.id}`)}
-      >
-        Chỉnh sửa
+      <Menu.Item key="view" onClick={() => navigate(`/admin/products/view/${record.id}`)}>
+        <EyeOutlined /> Xem chi tiết
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item
-        key="toggle"
-        icon={record.status === 'active' ? <CloseCircleOutlined /> : <CheckCircleOutlined />}
+      <Menu.Item 
+        key="status" 
         onClick={() => toggleProductStatus(record)}
       >
-        {record.status === 'active' ? 'Ngừng bán' : 'Kích hoạt'}
+        {record.status === 'active' ? (
+          <>
+            <CloseCircleOutlined /> Ngưng bán
+          </>
+        ) : (
+          <>
+            <CheckCircleOutlined /> Kích hoạt
+          </>
+        )}
       </Menu.Item>
-      <Menu.Item 
-        key="delete" 
-        icon={<DeleteOutlined />}
-        danger
-        onClick={() => handleDelete(record)}
-      >
-        Xoá
+      <Menu.Item key="delete" danger onClick={() => handleDelete(record)}>
+        <DeleteOutlined /> Xóa
       </Menu.Item>
     </Menu>
   );
 
-  // Define table columns
+  // Table columns
   const columns = [
     {
       title: 'Sản phẩm',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
       render: (text, record) => (
-        <Space>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <Avatar 
-            shape="square"
+            src={record.image} 
+            shape="square" 
+            style={{ marginRight: '8px' }} 
             size={40}
-            src={record.image}
-            alt={text}
           />
           <div>
-            <div style={{ fontWeight: 500 }}>{text}</div>
-            <div style={{ fontSize: '12px', color: '#888' }}>{record.sku}</div>
+            <div style={{ fontWeight: 'bold' }}>{text}</div>
+            <Text type="secondary">{record.sku}</Text>
           </div>
-        </Space>
+        </div>
       ),
-      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Danh mục',
       dataIndex: 'category',
       key: 'category',
-      render: (text) => <Tag color="blue">{text}</Tag>,
-      filters: categories.map(category => ({ text: category, value: category })),
+      filters: [...new Set(mockProducts.map(p => p.category))].map(cat => ({
+        text: cat,
+        value: cat,
+      })),
       onFilter: (value, record) => record.category === value,
     },
     {
       title: 'Giá',
       dataIndex: 'price',
       key: 'price',
-      render: (text) => (
-        <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(text)}</span>
-      ),
       sorter: (a, b) => a.price - b.price,
+      render: (price) => (
+        <span style={{ fontWeight: 'bold' }}>
+          {new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+          }).format(price)}
+        </span>
+      ),
     },
     {
       title: 'Tồn kho',
       dataIndex: 'stock',
       key: 'stock',
-      render: (text, record) => {
-        let color = 'green';
-        if (text === 0) {
-          color = 'red';
-        } else if (text < 10) {
-          color = 'orange';
-        }
-        
-        return <span style={{ color }}>{text}</span>;
-      },
       sorter: (a, b) => a.stock - b.stock,
+      render: (stock, record) => {
+        let color = 'green';
+        if (stock === 0) color = 'red';
+        else if (stock < 10) color = 'orange';
+        return <Badge count={stock} showZero style={{ backgroundColor: color }} />;
+      },
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (status) => renderStatus(status),
-      filters: [
-        { text: 'Đang bán', value: 'active' },
-        { text: 'Hết hàng', value: 'out_of_stock' },
-        { text: 'Sắp hết hàng', value: 'low_stock' },
-        { text: 'Ngừng bán', value: 'inactive' },
-      ],
-      onFilter: (value, record) => record.status === value,
     },
     {
       title: 'Cập nhật lần cuối',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
-      render: (text) => dayjs(text).format('DD/MM/YYYY'),
-      sorter: (a, b) => dayjs(a.updatedAt).unix() - dayjs(b.updatedAt).unix(),
-      responsive: ['lg'],
+      sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
+      render: (date) => dayjs(date).format('DD/MM/YYYY'),
     },
     {
-      title: 'Hành động',
+      title: 'Thao tác',
       key: 'action',
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => navigate(`/admin/products/edit/${record.id}`)}
-          >
-            Sửa
-          </Button>
-          <Dropdown overlay={moreActions(record)} trigger={['click']}>
-            <Button size="small" icon={<MoreOutlined />} />
-          </Dropdown>
-        </Space>
+        <Dropdown overlay={moreActions(record)} trigger={['click']}>
+          <Button icon={<MoreOutlined />} />
+        </Dropdown>
       ),
     },
   ];
 
-  // Handle bulk actions
-  const handleBulkAction = (action) => {
-    if (selectedRowKeys.length === 0) {
-      message.warning('Vui lòng chọn sản phẩm');
-      return;
-    }
-    
-    switch (action) {
-      case 'delete':
-        handleBulkDelete();
-        break;
-      case 'active':
-        // Update products' status to active
-        const updatedActiveProducts = products.map(p => 
-          selectedRowKeys.includes(p.id) ? { ...p, status: 'active' } : p
-        );
-        setProducts(updatedActiveProducts);
-        setFilteredProducts(updatedActiveProducts);
-        message.success(`Đã kích hoạt ${selectedRowKeys.length} sản phẩm`);
-        break;
-      case 'inactive':
-        // Update products' status to inactive
-        const updatedInactiveProducts = products.map(p => 
-          selectedRowKeys.includes(p.id) ? { ...p, status: 'inactive' } : p
-        );
-        setProducts(updatedInactiveProducts);
-        setFilteredProducts(updatedInactiveProducts);
-        message.success(`Đã vô hiệu hoá ${selectedRowKeys.length} sản phẩm`);
-        break;
-      default:
-        break;
-    }
+  // Row selection config
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: keys => setSelectedRowKeys(keys),
   };
 
-  // Bulk action menu
-  const bulkActionMenu = (
+  // Get available categories for filter
+  const categories = [...new Set(products.map(product => product.category))];
+
+  // Calculate stats
+  const totalProducts = products.length;
+  const activeProducts = products.filter(p => p.status === 'active').length;
+  const outOfStockProducts = products.filter(p => p.status === 'out_of_stock' || p.stock === 0).length;
+  const lowStockProducts = products.filter(p => p.status === 'low_stock' || (p.stock > 0 && p.stock < 10)).length;
+
+  // Handle bulk action for products
+  const handleBulkAction = (action) => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một sản phẩm');
+      return;
+    }
+
+    setLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      switch (action) {
+        case 'activate':
+          setProducts(prevProducts =>
+            prevProducts.map(p =>
+              selectedRowKeys.includes(p.id) ? { ...p, status: 'active' } : p
+            )
+          );
+          message.success(`Đã kích hoạt ${selectedRowKeys.length} sản phẩm`);
+          break;
+        case 'deactivate':
+          setProducts(prevProducts =>
+            prevProducts.map(p =>
+              selectedRowKeys.includes(p.id) ? { ...p, status: 'inactive' } : p
+            )
+          );
+          message.success(`Đã vô hiệu hóa ${selectedRowKeys.length} sản phẩm`);
+          break;
+        case 'delete':
+          handleBulkDelete();
+          return; // Return early as handleBulkDelete handles the loading state
+        case 'export':
+          message.success('Đã xuất danh sách sản phẩm đã chọn');
+          break;
+        default:
+          break;
+      }
+      
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
+  };
+
+  // Dropdown menu for bulk actions
+  const bulkActions = (
     <Menu>
-      <Menu.Item
-        key="active"
-        icon={<CheckCircleOutlined />}
-        onClick={() => handleBulkAction('active')}
-      >
-        Kích hoạt đã chọn
+      <Menu.Item key="activate" onClick={() => handleBulkAction('activate')}>
+        <CheckCircleOutlined /> Kích hoạt đã chọn
       </Menu.Item>
-      <Menu.Item
-        key="inactive"
-        icon={<CloseCircleOutlined />}
-        onClick={() => handleBulkAction('inactive')}
-      >
-        Vô hiệu hoá đã chọn
+      <Menu.Item key="deactivate" onClick={() => handleBulkAction('deactivate')}>
+        <CloseCircleOutlined /> Vô hiệu hóa đã chọn
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item
-        key="delete"
-        icon={<DeleteOutlined />}
-        danger
-        onClick={() => handleBulkAction('delete')}
-      >
-        Xoá đã chọn
+      <Menu.Item key="export" onClick={() => handleBulkAction('export')}>
+        <ExportOutlined /> Xuất Excel
+      </Menu.Item>
+      <Menu.Item key="delete" danger onClick={() => handleBulkAction('delete')}>
+        <DeleteOutlined /> Xóa đã chọn
       </Menu.Item>
     </Menu>
   );
 
   return (
     <div className="product-management">
-      {/* Product Statistics */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Tổng sản phẩm"
-              value={products.length}
-              prefix={<ShoppingOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Sản phẩm hết hàng"
-              value={products.filter(p => p.stock === 0).length}
-              prefix={<WarningOutlined />}
-              valueStyle={{ color: '#ff4d4f' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Sắp hết hàng"
-              value={products.filter(p => p.stock > 0 && p.stock < 10).length}
-              prefix={<ExclamationCircleOutlined />}
-              valueStyle={{ color: '#faad14' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Tổng giá trị kho"
-              value={products.reduce((sum, p) => sum + (p.price * p.stock), 0)}
-              prefix={<DollarOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-              formatter={(value) => new Intl.NumberFormat('vi-VN', { 
-                style: 'currency', 
-                currency: 'VND',
-                maximumFractionDigits: 0 
-              }).format(value)}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Filters and Actions */}
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Input
-              placeholder="Tìm kiếm sản phẩm..."
-              value={searchText}
-              onChange={handleSearch}
-              prefix={<SearchOutlined />}
-              allowClear
-            />
+      <Card className="header-card">
+        <Row justify="space-between" align="middle" gutter={[24, 24]}>
+          <Col xs={24} md={12}>
+            <Title level={1}>Product Management</Title>
+            <Text type="secondary">
+              Quản lý sản phẩm, giá cả và tồn kho
+            </Text>
           </Col>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Select
-              placeholder="Lọc theo danh mục"
-              style={{ width: '100%' }}
-              value={categoryFilter}
-              onChange={handleCategoryChange}
-            >
-              <Option value="all">Tất cả danh mục</Option>
-              {categories.map((category) => (
-                <Option key={category} value={category}>
-                  {category}
-                </Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Select
-              placeholder="Lọc theo trạng thái"
-              style={{ width: '100%' }}
-              value={statusFilter}
-              onChange={handleStatusChange}
-            >
-              <Option value="all">Tất cả trạng thái</Option>
-              <Option value="active">Đang bán</Option>
-              <Option value="out_of_stock">Hết hàng</Option>
-              <Option value="low_stock">Sắp hết hàng</Option>
-              <Option value="inactive">Ngừng bán</Option>
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={24} lg={6} style={{ textAlign: 'right' }}>
-            <Space wrap>
-              <Button icon={<FilterOutlined />} onClick={handleResetFilters}>
-                Xoá bộ lọc
-              </Button>
-              <Button
-                type="primary"
+          <Col xs={24} md={12}>
+            <Space wrap style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button 
+                type="primary" 
                 icon={<PlusOutlined />}
-                onClick={() => navigate('/admin/products/new')}
+                onClick={() => navigate('/admin/products/add')}
+                className="add-product-btn"
               >
-                Thêm sản phẩm mới
+                Add Product
+              </Button>
+              <Button icon={<ImportOutlined />}>
+                Import
+              </Button>
+              <Button icon={<ExportOutlined />}>
+                Export
+              </Button>
+              <Button 
+                icon={<SyncOutlined />} 
+                loading={loading}
+                onClick={() => {
+                  setLoading(true);
+                  setTimeout(() => setLoading(false), 1000);
+                }}
+              >
+                Refresh
               </Button>
             </Space>
           </Col>
         </Row>
       </Card>
 
-      {/* Products Table */}
+      <div style={{ margin: '24px 0' }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={6}>
+            <Card>
+              <Statistic
+                title="Total Products"
+                value={totalProducts}
+                prefix={<ShoppingOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card>
+              <Statistic
+                title="Active Products"
+                value={activeProducts}
+                valueStyle={{ color: '#52c41a' }}
+                prefix={<CheckCircleOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card>
+              <Statistic
+                title="Out of Stock"
+                value={outOfStockProducts}
+                valueStyle={{ color: '#ff4d4f' }}
+                prefix={<ExclamationCircleOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card>
+              <Statistic
+                title="Low Stock"
+                value={lowStockProducts}
+                valueStyle={{ color: '#faad14' }}
+                prefix={<WarningOutlined />}
+              />
+            </Card>
+          </Col>
+        </Row>
+      </div>
+
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Space wrap>
-            <Dropdown overlay={bulkActionMenu} disabled={selectedRowKeys.length === 0}>
-              <Button>
-                Thao tác hàng loạt <DownOutlined />
-              </Button>
-            </Dropdown>
-            <Button icon={<ImportOutlined />}>Nhập Excel</Button>
-            <Button icon={<ExportOutlined />}>Xuất Excel</Button>
-          </Space>
-          <span style={{ marginLeft: 8 }}>
-            {selectedRowKeys.length > 0 && (
-              <span>Đã chọn {selectedRowKeys.length} sản phẩm</span>
-            )}
-          </span>
+        <div style={{ marginBottom: '16px' }}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} md={8}>
+              <Input
+                placeholder="Search products"
+                value={searchText}
+                onChange={handleSearch}
+                prefix={<SearchOutlined />}
+                allowClear
+                className="product-search"
+              />
+            </Col>
+            <Col xs={24} md={16}>
+              <Space size="small" style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                <Select
+                  style={{ width: 150 }}
+                  placeholder="Category"
+                  value={categoryFilter}
+                  onChange={handleCategoryChange}
+                >
+                  <Option value="all">All Categories</Option>
+                  {categories.map(category => (
+                    <Option key={category} value={category}>
+                      {category}
+                    </Option>
+                  ))}
+                </Select>
+                <Select
+                  style={{ width: 150 }}
+                  placeholder="Status"
+                  value={statusFilter}
+                  onChange={handleStatusChange}
+                >
+                  <Option value="all">All Status</Option>
+                  <Option value="active">Active</Option>
+                  <Option value="inactive">Inactive</Option>
+                  <Option value="out_of_stock">Out of Stock</Option>
+                  <Option value="low_stock">Low Stock</Option>
+                </Select>
+                
+                {selectedRowKeys.length > 0 && (
+                  <Dropdown overlay={bulkActions}>
+                    <Button>
+                      Actions <DownOutlined />
+                    </Button>
+                  </Dropdown>
+                )}
+                
+                <Button 
+                  icon={<FilterOutlined />} 
+                  onClick={handleResetFilters}
+                >
+                  Clear Filters
+                </Button>
+              </Space>
+            </Col>
+          </Row>
         </div>
 
         <Table
@@ -674,28 +681,24 @@ const ProductManagement = () => {
           columns={columns}
           dataSource={filteredProducts}
           rowKey="id"
-          pagination={{ 
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Tổng ${total} sản phẩm` 
-          }}
           loading={loading}
+          pagination={{ pageSize: 10 }}
+          className="product-table"
         />
       </Card>
 
       {/* Delete Confirmation Modal */}
       <Modal
-        title="Xác nhận xoá"
+        title="Confirm Delete"
         visible={isDeleteModalVisible}
         onOk={confirmDelete}
         onCancel={() => setIsDeleteModalVisible(false)}
-        okText="Xoá"
-        cancelText="Huỷ"
+        okText="Delete"
+        cancelText="Cancel"
         okButtonProps={{ danger: true }}
       >
-        {productToDelete && (
-          <p>Bạn có chắc chắn muốn xoá sản phẩm "{productToDelete.name}" không?</p>
-        )}
+        <p>Are you sure you want to delete the product <strong>{productToDelete?.name}</strong>?</p>
+        <p>This action cannot be undone.</p>
       </Modal>
     </div>
   );

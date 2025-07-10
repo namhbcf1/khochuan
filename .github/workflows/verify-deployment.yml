@@ -1,0 +1,63 @@
+name: Verify Deployment
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: 'URL of the deployment to verify'
+        required: true
+        default: 'https://khochuan-pos.pages.dev'
+      api_url:
+        description: 'URL of the API to verify'
+        required: true
+        default: 'https://khochuan-api.workers.dev'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'deployment_status' || github.event.deployment_status.state == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      
+      - name: Set deployment URL
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "DEPLOYMENT_URL=${{ github.event.inputs.deployment_url }}" >> $GITHUB_ENV
+            echo "API_URL=${{ github.event.inputs.api_url }}" >> $GITHUB_ENV
+          else
+            echo "DEPLOYMENT_URL=${{ github.event.deployment_status.target_url }}" >> $GITHUB_ENV
+            echo "API_URL=https://khochuan-api.workers.dev" >> $GITHUB_ENV
+          fi
+      
+      - name: Verify deployment
+        run: |
+          chmod +x ./scripts/verify-deployment.sh
+          ./scripts/verify-deployment.sh $DEPLOYMENT_URL $API_URL
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report/
+      
+      - name: Upload CHUAN.MD
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: chuan-md
+          path: CHUAN.MD 

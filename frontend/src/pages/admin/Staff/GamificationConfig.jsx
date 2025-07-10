@@ -483,213 +483,276 @@ const GamificationConfig = () => {
   ];
 
   return (
-    <div className="gamification-config-container" style={{ padding: '24px' }}>
+    <div className="gamification-config-page">
+      <h1>Gamification Configuration</h1>
+      
       <Card>
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-          <Col>
-            <Title level={2}><TrophyOutlined /> Gamification Configuration</Title>
-            <Paragraph>Configure achievements, rewards, and gamification settings for your staff</Paragraph>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-            >
-              Save All Settings
-            </Button>
-          </Col>
-        </Row>
-
-        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <Tabs defaultActiveKey="1" onChange={setActiveTab}>
           <TabPane
-            tab={<span><StarOutlined /> Achievements</span>}
+            tab={
+              <span>
+                <TrophyOutlined /> Achievements
+              </span>
+            }
             key="1"
           >
-            <Alert 
-              message="Staff Achievements" 
-              description="Create and manage achievements that staff members can earn by meeting specific criteria."
-              type="info"
-              showIcon
-              style={{ marginBottom: 16 }}
-            />
-
-            <div style={{ marginBottom: 16 }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => showAchievementModal()}
-              >
-                Add Achievement
-              </Button>
-            </div>
-
+            <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+              <Col>
+                <Title level={4}>Configure Achievements</Title>
+                <Text type="secondary">
+                  Create and manage achievements that staff can earn through various activities
+                </Text>
+              </Col>
+              <Col>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />}
+                  onClick={() => showAchievementModal()}
+                >
+                  Create Achievement
+                </Button>
+              </Col>
+            </Row>
+            
             <Table
-              columns={achievementColumns}
               dataSource={achievements}
               rowKey="id"
+              columns={achievementColumns}
+              pagination={{ pageSize: 5 }}
             />
           </TabPane>
-
+          
           <TabPane
-            tab={<span><TrophyOutlined /> Rewards</span>}
+            tab={
+              <span>
+                <StarOutlined /> Rewards
+              </span>
+            }
             key="2"
           >
-            <Alert 
-              message="Staff Rewards" 
-              description="Create rewards that staff can redeem with points earned from achievements."
-              type="info"
-              showIcon
-              style={{ marginBottom: 16 }}
-            />
-
-            <div style={{ marginBottom: 16 }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => showRewardModal()}
-              >
-                Add Reward
-              </Button>
-            </div>
-
+            <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+              <Col>
+                <Title level={4}>Rewards System</Title>
+                <Text type="secondary">
+                  Configure rewards that staff can redeem with their earned points
+                </Text>
+              </Col>
+              <Col>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />}
+                  onClick={() => showRewardModal()}
+                >
+                  Add Reward
+                </Button>
+              </Col>
+            </Row>
+            
             <Table
-              columns={rewardColumns}
               dataSource={rewards}
               rowKey="id"
+              columns={rewardColumns}
+              pagination={{ pageSize: 5 }}
             />
           </TabPane>
-
+          
           <TabPane
-            tab={<span><RiseOutlined /> Level System</span>}
+            tab={
+              <span>
+                <SettingOutlined /> Level Settings
+              </span>
+            }
             key="3"
           >
-            <Alert 
-              message="Staff Level System" 
-              description="Configure how staff members level up and progress through the gamification system."
-              type="info"
-              showIcon
-              style={{ marginBottom: 16 }}
-            />
-
-            <Card title="Level Settings" bordered={false}>
-              <Form
-                layout="vertical"
-                initialValues={levelSettings}
-                onFinish={handleLevelSettingsSubmit}
-                form={levelForm}
-              >
-                <Row gutter={24}>
-                  <Col span={12}>
-                    <Form.Item
-                      name="basePoints"
-                      label="Base Points for Level 1"
-                      rules={[{ required: true, message: 'Please enter base points' }]}
-                    >
-                      <InputNumber min={1} style={{ width: '100%' }} />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="pointsMultiplier"
-                      label="Points Multiplier Between Levels"
-                      rules={[{ required: true, message: 'Please enter points multiplier' }]}
-                      tooltip="The multiplier applied to determine points needed for next level"
-                    >
-                      <InputNumber min={1} step={0.1} style={{ width: '100%' }} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="maxLevel"
-                  label="Maximum Level"
-                  rules={[{ required: true, message: 'Please enter maximum level' }]}
+            <Row>
+              <Col span={16}>
+                <Form
+                  layout="vertical"
+                  form={levelForm}
+                  initialValues={levelSettings}
+                  onFinish={handleLevelSettingsSubmit}
                 >
-                  <InputNumber min={1} max={100} style={{ width: '100%' }} />
-                </Form.Item>
-
-                <Form.Item
-                  name="resetPointsPeriod"
-                  label="Points Reset Period"
-                >
-                  <Select>
-                    <Option value="never">Never</Option>
-                    <Option value="monthly">Monthly</Option>
-                    <Option value="quarterly">Quarterly</Option>
-                    <Option value="yearly">Yearly</Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  name="levelUpNotification"
-                  valuePropName="checked"
-                  label="Level Up Notifications"
-                >
-                  <Switch />
-                </Form.Item>
-
-                <Form.Item
-                  name="showLeaderboard"
-                  valuePropName="checked"
-                  label="Show Leaderboard"
-                >
-                  <Switch />
-                </Form.Item>
-
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Save Level Settings
+                  <Title level={4}>Level System Configuration</Title>
+                  <Paragraph type="secondary">
+                    Configure how the leveling system works and point calculations
+                  </Paragraph>
+                  
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <Form.Item
+                        label="Base Points for Level 1"
+                        name="basePoints"
+                        rules={[{ required: true, message: 'Required' }]}
+                      >
+                        <InputNumber min={1} style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                    
+                    <Col span={12}>
+                      <Form.Item
+                        label="Points Multiplier per Level"
+                        name="pointsMultiplier"
+                        rules={[{ required: true, message: 'Required' }]}
+                      >
+                        <InputNumber min={1} step={0.1} style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <Form.Item
+                        label="Maximum Level"
+                        name="maxLevel"
+                        rules={[{ required: true, message: 'Required' }]}
+                      >
+                        <InputNumber min={5} style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                    
+                    <Col span={12}>
+                      <Form.Item
+                        label="Reset Points Period"
+                        name="resetPointsPeriod"
+                      >
+                        <Select>
+                          <Option value="never">Never</Option>
+                          <Option value="monthly">Monthly</Option>
+                          <Option value="quarterly">Quarterly</Option>
+                          <Option value="yearly">Yearly</Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <Form.Item
+                        name="levelUpNotification"
+                        valuePropName="checked"
+                      >
+                        <Switch checkedChildren="Level-up Notifications Enabled" unCheckedChildren="Notifications Disabled" />
+                      </Form.Item>
+                    </Col>
+                    
+                    <Col span={12}>
+                      <Form.Item
+                        name="showLeaderboard"
+                        valuePropName="checked"
+                      >
+                        <Switch checkedChildren="Public Leaderboard Enabled" unCheckedChildren="Leaderboard Disabled" />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  
+                  <Divider />
+                  
+                  <Button type="primary" htmlType="submit" icon={<SaveOutlined />}>
+                    Save Settings
                   </Button>
-                </Form.Item>
-              </Form>
-            </Card>
+                </Form>
+              </Col>
+              <Col span={8}>
+                <Card title="Leaderboard Settings">
+                  <Form layout="vertical">
+                    <Form.Item label="Leaderboard Type" name="leaderboard-type">
+                      <Select defaultValue="sales">
+                        <Option value="sales">Sales Performance</Option>
+                        <Option value="customer">Customer Satisfaction</Option>
+                        <Option value="points">Total Points</Option>
+                        <Option value="achievements">Achievements</Option>
+                      </Select>
+                    </Form.Item>
+                    
+                    <Form.Item label="Time Period" name="time-period">
+                      <Select defaultValue="weekly">
+                        <Option value="daily">Daily</Option>
+                        <Option value="weekly">Weekly</Option>
+                        <Option value="monthly">Monthly</Option>
+                        <Option value="quarterly">Quarterly</Option>
+                        <Option value="yearly">Yearly</Option>
+                        <Option value="all_time">All Time</Option>
+                      </Select>
+                    </Form.Item>
+                    
+                    <Form.Item label="Top Performers to Display" name="top-performers">
+                      <InputNumber min={3} max={100} defaultValue={10} style={{ width: '100%' }} />
+                    </Form.Item>
+                    
+                    <Button type="primary" icon={<SaveOutlined />}>
+                      Save Settings
+                    </Button>
+                  </Form>
+                </Card>
+              </Col>
+            </Row>
           </TabPane>
         </Tabs>
       </Card>
 
       {/* Achievement Modal */}
       <Modal
-        title={currentAchievement ? "Edit Achievement" : "Add New Achievement"}
+        title={currentAchievement ? "Edit Achievement" : "Create Achievement"}
         visible={achievementModalVisible}
-        onOk={handleAchievementSubmit}
         onCancel={() => setAchievementModalVisible(false)}
-        width={600}
+        footer={[
+          <Button key="cancel" onClick={() => setAchievementModalVisible(false)}>
+            Cancel
+          </Button>,
+          <Button key="save" type="primary" onClick={handleAchievementSubmit}>
+            Save Achievement
+          </Button>
+        ]}
+        width={700}
       >
         <Form
           form={achievementForm}
           layout="vertical"
         >
-          <Form.Item
-            name="name"
-            label="Achievement Name"
-            rules={[{ required: true, message: 'Please enter achievement name' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[{ required: true, message: 'Please enter achievement description' }]}
-          >
-            <Input.TextArea rows={3} />
-          </Form.Item>
-
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={16}>
               <Form.Item
-                name="pointsAwarded"
-                label="Points Awarded"
-                rules={[{ required: true, message: 'Please enter points' }]}
+                label="Achievement Name"
+                name="name"
+                rules={[{ required: true, message: 'Please enter achievement name' }]}
               >
-                <InputNumber min={1} style={{ width: '100%' }} />
+                <Input placeholder="e.g. Sales Master" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            
+            <Col span={8}>
               <Form.Item
+                label="Badge Image"
+                name="badgeImage"
+              >
+                <Input placeholder="Emoji or URL" />
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Form.Item
+            label="Description"
+            name="description"
+            rules={[{ required: true, message: 'Please enter description' }]}
+          >
+            <Input.TextArea placeholder="Describe what the achievement represents" rows={3} />
+          </Form.Item>
+          
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label="Points"
+                name="pointsAwarded"
+                rules={[{ required: true, message: 'Required' }]}
+              >
+                <InputNumber min={1} style={{ width: '100%' }} placeholder="50" />
+              </Form.Item>
+            </Col>
+            
+            <Col span={8}>
+              <Form.Item
+                label="Difficulty"
                 name="difficulty"
-                label="Difficulty Level"
-                rules={[{ required: true, message: 'Please select difficulty' }]}
               >
                 <Select>
                   <Option value="easy">Easy</Option>
@@ -698,40 +761,66 @@ const GamificationConfig = () => {
                 </Select>
               </Form.Item>
             </Col>
+            
+            <Col span={8}>
+              <Form.Item
+                label="Active"
+                name="status"
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
           </Row>
-
+          
           <Form.Item
-            name="badgeImage"
-            label="Badge Emoji"
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
+            label={
+              <span>
+                Achievement Criteria 
+                <Tooltip title="The condition that needs to be met to earn this achievement">
+                  <QuestionCircleOutlined style={{ marginLeft: 8 }} />
+                </Tooltip>
+              </span>
+            }
             name="criteria"
-            label="Achievement Criteria"
-            tooltip="Enter the criteria as a logical expression (e.g., 'sales_count >= 10')"
-            rules={[{ required: true, message: 'Please enter achievement criteria' }]}
+            rules={[{ required: true, message: 'Please define criteria' }]}
           >
-            <Input />
+            <Input placeholder="e.g. sales_count >= 10" />
           </Form.Item>
 
-          <Form.Item
-            name="status"
-            valuePropName="checked"
-            label="Status"
-          >
-            <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Criteria Type" name="criteria-type">
+                <Select placeholder="Select criteria type">
+                  <Option value="sales-target">Sales Target</Option>
+                  <Option value="customer-ratings">Customer Ratings</Option>
+                  <Option value="login-streak">Login Streak</Option>
+                  <Option value="order-count">Order Count</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Criteria Value" name="criteria-value">
+                <InputNumber style={{ width: '100%' }} placeholder="Target value" />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Modal>
-
+      
       {/* Reward Modal */}
       <Modal
-        title={currentReward ? "Edit Reward" : "Add New Reward"}
+        title={currentReward ? "Edit Reward" : "Add Reward"}
         visible={rewardModalVisible}
-        onOk={handleRewardSubmit}
         onCancel={() => setRewardModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setRewardModalVisible(false)}>
+            Cancel
+          </Button>,
+          <Button key="save" type="primary" onClick={handleRewardSubmit}>
+            Save Reward
+          </Button>
+        ]}
         width={600}
       >
         <Form
@@ -739,36 +828,36 @@ const GamificationConfig = () => {
           layout="vertical"
         >
           <Form.Item
-            name="name"
             label="Reward Name"
+            name="name"
             rules={[{ required: true, message: 'Please enter reward name' }]}
           >
-            <Input />
+            <Input placeholder="e.g. Extra Day Off" />
           </Form.Item>
-
+          
           <Form.Item
-            name="description"
             label="Description"
-            rules={[{ required: true, message: 'Please enter reward description' }]}
+            name="description"
+            rules={[{ required: true, message: 'Please enter description' }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea placeholder="Describe what the reward provides" rows={3} />
           </Form.Item>
-
+          
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="pointsCost"
                 label="Points Cost"
-                rules={[{ required: true, message: 'Please enter points cost' }]}
+                name="pointsCost"
+                rules={[{ required: true, message: 'Required' }]}
               >
-                <InputNumber min={1} style={{ width: '100%' }} />
+                <InputNumber min={1} style={{ width: '100%' }} placeholder="500" />
               </Form.Item>
             </Col>
+            
             <Col span={12}>
               <Form.Item
+                label="Category"
                 name="category"
-                label="Reward Category"
-                rules={[{ required: true, message: 'Please select category' }]}
               >
                 <Select>
                   <Option value="time_off">Time Off</Option>
@@ -780,23 +869,46 @@ const GamificationConfig = () => {
               </Form.Item>
             </Col>
           </Row>
+          
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Availability"
+                name="availability"
+                rules={[{ required: true, message: 'Required' }]}
+              >
+                <Input placeholder="Number or 'unlimited'" />
+              </Form.Item>
+            </Col>
+            
+            <Col span={12}>
+              <Form.Item
+                label="Active"
+                name="status"
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            name="availability"
-            label="Availability"
-            tooltip="Enter number of rewards available or 'unlimited'"
-            rules={[{ required: true, message: 'Please enter availability' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="status"
-            valuePropName="checked"
-            label="Status"
-          >
-            <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Reward Type" name="reward-type">
+                <Select placeholder="Select reward type">
+                  <Option value="cash-bonus">Cash Bonus</Option>
+                  <Option value="time-off">Time Off</Option>
+                  <Option value="gift-card">Gift Card</Option>
+                  <Option value="experience">Experience</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Reward Value" name="reward-value">
+                <InputNumber style={{ width: '100%' }} placeholder="Value (if applicable)" />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Modal>
     </div>

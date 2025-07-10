@@ -13,9 +13,12 @@
     "test:debug": "npx playwright test --debug",
     "test:report": "npx playwright show-report",
     "test:visual": "npx playwright test tests/visual-regression.spec.js --project=chromium",
+    "test:visual:update": "npx playwright test tests/visual-regression.spec.js --project=chromium --update-snapshots",
     "test:inventory": "npx playwright test tests/inventory.spec.js --project=chromium",
     "test:customers": "npx playwright test tests/customers.spec.js --project=chromium",
     "test:chromium": "npx playwright test --project=chromium",
+    "test:pages": "npx playwright test tests/pages.spec.js --project=chromium",
+    "test:full-ui": "node scripts/run-ui-tests.js",
     "setup-testing": "node setup-testing.js"
   },
   "keywords": [

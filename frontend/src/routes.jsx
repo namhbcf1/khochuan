@@ -14,15 +14,26 @@ const CustomerLayout = lazy(() => import('./components/common/Layout/CustomerLay
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 
+// Our Implemented Pages
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Customers = lazy(() => import('./pages/Customers'));
+const Orders = lazy(() => import('./pages/Orders'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Staff = lazy(() => import('./pages/Staff'));
+
 // Customer Pages
 const CustomerProductLookup = lazy(() => import('./pages/customer/CustomerLookup'));
 const Terms = lazy(() => import('./pages/customer/Terms'));
 const QrLookup = lazy(() => import('./pages/customer/QrLookup'));
+const CustomerProfile = lazy(() => import('./pages/customer/Profile'));
+const CustomerWarranty = lazy(() => import('./pages/customer/Warranty'));
+const CustomerLoyalty = lazy(() => import('./pages/customer/Loyalty'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard/AnalyticsDashboard'));
 const RevenueOverview = lazy(() => import('./pages/admin/Dashboard/RevenueOverview'));
 const PerformanceMetrics = lazy(() => import('./pages/admin/Dashboard/PerformanceMetrics'));
+const AIInsightsDashboard = lazy(() => import('./pages/admin/Dashboard/AIInsightsDashboard'));
 
 // Products
 const ProductManagement = lazy(() => import('./pages/admin/Products/ProductManagement'));
@@ -140,11 +151,55 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Dashboard />} />
         
-        {/* Customer Routes */}
+        {/* Direct Routes to Implemented Pages */}
+        <Route path="/analytics" element={
+          <ProtectedRoute>
+            <Analytics />
+          </ProtectedRoute>
+        } />
+        <Route path="/customers" element={
+          <ProtectedRoute>
+            <Customers />
+          </ProtectedRoute>
+        } />
+        <Route path="/orders" element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff" element={
+          <ProtectedRoute>
+            <Staff />
+          </ProtectedRoute>
+        } />
+        
+        {/* Customer Routes - Public */}
         <Route path="/" element={<CustomerLayout />}>
           <Route path="customer-lookup" element={<CustomerProductLookup />} />
           <Route path="terms" element={<Terms />} />
           <Route path="qr/:id" element={<QrLookup />} />
+        </Route>
+        
+        {/* Customer Routes - Protected */}
+        <Route path="/customer" element={
+          <ProtectedRoute>
+            <RoleBasedAccess allowedRoles={['customer']}>
+              <CustomerLayout />
+            </RoleBasedAccess>
+          </ProtectedRoute>
+        }>
+          <Route index element={<Navigate to="/customer/profile" replace />} />
+          <Route path="profile" element={<CustomerProfile />} />
+          <Route path="warranty" element={<CustomerWarranty />} />
+          <Route path="loyalty" element={<CustomerLoyalty />} />
+          <Route path="lookup" element={<CustomerProductLookup />} />
+          <Route path="orders/:id" element={<QrLookup />} />
+          <Route path="terms" element={<Terms />} />
         </Route>
         
         {/* Admin Routes */}
@@ -160,6 +215,7 @@ const AppRoutes = () => {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="dashboard/revenue" element={<RevenueOverview />} />
           <Route path="dashboard/performance" element={<PerformanceMetrics />} />
+          <Route path="ai-insights" element={<AIInsightsDashboard />} />
           
           {/* Products */}
           <Route path="products" element={<ProductManagement />} />

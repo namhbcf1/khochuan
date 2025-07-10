@@ -4,13 +4,13 @@
 -- Compatible with Cloudflare D1 (SQLite)
 -- =====================================================
 
--- 1. USERS TABLE (Multi-role: Admin/Cashier/Staff)
+-- 1. USERS TABLE (Multi-role: Admin/Cashier/Staff/Customer)
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('admin', 'cashier', 'staff')),
+    role TEXT NOT NULL CHECK (role IN ('admin', 'cashier', 'staff', 'customer')),
     phone TEXT,
     avatar_url TEXT,
     is_active BOOLEAN DEFAULT 1,

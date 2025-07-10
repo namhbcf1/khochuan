@@ -336,7 +336,7 @@ const AnalyticsDashboard = () => {
       
       <div className="dashboard-content">
         <div className="dashboard-header">
-          <Title level={1}>Analytics Dashboard</Title>
+          <h1>Analytics Dashboard</h1>
           <div className="dashboard-controls">
             <Space>
               <Select
