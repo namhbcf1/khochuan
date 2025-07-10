@@ -1,11 +1,18 @@
 /**
- * KhoChuan POS API - Working Version
- * Manual routing system that works without hanging
+ * Fixed KhoChuan POS API - Manual Routing
+ * Working version without itty-router to avoid hanging issues
  * Trường Phát Computer Hòa Bình
  */
 
-// Import Durable Object
-import RealtimeDurableObject from './websocket/realtime.js';
+// Import route handlers
+import authRoutes from './routes/auth_real.js';
+import productsRoutes from './routes/products_real.js';
+import categoriesRoutes from './routes/categories_real.js';
+import ordersRoutes from './routes/orders_real.js';
+import customersRoutes from './routes/customers_real.js';
+import inventoryRoutes from './routes/inventory_real.js';
+import analyticsRoutes from './routes/analytics_real.js';
+import aiRoutes from './routes/ai_real.js';
 
 // CORS headers
 function addCorsHeaders() {
@@ -20,11 +27,11 @@ function addCorsHeaders() {
 function matchRoute(path, pattern) {
   const pathParts = path.split('/').filter(p => p);
   const patternParts = pattern.split('/').filter(p => p);
-
+  
   if (pathParts.length !== patternParts.length) {
     return null;
   }
-
+  
   const params = {};
   for (let i = 0; i < patternParts.length; i++) {
     if (patternParts[i].startsWith(':')) {
@@ -33,10 +40,11 @@ function matchRoute(path, pattern) {
       return null;
     }
   }
-
+  
   return params;
 }
 
+// Main request handler
 // Authentication handlers
 async function handleAuthLogin(request, env) {
   try {
@@ -113,6 +121,26 @@ async function handleAuthLogin(request, env) {
   }
 }
 
+async function handleAuthRegister(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Registration not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleAuthMe(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Auth me not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
 // Products handlers
 async function handleProductsList(request, env) {
   try {
@@ -183,7 +211,77 @@ async function handleProductsList(request, env) {
   }
 }
 
-// Categories handlers
+async function handleProductsCreate(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Product creation not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleProductsSearch(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Product search not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleProductsLowStock(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Low stock not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleProductsGet(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Product get not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleProductsUpdate(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Product update not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleProductsDelete(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Product delete not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleProductsBarcode(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Barcode lookup not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+// Placeholder handlers for other routes
 async function handleCategoriesList(request, env) {
   try {
     const db = env.DB;
@@ -208,10 +306,40 @@ async function handleCategoriesList(request, env) {
       success: false,
       message: 'Lỗi khi lấy danh sách danh mục'
     }), {
-      status: 500,
+    status: 500,
       headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
     });
   }
+}
+
+async function handleCategoriesCreate(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Categories create not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleCategoriesUpdate(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Categories update not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
+}
+
+async function handleCategoriesDelete(request, env) {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Categories delete not implemented yet'
+  }), {
+    status: 501,
+    headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
+  });
 }
 
 // Customers handlers
@@ -284,8 +412,13 @@ async function handleCustomersList(request, env) {
     });
   }
 }
-
-// Orders handlers
+async function handleCustomersCreate(request, env) { return createNotImplementedResponse('Customers create'); }
+async function handleCustomersSegments(request, env) { return createNotImplementedResponse('Customers segments'); }
+async function handleCustomersGet(request, env) { return createNotImplementedResponse('Customers get'); }
+async function handleCustomersUpdate(request, env) { return createNotImplementedResponse('Customers update'); }
+async function handleCustomersLoyalty(request, env) { return createNotImplementedResponse('Customers loyalty'); }
+async function handleCustomersLoyaltyHistory(request, env) { return createNotImplementedResponse('Customers loyalty history'); }
+async function handleCustomersAnalytics(request, env) { return createNotImplementedResponse('Customers analytics'); }
 async function handleOrdersList(request, env) {
   try {
     const url = new URL(request.url);
@@ -358,8 +491,8 @@ async function handleOrdersList(request, env) {
     });
   }
 }
-
-// Inventory handlers
+async function handleOrdersCreate(request, env) { return createNotImplementedResponse('Orders create'); }
+async function handleOrdersGet(request, env) { return createNotImplementedResponse('Orders get'); }
 async function handleInventoryCurrent(request, env) {
   try {
     const url = new URL(request.url);
@@ -440,8 +573,9 @@ async function handleInventoryCurrent(request, env) {
     });
   }
 }
-
-// Analytics handlers
+async function handleInventoryMovements(request, env) { return createNotImplementedResponse('Inventory movements'); }
+async function handleInventoryAlerts(request, env) { return createNotImplementedResponse('Inventory alerts'); }
+async function handleInventoryAdjustment(request, env) { return createNotImplementedResponse('Inventory adjustment'); }
 async function handleAnalyticsSalesDaily(request, env) {
   try {
     const url = new URL(request.url);
@@ -523,6 +657,11 @@ async function handleAnalyticsSalesDaily(request, env) {
     });
   }
 }
+async function handleAnalyticsSalesProducts(request, env) { return createNotImplementedResponse('Analytics sales products'); }
+async function handleAnalyticsSalesCustomers(request, env) { return createNotImplementedResponse('Analytics sales customers'); }
+async function handleAnalyticsInventoryTurnover(request, env) { return createNotImplementedResponse('Analytics inventory turnover'); }
+async function handleAIForecastDemand(request, env) { return createNotImplementedResponse('AI forecast demand'); }
+async function handleAIRecommendations(request, env) { return createNotImplementedResponse('AI recommendations'); }
 
 function createNotImplementedResponse(feature) {
   return new Response(JSON.stringify({
@@ -534,15 +673,14 @@ function createNotImplementedResponse(feature) {
   });
 }
 
-// Main request handler
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
-
+    
     console.log('Request:', method, path);
-
+    
     try {
       // Handle OPTIONS requests
       if (method === 'OPTIONS') {
@@ -551,7 +689,7 @@ export default {
           headers: addCorsHeaders()
         });
       }
-
+      
       // Health check
       if (path === '/health') {
         return new Response(JSON.stringify({
@@ -564,7 +702,7 @@ export default {
           headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
         });
       }
-
+      
       // Root endpoint
       if (path === '/') {
         return new Response(JSON.stringify({
@@ -586,42 +724,188 @@ export default {
           headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
         });
       }
-
+      
+      // Create a mock request object for route handlers
+      const mockRequest = {
+        ...request,
+        params: {},
+        query: Object.fromEntries(url.searchParams.entries())
+      };
+      
       // Authentication routes
-      if (path === '/auth/login' && method === 'POST') {
-        return await handleAuthLogin(request, env);
+      if (path.startsWith('/auth')) {
+        if (path === '/auth/login' && method === 'POST') {
+          return await handleAuthLogin(request, env);
+        }
+        if (path === '/auth/register' && method === 'POST') {
+          return await handleAuthRegister(request, env);
+        }
+        if (path === '/auth/me' && method === 'GET') {
+          return await handleAuthMe(request, env);
+        }
       }
-
+      
       // Products routes
-      if (path === '/products' && method === 'GET') {
-        return await handleProductsList(request, env);
+      if (path.startsWith('/products')) {
+        if (path === '/products' && method === 'GET') {
+          return await handleProductsList(request, env);
+        }
+        if (path === '/products' && method === 'POST') {
+          return await handleProductsCreate(request, env);
+        }
+        if (path === '/products/search' && method === 'POST') {
+          return await handleProductsSearch(request, env);
+        }
+        if (path === '/products/low-stock' && method === 'GET') {
+          return await handleProductsLowStock(request, env);
+        }
+        
+        // Dynamic routes with ID
+        const productIdMatch = matchRoute(path, '/products/:id');
+        if (productIdMatch && method === 'GET') {
+          mockRequest.params = productIdMatch;
+          return await handleProductsGet(mockRequest, env);
+        }
+        if (productIdMatch && method === 'PUT') {
+          mockRequest.params = productIdMatch;
+          return await handleProductsUpdate(mockRequest, env);
+        }
+        if (productIdMatch && method === 'DELETE') {
+          mockRequest.params = productIdMatch;
+          return await handleProductsDelete(mockRequest, env);
+        }
+        
+        // Barcode lookup
+        const barcodeMatch = matchRoute(path, '/products/barcode/:barcode');
+        if (barcodeMatch && method === 'GET') {
+          mockRequest.params = barcodeMatch;
+          return await handleProductsBarcode(mockRequest, env);
+        }
       }
-
+      
       // Categories routes
-      if (path === '/categories' && method === 'GET') {
-        return await handleCategoriesList(request, env);
+      if (path.startsWith('/categories')) {
+        if (path === '/categories' && method === 'GET') {
+          return await handleCategoriesList(request, env);
+        }
+        if (path === '/categories' && method === 'POST') {
+          return await handleCategoriesCreate(request, env);
+        }
+        
+        const categoryIdMatch = matchRoute(path, '/categories/:id');
+        if (categoryIdMatch && method === 'PUT') {
+          mockRequest.params = categoryIdMatch;
+          return await handleCategoriesUpdate(mockRequest, env);
+        }
+        if (categoryIdMatch && method === 'DELETE') {
+          mockRequest.params = categoryIdMatch;
+          return await handleCategoriesDelete(mockRequest, env);
+        }
       }
-
+      
       // Customers routes
-      if (path === '/customers' && method === 'GET') {
-        return await handleCustomersList(request, env);
+      if (path.startsWith('/customers')) {
+        if (path === '/customers' && method === 'GET') {
+          return await handleCustomersList(request, env);
+        }
+        if (path === '/customers' && method === 'POST') {
+          return await handleCustomersCreate(request, env);
+        }
+        if (path === '/customers/segments' && method === 'GET') {
+          return await handleCustomersSegments(request, env);
+        }
+        
+        const customerIdMatch = matchRoute(path, '/customers/:id');
+        if (customerIdMatch && method === 'GET') {
+          mockRequest.params = customerIdMatch;
+          return await handleCustomersGet(mockRequest, env);
+        }
+        if (customerIdMatch && method === 'PUT') {
+          mockRequest.params = customerIdMatch;
+          return await handleCustomersUpdate(mockRequest, env);
+        }
+        
+        // Customer loyalty routes
+        const loyaltyMatch = matchRoute(path, '/customers/:id/loyalty');
+        if (loyaltyMatch && method === 'POST') {
+          mockRequest.params = loyaltyMatch;
+          return await handleCustomersLoyalty(mockRequest, env);
+        }
+        
+        const loyaltyHistoryMatch = matchRoute(path, '/customers/:id/loyalty-history');
+        if (loyaltyHistoryMatch && method === 'GET') {
+          mockRequest.params = loyaltyHistoryMatch;
+          return await handleCustomersLoyaltyHistory(mockRequest, env);
+        }
+        
+        const analyticsMatch = matchRoute(path, '/customers/:id/analytics');
+        if (analyticsMatch && method === 'GET') {
+          mockRequest.params = analyticsMatch;
+          return await handleCustomersAnalytics(mockRequest, env);
+        }
       }
-
+      
       // Orders routes
-      if (path === '/orders' && method === 'GET') {
-        return await handleOrdersList(request, env);
+      if (path.startsWith('/orders')) {
+        if (path === '/orders' && method === 'GET') {
+          return await handleOrdersList(request, env);
+        }
+        if (path === '/orders' && method === 'POST') {
+          return await handleOrdersCreate(request, env);
+        }
+        
+        const orderIdMatch = matchRoute(path, '/orders/:id');
+        if (orderIdMatch && method === 'GET') {
+          mockRequest.params = orderIdMatch;
+          return await handleOrdersGet(mockRequest, env);
+        }
       }
-
+      
       // Inventory routes
-      if (path === '/inventory/current' && method === 'GET') {
-        return await handleInventoryCurrent(request, env);
+      if (path.startsWith('/inventory')) {
+        if (path === '/inventory/current' && method === 'GET') {
+          return await handleInventoryCurrent(request, env);
+        }
+        if (path === '/inventory/movements' && method === 'GET') {
+          return await handleInventoryMovements(request, env);
+        }
+        if (path === '/inventory/alerts' && method === 'GET') {
+          return await handleInventoryAlerts(request, env);
+        }
+        if (path === '/inventory/adjustment' && method === 'POST') {
+          return await handleInventoryAdjustment(request, env);
+        }
       }
-
+      
       // Analytics routes
-      if (path === '/analytics/sales/daily' && method === 'GET') {
-        return await handleAnalyticsSalesDaily(request, env);
+      if (path.startsWith('/analytics')) {
+        if (path === '/analytics/sales/daily' && method === 'GET') {
+          return await handleAnalyticsSalesDaily(request, env);
+        }
+        if (path === '/analytics/sales/products' && method === 'GET') {
+          return await handleAnalyticsSalesProducts(request, env);
+        }
+        if (path === '/analytics/sales/customers' && method === 'GET') {
+          return await handleAnalyticsSalesCustomers(request, env);
+        }
+        if (path === '/analytics/inventory/turnover' && method === 'GET') {
+          return await handleAnalyticsInventoryTurnover(request, env);
+        }
       }
-
+      
+      // AI routes
+      if (path.startsWith('/ai')) {
+        if (path === '/ai/forecast/demand' && method === 'POST') {
+          return await handleAIForecastDemand(request, env);
+        }
+        
+        const recommendationsMatch = matchRoute(path, '/ai/recommendations/:customer_id');
+        if (recommendationsMatch && method === 'GET') {
+          mockRequest.params = recommendationsMatch;
+          return await handleAIRecommendations(mockRequest, env);
+        }
+      }
+      
       // 404 for unmatched routes
       return new Response(JSON.stringify({
         success: false,
@@ -632,7 +916,7 @@ export default {
         status: 404,
         headers: { 'Content-Type': 'application/json', ...addCorsHeaders() }
       });
-
+      
     } catch (error) {
       console.error('Error handling request:', error);
       return new Response(JSON.stringify({
@@ -646,6 +930,3 @@ export default {
     }
   }
 };
-
-// Export Durable Objects
-export { RealtimeDurableObject };

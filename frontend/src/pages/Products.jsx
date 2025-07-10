@@ -91,14 +91,31 @@ const Products = () => {
       };
 
       const response = await api.get('/products', { params });
-      setProducts(response.data?.products || getMockProducts());
-      setPagination(prev => ({
-        ...prev,
-        total: response.data?.total || getMockProducts().length
-      }));
+
+      // Handle real API response structure
+      if (response.success && response.data) {
+        setProducts(response.data.products || []);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.pagination?.total || 0
+        }));
+      } else {
+        // Fallback to mock data only if API completely fails
+        console.warn('API response not in expected format, using mock data');
+        setProducts(getMockProducts());
+        setPagination(prev => ({
+          ...prev,
+          total: getMockProducts().length
+        }));
+      }
     } catch (error) {
       console.error('Failed to load products:', error);
+      // Only use mock data as last resort
       setProducts(getMockProducts());
+      setPagination(prev => ({
+        ...prev,
+        total: getMockProducts().length
+      }));
     } finally {
       setLoading(false);
     }
@@ -106,8 +123,27 @@ const Products = () => {
 
   const loadCategories = async () => {
     try {
-      const response = await api.get('/products/categories');
-      setCategories(response.data || getMockCategories());
+      const response = await api.get('/categories');
+
+      // Handle real API response structure
+      if (response.success && response.data) {
+        // Flatten tree structure for dropdown usage
+        const flattenCategories = (categories) => {
+          let result = [];
+          categories.forEach(cat => {
+            result.push({ id: cat.id, name: cat.name, count: cat.product_count });
+            if (cat.children && cat.children.length > 0) {
+              result = result.concat(flattenCategories(cat.children));
+            }
+          });
+          return result;
+        };
+
+        setCategories(flattenCategories(response.data.categories || []));
+      } else {
+        console.warn('Categories API response not in expected format, using mock data');
+        setCategories(getMockCategories());
+      }
     } catch (error) {
       console.error('Failed to load categories:', error);
       setCategories(getMockCategories());
@@ -192,20 +228,33 @@ const Products = () => {
   const handleSave = async (values) => {
     try {
       setLoading(true);
-      
+
       const formData = {
         ...values,
-        image: values.image?.file || null
+        // Map frontend field names to backend field names
+        reorder_level: values.min_stock || values.reorder_level || 10,
+        stock_quantity: values.stock || values.stock_quantity || 0,
+        cost_price: values.cost || values.cost_price,
+        category_id: values.category,
+        image_url: values.image?.file || values.image_url || null
       };
 
+      // Remove frontend-only fields
+      delete formData.image;
+      delete formData.min_stock;
+      delete formData.stock;
+      delete formData.cost;
+      delete formData.category;
+
+      let response;
       if (selectedProduct) {
-        await api.put(`/products/${selectedProduct.id}`, formData);
+        response = await api.put(`/products/${selectedProduct.id}`, formData);
         showSuccessNotification(
           'Product Updated',
           `${values.name} has been updated successfully.`
         );
       } else {
-        await api.post('/products', formData);
+        response = await api.post('/products', formData);
         showSuccessNotification(
           'Product Created',
           `${values.name} has been created successfully.`
@@ -218,10 +267,8 @@ const Products = () => {
       loadProducts();
     } catch (error) {
       console.error('Save error:', error);
-      showErrorNotification(
-        'Save Failed',
-        error.message || 'Failed to save product. Please try again.'
-      );
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save product. Please try again.';
+      showErrorNotification('Save Failed', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -230,18 +277,21 @@ const Products = () => {
   const handleDelete = async (product) => {
     try {
       setLoading(true);
-      await api.delete(`/products/${product.id}`);
-      showSuccessNotification(
-        'Product Deleted',
-        `${product.name} has been deleted successfully.`
-      );
-      loadProducts();
+      const response = await api.delete(`/products/${product.id}`);
+
+      if (response.success) {
+        showSuccessNotification(
+          'Product Deleted',
+          `${product.name} has been deleted successfully.`
+        );
+        loadProducts();
+      } else {
+        throw new Error(response.message || 'Delete failed');
+      }
     } catch (error) {
       console.error('Delete error:', error);
-      showErrorNotification(
-        'Delete Failed',
-        error.message || 'Failed to delete product. Please try again.'
-      );
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete product. Please try again.';
+      showErrorNotification('Delete Failed', errorMessage);
     } finally {
       setLoading(false);
     }

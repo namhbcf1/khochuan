@@ -81,10 +81,10 @@ SUPPORT_EMAIL = "support@truongphat.com"
 # Durable Objects
 [[durable_objects.bindings]]
 name = "REALTIME"
-class_name = "RealtimeHandler"
+class_name = "RealtimeDurableObject"
 
 # Durable Objects Migrations
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["RealtimeHandler"]
+new_sqlite_classes = ["RealtimeDurableObject"]
 
