@@ -15,7 +15,9 @@
 - **❤️ Health Check**: https://khochuan-pos-api.bangachieu2.workers.dev/health
 
 ### GitHub Repository
-- **📂 Source Code**: https://github.com/namhbcf1/khoaugment
+- **📂 Source Code**: https://github.com/namhbcf1/khochuan
+- **🌿 Main Branch**: https://github.com/namhbcf1/khochuan/tree/main
+- **🔧 Master Branch**: https://github.com/namhbcf1/khochuan/tree/master
 
 ## ✅ Deployment Status: 100% THÀNH CÔNG
 
@@ -172,5 +174,7 @@
 **🎉 SẴN SÀNG CHO SẢN XUẤT!**  
 **Liên hệ**: Trường Phát Computer Hòa Bình  
 **Phiên bản**: 1.0.0  
-**Cập nhật lần cuối**: 2025-07-10  
-**Thời gian deploy**: 15:35 GMT+7
+**Cập nhật lần cuối**: 2025-07-10
+**Thời gian deploy**: 18:45 GMT+7
+**Git Branch**: main (production ready)
+**Deployment URL**: https://1c0c4ca2.khoaugment.pages.dev
