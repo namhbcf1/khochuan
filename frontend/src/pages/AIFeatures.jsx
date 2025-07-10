@@ -483,7 +483,7 @@ const AIFeatures = () => {
 
         <TabPane tab={
           <span>
-            <ShoppingOutlined />
+            <ShoppingCartOutlined />
             Gợi ý sản phẩm
           </span>
         } key="product-recommendation">

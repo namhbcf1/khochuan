@@ -4,8 +4,8 @@
  * Trường Phát Computer Hòa Bình
  */
 
-// Import Durable Object
-import RealtimeDurableObject from './websocket/realtime.js';
+// Import Durable Object - Temporarily disabled
+// import RealtimeDurableObject from './websocket/realtime.js';
 
 // CORS headers
 function addCorsHeaders() {
@@ -647,5 +647,5 @@ export default {
   }
 };
 
-// Export Durable Objects
-export { RealtimeDurableObject };
+// Export Durable Objects - Temporarily disabled
+// export { RealtimeDurableObject };

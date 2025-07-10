@@ -560,7 +560,7 @@ const Analytics = () => {
                   title="Giá trị đơn hàng TB"
                   value={dashboardMetrics.avgOrderValue}
                   formatter={(value) => formatCurrency(value)}
-                  prefix={<TargetOutlined />}
+                  prefix={<AimOutlined />}
                   suffix={
                     <span style={{ fontSize: '14px', color: getGrowthColor(dashboardMetrics.avgOrderGrowth) }}>
                       {getGrowthIcon(dashboardMetrics.avgOrderGrowth)} {Math.abs(dashboardMetrics.avgOrderGrowth)}%
@@ -733,7 +733,7 @@ const Analytics = () => {
                       description: 'Khách mua Coca Cola có 70% khả năng mua snacks'
                     },
                     {
-                      icon: <TargetOutlined style={{ color: '#52c41a' }} />,
+                      icon: <AimOutlined style={{ color: '#52c41a' }} />,
                       title: 'Tối ưu hóa',
                       description: 'Tăng stock Bánh mì vào 7-9h sáng để tối đa hóa doanh thu'
                     }

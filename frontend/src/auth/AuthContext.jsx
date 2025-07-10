@@ -237,7 +237,7 @@ export const AuthProvider = ({ children }) => {
       console.log('🔐 AuthContext: Login response received', response);
 
       if (response.success) {
-        const { user, token } = response;
+        const { user, token } = response.data || response;
         console.log('🔐 AuthContext: Login successful', { user: user.email, role: user.role });
 
         // Set auth token in axios headers

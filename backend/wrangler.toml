@@ -1,4 +1,4 @@
-name = "khoaugment-api"
+name = "khochuan-pos-api"
 main = "src/index.js"
 compatibility_date = "2024-01-15"
 compatibility_flags = ["nodejs_compat"]
@@ -12,8 +12,8 @@ name = "khoaugment-api-staging"
 # D1 Database Configuration
 [[d1_databases]]
 binding = "DB"
-database_name = "pos-database"
-database_id = "813d3eca-d422-40ed-9b8f-ce21b1785967" # Đã được cập nhật với ID thực
+database_name = "khochuan-pos-prod"
+database_id = "7cedbbbb-d8f5-4a66-b238-9b8ace74b200" # Production database
 migrations_dir = "database/migrations"
 
 # KV Storage Configuration
@@ -45,10 +45,10 @@ ADMIN_EMAIL = "admin@truongphat.com"
 SUPPORT_EMAIL = "support@truongphat.com"
 
 # Production environment configuration
-[env.production.d1_databases]
+[[env.production.d1_databases]]
 binding = "DB"
-database_name = "khoaugment-pos-db"
-database_id = "your-production-database-id"
+database_name = "khochuan-pos-prod"
+database_id = "7cedbbbb-d8f5-4a66-b238-9b8ace74b200"
 
 [env.production.kv_namespaces]
 binding = "CACHE"
@@ -78,13 +78,13 @@ SUPPORT_EMAIL = "support@truongphat.com"
 # binding = "ANALYTICS"
 # dataset = "khochuan_events"
 
-# Durable Objects
-[[durable_objects.bindings]]
-name = "REALTIME"
-class_name = "RealtimeDurableObject"
+# Durable Objects - Temporarily disabled for deployment
+# [[durable_objects.bindings]]
+# name = "REALTIME"
+# class_name = "RealtimeDurableObject"
 
 # Durable Objects Migrations
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["RealtimeDurableObject"]
+# [[migrations]]
+# tag = "v1"
+# new_sqlite_classes = ["RealtimeDurableObject"]
 

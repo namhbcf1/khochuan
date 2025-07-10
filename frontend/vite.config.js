@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
@@ -18,9 +18,11 @@ export default defineConfig({
     }
   },
   build: {
-    target: 'esnext',
-    minify: 'esbuild',
+    target: 'es2020',
+    minify: 'terser',
     sourcemap: false,
+    outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: {

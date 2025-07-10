@@ -20,7 +20,8 @@ import {
   DatePicker,
   message,
   Tabs,
-  Upload
+  Upload,
+  Switch
 } from 'antd';
 import {
   UserAddOutlined,
