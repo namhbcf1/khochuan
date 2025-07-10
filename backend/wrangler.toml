@@ -30,12 +30,48 @@ id = "b4966461e07a48e981c78cf9f374fe4c" # ID từ KV namespace SESSIONS
 # binding = "STORAGE"
 # bucket_name = "khochuan-files"
 
-# Environment Variables
-[vars]
+# Production Environment Variables
+[env.production.vars]
 ENVIRONMENT = "production"
-JWT_SECRET = "YOUR_JWT_SECRET" # Change this in production
+JWT_SECRET = "khoaugment-super-secret-jwt-key-production-2025-truongphat"
+ENCRYPTION_KEY = "khoaugment-32-char-encryption-prod!"
 API_VERSION = "v1"
 CORS_ORIGIN = "https://khoaugment.pages.dev"
+COMPANY_NAME = "Trường Phát Computer Hòa Bình"
+COMPANY_ADDRESS = "123 Đường Trường Phát, Hòa Bình, Việt Nam"
+COMPANY_PHONE = "+84-123-456-789"
+COMPANY_EMAIL = "info@truongphat.com"
+ADMIN_EMAIL = "admin@truongphat.com"
+SUPPORT_EMAIL = "support@truongphat.com"
+
+# Production environment configuration
+[env.production.d1_databases]
+binding = "DB"
+database_name = "khoaugment-pos-db"
+database_id = "your-production-database-id"
+
+[env.production.kv_namespaces]
+binding = "CACHE"
+id = "your-production-kv-id"
+
+[env.production.durable_objects]
+bindings = [
+  { name = "ANALYTICS", class_name = "AnalyticsCounter" }
+]
+
+# Development Environment Variables
+[env.development.vars]
+ENVIRONMENT = "development"
+JWT_SECRET = "khoaugment-super-secret-jwt-key-development-2025-truongphat"
+ENCRYPTION_KEY = "khoaugment-32-char-encryption-dev!!"
+API_VERSION = "v1"
+CORS_ORIGIN = "http://localhost:5173"
+COMPANY_NAME = "Trường Phát Computer Hòa Bình"
+COMPANY_ADDRESS = "123 Đường Trường Phát, Hòa Bình, Việt Nam"
+COMPANY_PHONE = "+84-123-456-789"
+COMPANY_EMAIL = "info@truongphat.com"
+ADMIN_EMAIL = "admin@truongphat.com"
+SUPPORT_EMAIL = "support@truongphat.com"
 
 # Analytics Engine - Đã được bình luận vì chưa kích hoạt Analytics Engine
 # [[analytics_engine_datasets]]
@@ -52,7 +88,3 @@ class_name = "RealtimeHandler"
 tag = "v1"
 new_sqlite_classes = ["RealtimeHandler"]
 
-# Development Configuration
-[env.development]
-name = "khoaugment-api-dev"
-vars = { ENVIRONMENT = "development", CORS_ORIGIN = "http://localhost:5173" }

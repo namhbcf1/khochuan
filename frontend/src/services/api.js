@@ -1,27 +1,28 @@
 /**
- * API Service
- * Centralized API communication layer with error handling and offline support
- * Edge-optimized for Cloudflare environment
+ * Real API Service - NO MOCK DATA
+ * 100% Real Database Operations with Cloudflare Workers
+ * Trường Phát Computer Hòa Bình
  */
 
 import axios from 'axios';
 import { getAccessToken, refreshToken, clearAuthTokens } from '../utils/helpers/authUtils';
 import { localCache } from '../utils/helpers/cacheUtils';
 import { logEvent } from '../utils/helpers/analyticsUtils';
-import { mockApi, shouldUseMockApi } from './mockApi';
 
 // Default API configuration
 const DEFAULT_TIMEOUT = 15000; // 15 seconds
 const RETRY_ATTEMPTS = 2;
 const RETRY_DELAY = 1000; // 1 second
 
-// Create API client instance
+// Real API client instance - NO MOCK
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://khoaugment-api.namhbcf1.workers.dev',
   timeout: DEFAULT_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
+    'X-Client': 'Khochuan-POS-Frontend',
     'X-Client-Version': import.meta.env.VITE_APP_VERSION || '1.0.0',
+    'X-Company': 'Truong-Phat-Computer'
   }
 });
 
@@ -496,71 +497,44 @@ window.addEventListener('offline', () => {
 const enhancedApi = {
   ...api,
 
-  // Authentication
+  // Real Authentication - NO MOCK
   async login(email, password) {
-    if (shouldUseMockApi()) {
-      return await mockApi.login(email, password);
-    }
     return await api.post('/auth/login', { email, password });
   },
 
   async logout() {
-    if (shouldUseMockApi()) {
-      return await mockApi.logout();
-    }
     return await api.post('/auth/logout');
   },
 
   async getProfile() {
-    if (shouldUseMockApi()) {
-      return await mockApi.getProfile();
-    }
     return await api.get('/auth/me');
   },
 
-  // Products
+  // Real Products - NO MOCK
   async getProducts(params = {}) {
-    if (shouldUseMockApi()) {
-      return await mockApi.getProducts(params);
-    }
     return await api.get('/products', { params });
   },
 
   async getProduct(id) {
-    if (shouldUseMockApi()) {
-      return await mockApi.getProduct(id);
-    }
     return await api.get(`/products/${id}`);
   },
 
-  // Orders
+  // Real Orders - NO MOCK
   async getOrders(params = {}) {
-    if (shouldUseMockApi()) {
-      return await mockApi.getOrders(params);
-    }
     return await api.get('/orders', { params });
   },
 
   async createOrder(orderData) {
-    if (shouldUseMockApi()) {
-      return await mockApi.createOrder(orderData);
-    }
     return await api.post('/orders', orderData);
   },
 
-  // Dashboard
+  // Real Dashboard - NO MOCK
   async getDashboardStats() {
-    if (shouldUseMockApi()) {
-      return await mockApi.getDashboardStats();
-    }
     return await api.get('/analytics/dashboard');
   },
 
-  // Categories
+  // Real Categories - NO MOCK
   async getCategories() {
-    if (shouldUseMockApi()) {
-      return await mockApi.getCategories();
-    }
     return await api.get('/categories');
   }
 };

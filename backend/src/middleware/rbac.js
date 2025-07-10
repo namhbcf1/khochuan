@@ -63,6 +63,46 @@ export const ROLES = {
 };
 
 /**
+ * Resource-based permissions mapping
+ */
+export const RESOURCE_PERMISSIONS = {
+  admin: {
+    users: ['create', 'read', 'update', 'delete'],
+    products: ['create', 'read', 'update', 'delete'],
+    orders: ['create', 'read', 'update', 'delete'],
+    customers: ['create', 'read', 'update', 'delete'],
+    analytics: ['read'],
+    settings: ['read', 'update'],
+    inventory: ['create', 'read', 'update', 'delete']
+  },
+  manager: {
+    users: ['read', 'update'],
+    products: ['create', 'read', 'update', 'delete'],
+    orders: ['create', 'read', 'update', 'delete'],
+    customers: ['create', 'read', 'update', 'delete'],
+    analytics: ['read'],
+    settings: ['read'],
+    inventory: ['create', 'read', 'update', 'delete']
+  },
+  cashier: {
+    products: ['read'],
+    orders: ['create', 'read', 'update'],
+    customers: ['read', 'update'],
+    inventory: ['read']
+  },
+  staff: {
+    products: ['read'],
+    orders: ['read'],
+    customers: ['read'],
+    inventory: ['read']
+  },
+  customer: {
+    orders: ['read'],
+    profile: ['read', 'update']
+  }
+};
+
+/**
  * Check if user has required permission
  * @param {Object} user - User object with role
  * @param {String} permission - Required permission
@@ -82,12 +122,12 @@ export function hasPermission(user, permission) {
  * @param {String|Array} requiredPermissions - Required permission(s)
  * @returns {Function} - Middleware function
  */
-export const requirePermission = (requiredPermissions) => (request) => {
+export const requirePermissionMiddleware = (requiredPermissions) => (request) => {
   // Skip for OPTIONS requests
   if (request.method === 'OPTIONS') {
     return;
   }
-  
+
   // Ensure user is authenticated
   if (!request.user) {
     return new Response(JSON.stringify({
@@ -101,17 +141,17 @@ export const requirePermission = (requiredPermissions) => (request) => {
       }
     });
   }
-  
+
   // Normalize permissions to array
-  const permissions = Array.isArray(requiredPermissions) 
-    ? requiredPermissions 
+  const permissions = Array.isArray(requiredPermissions)
+    ? requiredPermissions
     : [requiredPermissions];
-  
+
   // Check if user has any of the required permissions
   const hasRequiredPermission = permissions.some(
     permission => hasPermission(request.user, permission)
   );
-  
+
   if (!hasRequiredPermission) {
     return new Response(JSON.stringify({
       success: false,
@@ -124,14 +164,14 @@ export const requirePermission = (requiredPermissions) => (request) => {
       }
     });
   }
-  
-<<<<<<< HEAD
-  /**
-   * Quick role check middleware
-   */
-  export function requireRole(roles) {
-    return rbacMiddleware(roles)
-  }
+};
+
+/**
+ * Quick role check middleware
+ */
+export function requireRole(roles) {
+  return rbacMiddleware(roles)
+}
   
   /**
    * Quick permission check middleware
@@ -275,15 +315,6 @@ export const requirePermission = (requiredPermissions) => (request) => {
     }
   }
   
-  /**
-   * Export role definitions for frontend
-   */
-  export { ROLES, RESOURCE_PERMISSIONS }
+// Export rbac as alias for rbacMiddleware
+export const rbac = rbacMiddleware;
 
-  // Export rbac as alias for rbacMiddleware
-  export const rbac = rbacMiddleware;
-=======
-  // Continue processing
-  return;
-};
->>>>>>> 6806c702f54d85aaf87695d8ea5a7e4205f1eb0c

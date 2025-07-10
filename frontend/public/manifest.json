@@ -1,7 +1,7 @@
 {
-  "name": "Kho Augment - Smart POS System",
-  "short_name": "KhoAugment",
-  "description": "Advanced Point of Sale and Inventory Management System with AI-powered features",
+  "name": "Khochuan POS - Trường Phát Computer Hòa Bình",
+  "short_name": "Khochuan POS",
+  "description": "Enterprise Point of Sale System with AI, Gamification, Barcode Scanner, Multi-Payment Methods for Trường Phát Computer Hòa Bình",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

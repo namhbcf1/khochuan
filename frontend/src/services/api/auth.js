@@ -2,7 +2,7 @@ import axios from 'axios';
 import { mockApi, shouldUseMockApi } from '../mockApi';
 
 // Cấu hình base URL cho auth API
-const AUTH_API_URL = import.meta.env.VITE_API_URL || 'https://khoaugment-api.bangachieu2.workers.dev';
+const AUTH_API_URL = import.meta.env.VITE_API_URL || 'https://khoaugment-api.namhbcf1.workers.dev';
 
 // Tạo axios instance
 const apiClient = axios.create({

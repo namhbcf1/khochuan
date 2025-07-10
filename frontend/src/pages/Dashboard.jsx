@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Typography, Button, Space, Statistic, Progress } from 'antd';
 import {
@@ -10,13 +10,23 @@ import {
   TeamOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
+import performanceService from '../services/performanceService';
 
 const { Title, Text } = Typography;
 
-const Dashboard = () => {
+const Dashboard = memo(() => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Performance monitoring
+  useEffect(() => {
+    performanceService.startRenderTiming('Dashboard');
+    return () => {
+      performanceService.endRenderTiming('Dashboard');
+    };
+  }, []);
+
+  // Memoized navigation effect
   useEffect(() => {
     // Redirect based on user role
     if (user?.role === 'admin') {
@@ -28,8 +38,8 @@ const Dashboard = () => {
     }
   }, [user, navigate]);
 
-  // Demo statistics
-  const stats = [
+  // Memoized statistics to prevent unnecessary re-renders
+  const stats = useMemo(() => [
     {
       title: 'Doanh thu hôm nay',
       value: 15420000,
@@ -55,7 +65,24 @@ const Dashboard = () => {
       prefix: <TeamOutlined />,
       color: '#fa8c16'
     }
-  ];
+  ], []);
+
+  // Memoized navigation handlers
+  const handleAdminAccess = useCallback(() => {
+    navigate('/admin/dashboard');
+  }, [navigate]);
+
+  const handleCashierAccess = useCallback(() => {
+    navigate('/cashier/pos');
+  }, [navigate]);
+
+  const handleStaffAccess = useCallback(() => {
+    navigate('/staff/dashboard');
+  }, [navigate]);
+
+  const handleCustomerAccess = useCallback(() => {
+    navigate('/customer/profile');
+  }, [navigate]);
 
   return (
     <div style={{ 
@@ -121,11 +148,11 @@ const Dashboard = () => {
                 </Text>
                 
                 <Space size="large" wrap>
-                  <Button 
-                    type="primary" 
-                    size="large" 
+                  <Button
+                    type="primary"
+                    size="large"
                     icon={<ShoppingCartOutlined />}
-                    onClick={() => navigate('/login')}
+                    onClick={handleCashierAccess}
                     style={{
                       background: 'rgba(255,255,255,0.2)',
                       border: '1px solid rgba(255,255,255,0.3)',
@@ -134,8 +161,8 @@ const Dashboard = () => {
                   >
                     Bắt đầu bán hàng
                   </Button>
-                  <Button 
-                    size="large" 
+                  <Button
+                    size="large"
                     icon={<UserOutlined />}
                     onClick={() => navigate('/login')}
                     style={{
@@ -277,6 +304,8 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
+});
+
+Dashboard.displayName = 'Dashboard';
 
 export default Dashboard;

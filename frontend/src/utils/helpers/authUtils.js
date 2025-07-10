@@ -1,7 +1,10 @@
 /**
  * Authentication Utilities
  * Functions for token management, user info, and role-based access
+ * Enhanced with security service integration
  */
+
+import securityService from '../../services/securityService';
 
 // Token management
 const TOKEN_KEY = 'auth_token';
@@ -10,26 +13,62 @@ const USER_INFO_KEY = 'user_info';
 const TOKEN_EXPIRY_KEY = 'token_expiry';
 
 /**
- * Set authentication tokens in storage
+ * Set authentication tokens in storage with security enhancements
  * @param {String} accessToken - JWT access token
  * @param {String} refreshToken - JWT refresh token
  * @param {Number} expiresIn - Expiration time in seconds
+ * @param {Object} userInfo - User information
  */
-export const setAuthTokens = (accessToken, refreshToken, expiresIn = 3600) => {
-  localStorage.setItem(TOKEN_KEY, accessToken);
-  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-  
+export const setAuthTokens = (accessToken, refreshToken, expiresIn = 3600, userInfo = null) => {
+  // Encrypt sensitive tokens before storing
+  const encryptedToken = securityService.encrypt(accessToken);
+  const encryptedRefreshToken = securityService.encrypt(refreshToken);
+
+  localStorage.setItem(TOKEN_KEY, JSON.stringify(encryptedToken));
+  localStorage.setItem(REFRESH_TOKEN_KEY, JSON.stringify(encryptedRefreshToken));
+
   // Calculate expiry time
   const expiryTime = Date.now() + (expiresIn * 1000);
   localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime.toString());
+
+  // Create secure session if user info provided
+  if (userInfo) {
+    const sessionId = securityService.createSession(userInfo.id, userInfo);
+    localStorage.setItem('session_id', sessionId);
+    securityService.logSecurityEvent('successful_login', { userId: userInfo.id, role: userInfo.role });
+  }
 };
 
 /**
- * Get current access token
+ * Get current access token with security validation
  * @returns {String|null} - Current access token or null if not set
  */
 export const getAccessToken = () => {
-  return localStorage.getItem(TOKEN_KEY);
+  try {
+    const encryptedToken = localStorage.getItem(TOKEN_KEY);
+    if (!encryptedToken) return null;
+
+    const tokenData = JSON.parse(encryptedToken);
+    const decryptedToken = securityService.decrypt(tokenData.encrypted, tokenData.iv);
+
+    // Validate session if exists
+    const sessionId = localStorage.getItem('session_id');
+    if (sessionId) {
+      try {
+        securityService.validateSession(sessionId);
+      } catch (error) {
+        // Session invalid, clear tokens
+        clearAuthTokens();
+        return null;
+      }
+    }
+
+    return decryptedToken;
+  } catch (error) {
+    console.error('Error decrypting token:', error);
+    clearAuthTokens();
+    return null;
+  }
 };
 
 /**
@@ -41,13 +80,75 @@ export const getRefreshToken = () => {
 };
 
 /**
- * Clear all authentication tokens and user info
+ * Clear all authentication tokens and user info with security cleanup
  */
 export const clearAuthTokens = () => {
+  // Destroy session if exists
+  const sessionId = localStorage.getItem('session_id');
+  if (sessionId) {
+    securityService.destroySession(sessionId);
+  }
+
+  // Clear all auth-related data
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_INFO_KEY);
   localStorage.removeItem(TOKEN_EXPIRY_KEY);
+  localStorage.removeItem('session_id');
+
+  // Log security event
+  securityService.logSecurityEvent('logout');
+};
+
+/**
+ * Secure login with rate limiting and security checks
+ * @param {String} email - User email
+ * @param {String} password - User password
+ * @returns {Promise} - Login result
+ */
+export const secureLogin = async (email, password) => {
+  try {
+    // Validate input
+    if (!securityService.validateEmail(email)) {
+      throw new Error('Email không hợp lệ');
+    }
+
+    // Check login attempts
+    securityService.checkLoginAttempts(email);
+
+    // Sanitize input
+    const sanitizedEmail = securityService.sanitizeInput(email);
+
+    // Import API dynamically to avoid circular dependency
+    const { default: api } = await import('../../services/api');
+
+    // Attempt login
+    const response = await api.post('/auth/login', {
+      email: sanitizedEmail,
+      password: password
+    });
+
+    if (response.data.success) {
+      // Clear failed attempts on success
+      securityService.clearLoginAttempts(email);
+
+      // Set tokens with security enhancements
+      setAuthTokens(
+        response.data.accessToken,
+        response.data.refreshToken,
+        response.data.expiresIn,
+        response.data.user
+      );
+
+      return response.data;
+    } else {
+      throw new Error(response.data.message || 'Đăng nhập thất bại');
+    }
+  } catch (error) {
+    // Record failed login attempt
+    securityService.recordFailedLogin(email);
+    throw error;
+  }
 };
 
 /**

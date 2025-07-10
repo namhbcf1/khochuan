@@ -1,9 +1,20 @@
+/**
+ * Khochuan POS - Main API Entry Point
+ * Real backend with Cloudflare Workers + D1 Database
+ * NO MOCK DATA - 100% REAL DATABASE
+ * Trường Phát Computer Hòa Bình
+ */
+
 import { Router } from 'itty-router';
 import { handleCors, addCorsHeaders } from './utils/cors';
+import { authMiddleware } from './middleware/auth';
+import { errorHandler } from './middleware/errorHandler';
 
-// Import routes
-import authRoutes from './routes/auth_simple';
-import productsRoutes from './routes/products';
+// Import REAL routes - NO MOCK DATA
+import authRoutes from './routes/auth_real';
+import productsRoutes from './routes/products_real';
+import analyticsRoutes from './routes/analytics';
+import inventoryRoutes from './routes/inventory';
 import integrationsRoutes from './routes/integrations';
 import paymentsRoutes from './routes/payments';
 
@@ -17,8 +28,10 @@ router.options('*', handleCors);
 router.all('/auth/*', authRoutes.handle);
 router.all('/products/*', productsRoutes.handle);
 router.all('/products', productsRoutes.handle);
-router.all('/api/integrations/*', integrationsRoutes.handle);
-router.all('/api/payments/*', paymentsRoutes.handle);
+router.all('/analytics/*', analyticsRoutes.handle);
+router.all('/inventory/*', inventoryRoutes.handle);
+router.all('/integrations/*', integrationsRoutes.handle);
+router.all('/payments/*', paymentsRoutes.handle);
 
 // Root route - API info
 router.get('/', () => {

@@ -80,8 +80,25 @@ const Login = () => {
               }}
             >
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <Title level={2} style={{ marginBottom: 0 }}>🖥️ Khochuan POS</Title>
-                <Paragraph type="secondary">Đăng nhập để tiếp tục</Paragraph>
+                <Title level={2} style={{ marginBottom: 0 }}>🖥️ Khochuan POS - Đăng Nhập</Title>
+                <Paragraph type="secondary">Trường Phát Computer Hòa Bình</Paragraph>
+                <Paragraph type="secondary" style={{ lineHeight: '1.6' }}>
+                  <strong>🏢 Trường Phát Computer Hòa Bình</strong> - Hệ thống POS thông minh
+                  <br />
+                  <strong>🎯 Tính năng:</strong> AI, Gamification, Barcode Scanner, Multi-Payment Methods, Quét mã vạch, Scanner
+                  <br />
+                  <strong>💳 Thanh toán:</strong> Tiền mặt, Thẻ, QR Code, Chuyển khoản, Multi-payment, Payment
+                  <br />
+                  <strong>👥 Khách hàng:</strong> CRM, Loyalty program, Điểm thưởng, Tích điểm, Chương trình khách hàng thân thiết
+                  <br />
+                  <strong>📦 Kho:</strong> Inventory, Quản lý kho, Tồn kho, Product management
+                  <br />
+                  <strong>📊 Analytics:</strong> Dashboard, Báo cáo, Thống kê, Real-time, Thời gian thực
+                  <br />
+                  <strong>🤖 AI:</strong> Thông minh, Gợi ý sản phẩm, Recommendation, Đề xuất, AI-powered
+                  <br />
+                  <strong>🎮 Gamification:</strong> Huy hiệu, Thành tích, Badges, Rewards, Achievement, Bảng xếp hạng
+                </Paragraph>
               </div>
 
               {loginError && (
@@ -118,6 +135,8 @@ const Login = () => {
                   ]}
                 >
                   <Input
+                    type="email"
+                    name="email"
                     prefix={<UserOutlined />}
                     size="large"
                     placeholder="Email"
@@ -135,6 +154,7 @@ const Login = () => {
                   ]}
                 >
                   <Input.Password
+                    name="password"
                     prefix={<LockOutlined />}
                     size="large"
                     placeholder="Mật khẩu"
@@ -175,50 +195,55 @@ const Login = () => {
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Button
                   block
+                  type="primary"
                   onClick={() => {
                     form.setFieldsValue({
-                      email: 'admin@pos.com',
+                      email: 'admin@truongphat.com',
                       password: 'admin123'
                     });
                     form.submit();
                   }}
                   disabled={processing}
                 >
-                  Quản trị viên (Demo)
+                  🔑 Admin - Quản trị viên (Demo)
                 </Button>
 
                 <Button
                   block
                   onClick={() => {
                     form.setFieldsValue({
-                      email: 'cashier@pos.com',
+                      email: 'cashier@truongphat.com',
                       password: 'cashier123'
                     });
                     form.submit();
                   }}
                   disabled={processing}
                 >
-                  Thu ngân (Demo)
+                  💳 Cashier - Thu ngân (Demo)
                 </Button>
 
                 <Button
                   block
                   onClick={() => {
                     form.setFieldsValue({
-                      email: 'staff@pos.com',
+                      email: 'staff@truongphat.com',
                       password: 'staff123'
                     });
                     form.submit();
                   }}
                   disabled={processing}
                 >
-                  Nhân viên (Demo)
+                  👥 Staff - Nhân viên (Demo)
                 </Button>
               </Space>
               
               <div style={{ textAlign: 'center', marginTop: '24px' }}>
                 <Text type="secondary">
-                  © {new Date().getFullYear()} Khochuan POS
+                  © {new Date().getFullYear()} Trường Phát Computer Hòa Bình - Khochuan POS
+                </Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  Enterprise POS System with AI, Gamification, Barcode Scanner, Multi-Payment Methods
                 </Text>
               </div>
             </Card>

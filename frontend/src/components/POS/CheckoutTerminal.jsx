@@ -3,7 +3,7 @@
  * Full-featured POS terminal with barcode scanning, payment processing, and receipt generation
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import {
     Row,
     Col,
@@ -35,6 +35,8 @@ import {
     QRCode,
     Image
 } from 'antd';
+import PaymentGateway from '../Payment/PaymentGateway';
+import performanceService from '../../services/performanceService';
 import {
     ShoppingCartOutlined,
     ScanOutlined,
@@ -72,10 +74,18 @@ const { Search } = Input;
 const { useToken } = theme;
 const { Step } = Steps;
 
-const CheckoutTerminal = () => {
+const CheckoutTerminal = memo(() => {
     const { user, hasPermission } = useAuth();
     const { token } = useToken();
     const scannerRef = useRef(null);
+
+    // Performance monitoring
+    useEffect(() => {
+        performanceService.startRenderTiming('CheckoutTerminal');
+        return () => {
+            performanceService.endRenderTiming('CheckoutTerminal');
+        };
+    }, []);
 
     // Cart state
     const [cart, setCart] = useState([]);
@@ -878,120 +888,30 @@ const CheckoutTerminal = () => {
             {/* Payment Drawer */}
             <Drawer
                 title="Thanh toán"
-                width={600}
+                width={700}
                 open={paymentDrawer}
                 onClose={() => setPaymentDrawer(false)}
-                footer={
-                    <Space>
-                        <Button onClick={() => setPaymentDrawer(false)}>
-                            Hủy
-                        </Button>
-                        <Button 
-                            type="primary" 
-                            onClick={() => {
-                                processPayment({
-                                    method: paymentMethod,
-                                    amount: paymentAmount,
-                                    printReceipt: true
-                                });
-                            }}
-                        >
-                            Xác nhận thanh toán
-                        </Button>
-                    </Space>
-                }
+                footer={null}
             >
-                <Steps current={paymentStep} size="small" style={{ marginBottom: 24 }}>
-                    <Step title="Chọn phương thức" />
-                    <Step title="Nhập số tiền" />
-                    <Step title="Xác nhận" />
-                </Steps>
+                <PaymentGateway
+                    amount={calculations.total}
+                    orderId={`ORDER_${Date.now()}`}
+                    customerInfo={selectedCustomer}
+                    onPaymentSuccess={(transaction) => {
+                        processPayment({
+                            method: transaction.method,
+                            amount: transaction.amount,
+                            transaction: transaction,
+                            printReceipt: true
+                        });
+                    }}
+                    onPaymentError={(error) => {
+                        message.error(`Lỗi thanh toán: ${error.message}`);
+                    }}
+                    onCancel={() => setPaymentDrawer(false)}
+                />
 
-                <Space direction="vertical" style={{ width: '100%' }} size="large">
-                    <Card title="Phương thức thanh toán" size="small">
-                        <Radio.Group 
-                            value={paymentMethod} 
-                            onChange={(e) => setPaymentMethod(e.target.value)}
-                            style={{ width: '100%' }}
-                        >
-                            <Space direction="vertical" style={{ width: '100%' }}>
-                                <Radio value="cash">
-                                    <Space>
-                                        <DollarOutlined />
-                                        Tiền mặt
-                                    </Space>
-                                </Radio>
-                                <Radio value="card">
-                                    <Space>
-                                        <CreditCardOutlined />
-                                        Thẻ tín dụng/ghi nợ
-                                    </Space>
-                                </Radio>
-                                <Radio value="bank">
-                                    <Space>
-                                        <BankOutlined />
-                                        Chuyển khoản
-                                    </Space>
-                                </Radio>
-                                <Radio value="ewallet">
-                                    <Space>
-                                        <MobileOutlined />
-                                        Ví điện tử
-                                    </Space>
-                                </Radio>
-                            </Space>
-                        </Radio.Group>
-                    </Card>
 
-                    <Card title="Thông tin thanh toán" size="small">
-                        <Space direction="vertical" style={{ width: '100%' }}>
-                            <Row justify="space-between">
-                                <Text>Tổng tiền:</Text>
-                                <Text strong style={{ fontSize: 16, color: token.colorPrimary }}>
-                                    {calculations.total.toLocaleString('vi-VN')} đ
-                                </Text>
-                            </Row>
-                            
-                            <Divider style={{ margin: '8px 0' }} />
-                            
-                            <div>
-                                <Text>Số tiền khách đưa:</Text>
-                                <InputNumber
-                                    style={{ width: '100%', marginTop: 8 }}
-                                    size="large"
-                                    value={paymentAmount}
-                                    onChange={setPaymentAmount}
-                                    min={calculations.total}
-                                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                    addonAfter="đ"
-                                />
-                            </div>
-                            
-                            {paymentAmount > calculations.total && (
-                                <Alert
-                                    message={`Tiền thừa: ${(paymentAmount - calculations.total).toLocaleString('vi-VN')} đ`}
-                                    type="info"
-                                    showIcon
-                                />
-                            )}
-                        </Space>
-                    </Card>
-
-                    <Card title="Tùy chọn" size="small">
-                        <Space direction="vertical">
-                            <Checkbox defaultChecked>
-                                In hóa đơn
-                            </Checkbox>
-                            <Checkbox>
-                                Gửi hóa đơn qua email
-                            </Checkbox>
-                            <Checkbox>
-                                Gửi SMS xác nhận
-                            </Checkbox>
-                        </Space>
-                    </Card>
-                </Space>
             </Drawer>
 
             {/* Customer Selection Drawer */}
@@ -1086,6 +1006,8 @@ const CheckoutTerminal = () => {
             </Modal>
         </div>
     );
-};
+});
+
+CheckoutTerminal.displayName = 'CheckoutTerminal';
 
 export default CheckoutTerminal;

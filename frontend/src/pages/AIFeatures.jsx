@@ -17,6 +17,11 @@ import { Line, Column, Scatter, Heatmap, Gauge } from '@ant-design/plots';
 import { api } from '../services/api';
 import dayjs from 'dayjs';
 
+import CustomerSegmentation from '../components/AI/CustomerSegmentation';
+import SalesForecasting from '../components/AI/SalesForecasting';
+import ProductRecommendation from '../components/AI/ProductRecommendation';
+import PriceOptimization from '../components/AI/PriceOptimization';
+
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -456,6 +461,42 @@ const AIFeatures = () => {
               </Card>
             </Col>
           </Row>
+        </TabPane>
+
+        <TabPane tab={
+          <span>
+            <UserOutlined />
+            Phân khúc khách hàng
+          </span>
+        } key="customer-segmentation">
+          <CustomerSegmentation />
+        </TabPane>
+
+        <TabPane tab={
+          <span>
+            <LineChartOutlined />
+            Dự báo doanh thu
+          </span>
+        } key="sales-forecasting">
+          <SalesForecasting />
+        </TabPane>
+
+        <TabPane tab={
+          <span>
+            <ShoppingOutlined />
+            Gợi ý sản phẩm
+          </span>
+        } key="product-recommendation">
+          <ProductRecommendation />
+        </TabPane>
+
+        <TabPane tab={
+          <span>
+            <DollarOutlined />
+            Tối ưu giá
+          </span>
+        } key="price-optimization">
+          <PriceOptimization />
         </TabPane>
       </Tabs>
     </div>
